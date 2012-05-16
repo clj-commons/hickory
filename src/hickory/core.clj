@@ -1,7 +1,7 @@
 (ns hickory.core
   (:require [clojure.string :as string])
   (:import [org.jsoup Jsoup]
-           [org.jsoup.nodes Attribute Attributes Comment Document
+           [org.jsoup.nodes Attribute Attributes Comment DataNode Document
             DocumentType Element Node TextNode XmlDeclaration]
            [org.jsoup.parser Tag]))
 
@@ -22,6 +22,8 @@
   (as-hiccup [this] (into {} (map as-hiccup this)))
   Comment
   (as-hiccup [this] (str this))
+  DataNode
+  (as-hiccup [this] (str this))
   Document
   (as-hiccup [this] (into [] (map as-hiccup (.childNodes this))))
   DocumentType
@@ -36,7 +38,6 @@
   (as-hiccup [this] (.text this))
   XmlDeclaration
   (as-hiccup [this] (str this)))
-
 
 (defn parse
   [s]
