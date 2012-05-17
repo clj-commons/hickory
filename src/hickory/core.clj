@@ -3,7 +3,7 @@
   (:import [org.jsoup Jsoup]
            [org.jsoup.nodes Attribute Attributes Comment DataNode Document
             DocumentType Element Node TextNode XmlDeclaration]
-           [org.jsoup.parser Tag]))
+           [org.jsoup.parser Tag Parser]))
 
 (defn lower-case-keyword
   [s]
@@ -45,4 +45,6 @@
 
 (defn parse-fragment
   [s]
-  (as-hiccup (Jsoup/parseBodyFragment s)))
+  (into []
+   (rest (rest (get-in (as-hiccup (Parser/parseBodyFragment s ""))
+                       [0 3])))))
