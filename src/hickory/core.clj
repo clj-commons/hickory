@@ -40,11 +40,29 @@
   (as-hiccup [this] (str this)))
 
 (defn parse
+  "Parse an entire HTML document into hiccup vectors."
   [s]
   (as-hiccup (Jsoup/parse s)))
 
 (defn parse-fragment
+  "Parse an HTML fragment (some group of tags that might be at home somewhere
+   in the tag hierarchy under <body>) into hiccup vectors."
   [s]
+  ;; Oh god. Oh God. This. is. *heinous*.
+  ;;
+  ;; Jsoup, excellent parser, has a bug in Parser/parseFragment when you do not
+  ;; supply the context arg. It has an uninitialized variable that causes an
+  ;; NPE. So, I found this problem and reported it. Haven't heard back. Project
+  ;; won't build for me, and I can't figure out why.
+  ;;
+  ;; So, after hours spent on this, it's time to make a strategic retreat to
+  ;; awfulness, and use the function that does work: parseBodyFragment. This
+  ;; parse the fragment into an entire html/head/body structure. We'll let it
+  ;; do that, and then *gulp* find the thing we wanted in that body and pull it
+  ;; back out.
+  ;;
+  ;; Seriously, soon as they fix parseFragment, fix this. The code should be
+  ;; (as-hiccup (Parser/parseFragment s nil "")) or something close.
   (into []
    (rest (rest (get-in (as-hiccup (Parser/parseBodyFragment s ""))
                        [0 3])))))
