@@ -1,4 +1,4 @@
-(defproject hickory "0.1.0-SNAPSHOT"
+(defproject hickory "0.1.0"
   :description "FIXME: write description"
   :url "http://github.com/davidsantiago/hickory"
   :license {:name "Eclipse Public License"
