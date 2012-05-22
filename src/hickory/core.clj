@@ -14,6 +14,20 @@
    order to make the conversion."
   (as-hiccup [this]))
 
+(defprotocol HTMLDOMMapRepresentable
+  "Objects that can be represented as HTML DOM node maps, similar to
+   clojure.xml, implement this protocol to make the conversion.
+
+   Each DOM node will be a map or string (for Text/CDATASections). Nodes that
+   are maps have the appropriate subset of the keys
+
+     :type     - [:comment, :document, :document-type, :element]
+     :name     - the node's name (tag)
+     :attrs    - the node's attributes, as a map
+     :children - the node's child nodes, as a vector"
+  (as-dom-map [this]))
+
+
 (extend-protocol HiccupRepresentable
   Attribute
   (as-hiccup [this] [(lower-case-keyword (.getKey this))
@@ -38,6 +52,31 @@
   (as-hiccup [this] (.text this))
   XmlDeclaration
   (as-hiccup [this] (str this)))
+
+(extend-protocol HTMLDOMMapRepresentable
+  Attribute
+  (as-dom-map [this] [(lower-case-keyword (.getKey this))
+                      (.getValue this)])
+  Attributes
+  (as-dom-map [this] (into {} (map as-dom-map this)))
+  Comment
+  (as-dom-map [this] {:type :comment
+                      :value (.getData this)})
+  DataNode
+  (as-dom-map [this] (str this))
+  Document
+  (as-dom-map [this] {:type :document
+                      :children (into [] (map as-dom-map (.childNodes this)))})
+  DocumentType
+  (as-dom-map [this] {:type :document-type
+                      :name (.nodeName this)})
+  Element
+  (as-dom-map [this] {:type :element
+                      :attrs (as-dom-map (.attributes this))
+                      :name (lower-case-keyword (.nodeName this))
+                      :children (into [] (map as-dom-map (.childNodes this)))})
+  TextNode
+  (as-dom-map [this] (.text this)))
 
 (defn parse
   "Parse an entire HTML document into hiccup vectors."
