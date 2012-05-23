@@ -43,11 +43,9 @@
   DocumentType
   (as-hiccup [this] (str this))
   Element
-  (as-hiccup [this] (into [] (concat [(as-hiccup (.tag this))
+  (as-hiccup [this] (into [] (concat [(lower-case-keyword (.tagName this))
                                       (as-hiccup (.attributes this))]
                                      (map as-hiccup (.childNodes this)))))
-  Tag
-  (as-hiccup [this] (lower-case-keyword (.getName this)))
   TextNode
   (as-hiccup [this] (.text this))
   XmlDeclaration
