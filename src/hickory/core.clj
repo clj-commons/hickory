@@ -22,8 +22,8 @@
    are maps have the appropriate subset of the keys
 
      :type     - [:comment, :document, :document-type, :element]
-     :name     - the node's name (tag)
-     :attrs    - the node's attributes, as a map
+     :tag      - the node's tag, if applicable
+     :attrs    - the node's attributes, as a map, if applicable
      :children - the node's child nodes, as a vector"
   (as-dom-map [this]))
 
@@ -61,7 +61,7 @@
   (as-dom-map [this] (into {} (map as-dom-map this)))
   Comment
   (as-dom-map [this] {:type :comment
-                      :value (.getData this)})
+                      :children [(.getData this)]})
   DataNode
   (as-dom-map [this] (str this))
   Document
@@ -69,11 +69,11 @@
                       :children (into [] (map as-dom-map (.childNodes this)))})
   DocumentType
   (as-dom-map [this] {:type :document-type
-                      :name (.nodeName this)})
+                      :attrs (as-dom-map (.attributes this))})
   Element
   (as-dom-map [this] {:type :element
                       :attrs (as-dom-map (.attributes this))
-                      :name (lower-case-keyword (.nodeName this))
+                      :tag (lower-case-keyword (.tagName this))
                       :children (into [] (map as-dom-map (.childNodes this)))})
   TextNode
   (as-dom-map [this] (.text this)))
