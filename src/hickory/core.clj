@@ -1,5 +1,6 @@
 (ns hickory.core
-  (:require [clojure.string :as string])
+  (:require [clojure.string :as string]
+            [clojure.zip :as zip])
   (:import [org.jsoup Jsoup]
            [org.jsoup.nodes Attribute Attributes Comment DataNode Document
             DocumentType Element Node TextNode XmlDeclaration]
@@ -107,3 +108,41 @@
                childNodes (get 0) ;; <html> tag
                childNodes (get 1) ;; <body> tag
                childNodes)))      ;; contents of <body> tag
+
+(defn html-zip
+  "Returns a zipper for html dom maps (as from as-dom-map),
+  given a root element."
+  [root]
+  (zip/zipper (complement string?)
+              (comp seq :children)
+              (fn [node children]
+                (assoc node :children (and children (apply vector children))))
+              root))
+
+(defn dom-to-html
+  "Given an HTML DOM map structure (as returned by as-dom-map), returns a
+   string containing HTML it represents.
+
+   Note that it will NOT in general be the case that
+
+     (= my-html-src (dom-to-html (as-dom-map (parse my-html-src))))
+
+   as we do not keep any letter case or whitespace information, any
+   \"tag-soupy\" elements, attribute quote characters used, etc."
+   [dom]
+  (if (string? dom)
+    dom
+    (case (:type dom)
+      :document
+      (apply str (map dom-to-html (:children dom)))
+      :document-type
+      (str "<!DOCTYPE " (get-in dom [:attrs :name])
+           (get-in dom [:attrs :publicid]) (get-in dom [:attrs :systemid]) ">")
+      :element
+      (str "<" (name (:tag dom))
+           (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
+                           (:attrs dom))) ">"
+                           (apply str (map dom-to-html (:children dom)))
+                           "</" (name (:tag dom)) ">")
+      :comment
+      (str "<!--" (apply str (:children dom)) "-->"))))
