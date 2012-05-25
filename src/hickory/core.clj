@@ -36,7 +36,7 @@
   Attributes
   (as-hiccup [this] (into {} (map as-hiccup this)))
   Comment
-  (as-hiccup [this] (str this))
+  (as-hiccup [this] (str "<!--" (.getData this) "-->"))
   DataNode
   (as-hiccup [this] (str this))
   Document

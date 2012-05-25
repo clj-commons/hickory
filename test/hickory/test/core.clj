@@ -4,7 +4,7 @@
 
 (deftest basic-documents
   (is (= ["<!DOCTYPE html>"
-          "\n<!--comment-->"
+          "<!--comment-->"
           [:html {}
            [:head {}]
            [:body {}
