@@ -6,9 +6,17 @@
             DocumentType Element Node TextNode XmlDeclaration]
            [org.jsoup.parser Tag Parser]))
 
-(defn lower-case-keyword
+;;
+;; Utilities
+;;
+(defn- lower-case-keyword
+  "Converts its string argument into a lowercase keyword."
   [s]
   (-> s string/lower-case keyword))
+
+;;
+;; Protocols
+;;
 
 (defprotocol HiccupRepresentable
   "Objects that can be represented as Hiccup nodes implement this protocol in
@@ -58,7 +66,7 @@
   (as-dom-map [this] [(lower-case-keyword (.getKey this))
                       (.getValue this)])
   Attributes
-  (as-dom-map [this] (into {} (map as-dom-map this)))
+  (as-dom-map [this] (not-empty (into {} (map as-dom-map this))))
   Comment
   (as-dom-map [this] {:type :comment
                       :children [(.getData this)]})
@@ -66,7 +74,8 @@
   (as-dom-map [this] (str this))
   Document
   (as-dom-map [this] {:type :document
-                      :children (into [] (map as-dom-map (.childNodes this)))})
+                      :children (not-empty (into [] (map as-dom-map
+                                                         (.childNodes this))))})
   DocumentType
   (as-dom-map [this] {:type :document-type
                       :attrs (as-dom-map (.attributes this))})
@@ -74,7 +83,8 @@
   (as-dom-map [this] {:type :element
                       :attrs (as-dom-map (.attributes this))
                       :tag (lower-case-keyword (.tagName this))
-                      :children (into [] (map as-dom-map (.childNodes this)))})
+                      :children (not-empty (into [] (map as-dom-map
+                                                         (.childNodes this))))})
   TextNode
   (as-dom-map [this] (.text this)))
 

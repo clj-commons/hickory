@@ -21,14 +21,14 @@
                      {:type :comment
                       :children ["comment"]}
                      {:type :element,
-                      :attrs {},
+                      :attrs nil,
                       :tag :html,
                       :children [{:type :element,
-                                  :attrs {},
+                                  :attrs nil,
                                   :tag :head,
-                                  :children []}
+                                  :children nil}
                                  {:type :element,
-                                  :attrs {},
+                                  :attrs nil,
                                   :tag :body,
                                   :children [{:type :element,
                                               :attrs {:href "foo"},
@@ -68,61 +68,62 @@
 (deftest html-zipper
   (is (= {:type :document,
           :children [{:type :element,
-                      :attrs {},
+                      :attrs nil,
                       :tag :html,
                       :children [{:type :element,
-                                  :attrs {},
+                                  :attrs nil,
                                   :tag :head,
-                                  :children []}
+                                  :children nil}
                                  {:type :element,
-                                  :attrs {},
+                                  :attrs nil,
                                   :tag :body,
                                   :children [{:type :element,
-                                              :attrs {},
+                                              :attrs nil,
                                               :tag :a,
-                                              :children []}]}]}]}
+                                              :children nil}]}]}]}
          (zip/node (html-zip (as-dom-map (parse "<a>"))))))
   (is (= {:type :element,
-          :attrs {},
+          :attrs nil,
           :tag :html,
           :children [{:type :element,
-                      :attrs {},
+                      :attrs nil,
                       :tag :head,
-                      :children []} {:type :element,
-                                     :attrs {},
-                                     :tag :body,
-                                     :children [{:type :element,
-                                                 :attrs {},
-                                                 :tag :a,
-                                                 :children []}]}]}
+                      :children nil}
+                     {:type :element,
+                      :attrs nil,
+                      :tag :body,
+                      :children [{:type :element,
+                                  :attrs nil,
+                                  :tag :a,
+                                  :children nil}]}]}
        (-> (html-zip (as-dom-map (parse "<a>")))
            zip/next zip/node)))
-  (is (= {:type :element, :attrs {}, :tag :head, :children []}
+  (is (= {:type :element, :attrs nil, :tag :head, :children nil}
        (-> (html-zip (as-dom-map (parse "<a>")))
            zip/next zip/next zip/node)))
   (is (= {:type :element,
-          :attrs {},
+          :attrs nil,
           :tag :body,
           :children [{:type :element,
-                      :attrs {},
+                      :attrs nil,
                       :tag :a,
-                      :children []}]}
+                      :children nil}]}
          (-> (html-zip (as-dom-map (parse "<a>")))
              zip/next zip/next zip/next zip/node)))
   (is (= {:type :element,
-          :attrs {},
+          :attrs nil,
           :tag :html,
           :children [{:type :element,
-                      :attrs {},
+                      :attrs nil,
                       :tag :head,
-                      :children []}
+                      :children nil}
                      {:type :element,
-                      :attrs {},
+                      :attrs nil,
                       :tag :body,
                       :children [{:type :element,
-                                  :attrs {},
+                                  :attrs nil,
                                   :tag :a,
-                                  :children []}]}]}
+                                  :children nil}]}]}
          (-> (html-zip (as-dom-map (parse "<a>")))
              zip/next zip/next zip/next zip/up zip/node))))
 
