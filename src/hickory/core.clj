@@ -22,9 +22,10 @@
    are maps have the appropriate subset of the keys
 
      :type     - [:comment, :document, :document-type, :element]
-     :tag      - the node's tag, if applicable
-     :attrs    - the node's attributes, as a map, if applicable
-     :children - the node's child nodes, as a vector"
+     :tag      - node's tag, check :type to see if applicable
+     :attrs    - node's attributes as a map, check :type to see if applicable
+     :children - node's child nodes, in a vector, check :type to see if
+                 applicable"
   (as-dom-map [this]))
 
 
