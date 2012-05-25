@@ -2,6 +2,8 @@
   (:use clojure.test
         hickory.core))
 
+;; This document tests: doctypes, comments, white space text nodes, attributes,
+;; and cdata nodes.
 (deftest basic-documents
   (is (= ["<!DOCTYPE html>"
           "<!--comment-->"
