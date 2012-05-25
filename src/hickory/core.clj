@@ -78,13 +78,15 @@
   (as-dom-map [this] (.text this)))
 
 (defn parse
-  "Parse an entire HTML document into hiccup vectors."
+  "Parse an entire HTML document into a DOM structure that can be
+   used as input to as-hiccup or as-dom-map."
   [s]
-  (as-hiccup (Jsoup/parse s)))
+  (Jsoup/parse s))
 
 (defn parse-fragment
   "Parse an HTML fragment (some group of tags that might be at home somewhere
-   in the tag hierarchy under <body>) into hiccup vectors."
+   in the tag hierarchy under <body>) into a list of DOM elements that can
+   each be passed as input to as-hiccup or as-dom-map."
   [s]
   ;; Oh god. Oh God. This. is. *heinous*.
   ;;
@@ -100,7 +102,8 @@
   ;; back out.
   ;;
   ;; Seriously, soon as they fix parseFragment, fix this. The code should be
-  ;; (as-hiccup (Parser/parseFragment s nil "")) or something close.
-  (into []
-   (rest (rest (get-in (as-hiccup (Parser/parseBodyFragment s ""))
-                       [0 3])))))
+  ;; (Parser/parseFragment s nil "") or something close.
+  (into [] (.. (Parser/parseBodyFragment s "")
+               childNodes (get 0) ;; <html> tag
+               childNodes (get 1) ;; <body> tag
+               childNodes)))      ;; contents of <body> tag
