@@ -141,7 +141,11 @@
       (apply str (map hickory-to-html (:content dom)))
       :document-type
       (str "<!DOCTYPE " (get-in dom [:attrs :name])
-           (get-in dom [:attrs :publicid]) (get-in dom [:attrs :systemid]) ">")
+           (when-let [publicid (not-empty (get-in dom [:attrs :publicid]))]
+             (str " PUBLIC \"" publicid "\""))
+           (when-let [systemid (not-empty (get-in dom [:attrs :systemid]))]
+             (str " \"" systemid "\""))
+           ">")
       :element
       (if (void-element (:tag dom))
         (str "<" (name (:tag dom))
