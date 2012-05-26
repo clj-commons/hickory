@@ -33,7 +33,7 @@
      :type     - [:comment, :document, :document-type, :element]
      :tag      - node's tag, check :type to see if applicable
      :attrs    - node's attributes as a map, check :type to see if applicable
-     :children - node's child nodes, in a vector, check :type to see if
+     :content - node's child nodes, in a vector, check :type to see if
                  applicable"
   (as-hickory [this]))
 
@@ -69,13 +69,13 @@
   (as-hickory [this] (not-empty (into {} (map as-hickory this))))
   Comment
   (as-hickory [this] {:type :comment
-                      :children [(.getData this)]})
+                      :content [(.getData this)]})
   DataNode
   (as-hickory [this] (str this))
   Document
   (as-hickory [this] {:type :document
-                      :children (not-empty (into [] (map as-hickory
-                                                         (.childNodes this))))})
+                      :content (not-empty (into [] (map as-hickory
+                                                        (.childNodes this))))})
   DocumentType
   (as-hickory [this] {:type :document-type
                       :attrs (as-hickory (.attributes this))})
@@ -83,8 +83,8 @@
   (as-hickory [this] {:type :element
                       :attrs (as-hickory (.attributes this))
                       :tag (lower-case-keyword (.tagName this))
-                      :children (not-empty (into [] (map as-hickory
-                                                         (.childNodes this))))})
+                      :content (not-empty (into [] (map as-hickory
+                                                        (.childNodes this))))})
   TextNode
   (as-hickory [this] (.text this)))
 
@@ -124,9 +124,9 @@
   given a root element."
   [root]
   (zip/zipper (complement string?)
-              (comp seq :children)
+              (comp seq :content)
               (fn [node children]
-                (assoc node :children (and children (apply vector children))))
+                (assoc node :content (and children (apply vector children))))
               root))
 
 (defn dom-to-html
@@ -144,7 +144,7 @@
     dom
     (case (:type dom)
       :document
-      (apply str (map dom-to-html (:children dom)))
+      (apply str (map dom-to-html (:content dom)))
       :document-type
       (str "<!DOCTYPE " (get-in dom [:attrs :name])
            (get-in dom [:attrs :publicid]) (get-in dom [:attrs :systemid]) ">")
@@ -152,7 +152,7 @@
       (str "<" (name (:tag dom))
            (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
                            (:attrs dom))) ">"
-                           (apply str (map dom-to-html (:children dom)))
+                           (apply str (map dom-to-html (:content dom)))
                            "</" (name (:tag dom)) ">")
       :comment
-      (str "<!--" (apply str (:children dom)) "-->"))))
+      (str "<!--" (apply str (:content dom)) "-->"))))
