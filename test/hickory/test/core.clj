@@ -43,7 +43,7 @@
                                               :attrs {:src "blah.js"},
                                               :tag :script,
                                               :children ["alert(\"hi\");"]}]}]}]}
-         (as-dom-map (parse "<!DOCTYPE html><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script>"))))
+         (as-hickory (parse "<!DOCTYPE html><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script>"))))
   )
 
 ;; Want to test a document fragment that has multiple nodes with no parent,
@@ -62,7 +62,7 @@
            :attrs {:href "bar"},
            :tag :a,
            :children ["bar"]}]
-         (map as-dom-map
+         (map as-hickory
               (parse-fragment "<a href=\"foo\">foo</a> <a href=\"bar\">bar</a>")))))
 
 (deftest html-zipper
@@ -81,7 +81,7 @@
                                               :attrs nil,
                                               :tag :a,
                                               :children nil}]}]}]}
-         (zip/node (html-zip (as-dom-map (parse "<a>"))))))
+         (zip/node (html-zip (as-hickory (parse "<a>"))))))
   (is (= {:type :element,
           :attrs nil,
           :tag :html,
@@ -96,10 +96,10 @@
                                   :attrs nil,
                                   :tag :a,
                                   :children nil}]}]}
-       (-> (html-zip (as-dom-map (parse "<a>")))
+       (-> (html-zip (as-hickory (parse "<a>")))
            zip/next zip/node)))
   (is (= {:type :element, :attrs nil, :tag :head, :children nil}
-       (-> (html-zip (as-dom-map (parse "<a>")))
+       (-> (html-zip (as-hickory (parse "<a>")))
            zip/next zip/next zip/node)))
   (is (= {:type :element,
           :attrs nil,
@@ -108,7 +108,7 @@
                       :attrs nil,
                       :tag :a,
                       :children nil}]}
-         (-> (html-zip (as-dom-map (parse "<a>")))
+         (-> (html-zip (as-hickory (parse "<a>")))
              zip/next zip/next zip/next zip/node)))
   (is (= {:type :element,
           :attrs nil,
@@ -124,9 +124,9 @@
                                   :attrs nil,
                                   :tag :a,
                                   :children nil}]}]}
-         (-> (html-zip (as-dom-map (parse "<a>")))
+         (-> (html-zip (as-hickory (parse "<a>")))
              zip/next zip/next zip/next zip/up zip/node))))
 
 (deftest html-output
   (is (= "<!DOCTYPE html><html><head></head><body><p><!--hi--><a href=\"foo\" id=\"bar\">hi</a></p></body></html>"
-         (dom-to-html (as-dom-map (parse "<!DOCTYPE html><P><!--hi--><a href=foo id=\"bar\">hi"))))))
+         (dom-to-html (as-hickory (parse "<!DOCTYPE html><P><!--hi--><a href=foo id=\"bar\">hi"))))))

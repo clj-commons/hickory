@@ -23,7 +23,7 @@
    order to make the conversion."
   (as-hiccup [this]))
 
-(defprotocol HTMLDOMMapRepresentable
+(defprotocol HickoryRepresentable
   "Objects that can be represented as HTML DOM node maps, similar to
    clojure.xml, implement this protocol to make the conversion.
 
@@ -35,7 +35,7 @@
      :attrs    - node's attributes as a map, check :type to see if applicable
      :children - node's child nodes, in a vector, check :type to see if
                  applicable"
-  (as-dom-map [this]))
+  (as-hickory [this]))
 
 
 (extend-protocol HiccupRepresentable
@@ -61,43 +61,43 @@
   XmlDeclaration
   (as-hiccup [this] (str this)))
 
-(extend-protocol HTMLDOMMapRepresentable
+(extend-protocol HickoryRepresentable
   Attribute
-  (as-dom-map [this] [(lower-case-keyword (.getKey this))
+  (as-hickory [this] [(lower-case-keyword (.getKey this))
                       (.getValue this)])
   Attributes
-  (as-dom-map [this] (not-empty (into {} (map as-dom-map this))))
+  (as-hickory [this] (not-empty (into {} (map as-hickory this))))
   Comment
-  (as-dom-map [this] {:type :comment
+  (as-hickory [this] {:type :comment
                       :children [(.getData this)]})
   DataNode
-  (as-dom-map [this] (str this))
+  (as-hickory [this] (str this))
   Document
-  (as-dom-map [this] {:type :document
-                      :children (not-empty (into [] (map as-dom-map
+  (as-hickory [this] {:type :document
+                      :children (not-empty (into [] (map as-hickory
                                                          (.childNodes this))))})
   DocumentType
-  (as-dom-map [this] {:type :document-type
-                      :attrs (as-dom-map (.attributes this))})
+  (as-hickory [this] {:type :document-type
+                      :attrs (as-hickory (.attributes this))})
   Element
-  (as-dom-map [this] {:type :element
-                      :attrs (as-dom-map (.attributes this))
+  (as-hickory [this] {:type :element
+                      :attrs (as-hickory (.attributes this))
                       :tag (lower-case-keyword (.tagName this))
-                      :children (not-empty (into [] (map as-dom-map
+                      :children (not-empty (into [] (map as-hickory
                                                          (.childNodes this))))})
   TextNode
-  (as-dom-map [this] (.text this)))
+  (as-hickory [this] (.text this)))
 
 (defn parse
   "Parse an entire HTML document into a DOM structure that can be
-   used as input to as-hiccup or as-dom-map."
+   used as input to as-hiccup or as-hickory."
   [s]
   (Jsoup/parse s))
 
 (defn parse-fragment
   "Parse an HTML fragment (some group of tags that might be at home somewhere
    in the tag hierarchy under <body>) into a list of DOM elements that can
-   each be passed as input to as-hiccup or as-dom-map."
+   each be passed as input to as-hiccup or as-hickory."
   [s]
   ;; Oh god. Oh God. This. is. *heinous*.
   ;;
@@ -120,7 +120,7 @@
                childNodes)))      ;; contents of <body> tag
 
 (defn html-zip
-  "Returns a zipper for html dom maps (as from as-dom-map),
+  "Returns a zipper for html dom maps (as from as-hickory),
   given a root element."
   [root]
   (zip/zipper (complement string?)
@@ -130,12 +130,12 @@
               root))
 
 (defn dom-to-html
-  "Given an HTML DOM map structure (as returned by as-dom-map), returns a
+  "Given an HTML DOM map structure (as returned by as-hickory), returns a
    string containing HTML it represents.
 
    Note that it will NOT in general be the case that
 
-     (= my-html-src (dom-to-html (as-dom-map (parse my-html-src))))
+     (= my-html-src (dom-to-html (as-hickory (parse my-html-src))))
 
    as we do not keep any letter case or whitespace information, any
    \"tag-soupy\" elements, attribute quote characters used, etc."
