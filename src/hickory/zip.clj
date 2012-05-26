@@ -47,7 +47,7 @@
     (if (map? (second node))                 ;; Again, check for normalized vec.
       (into (subvec node 0 2) children)      ;; Attach children after tag&attrs.
       (apply vector (first node) children))  ;; Otherwise, attach after tag.
-    children))   ;; We were given a list, so just return the new list.
+    children))   ;; We were given a list for node, so just return the new list.
 
 
 (defn hiccup-zip
