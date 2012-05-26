@@ -49,7 +49,7 @@
   DataNode
   (as-hiccup [this] (str this))
   Document
-  (as-hiccup [this] (into [] (map as-hiccup (.childNodes this))))
+  (as-hiccup [this] (map as-hiccup (.childNodes this)))
   DocumentType
   (as-hiccup [this] (str this))
   Element
@@ -118,16 +118,6 @@
                childNodes (get 0) ;; <html> tag
                childNodes (get 1) ;; <body> tag
                childNodes)))      ;; contents of <body> tag
-
-(defn hickory-zip
-  "Returns a zipper for html dom maps (as from as-hickory),
-  given a root element."
-  [root]
-  (zip/zipper (complement string?)
-              (comp seq :content)
-              (fn [node children]
-                (assoc node :content (and children (apply vector children))))
-              root))
 
 (def ^{:private true} void-element
   #{:area :base :br :col :command :embed :hr :img :input :keygen :link :meta

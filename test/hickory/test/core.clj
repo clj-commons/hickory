@@ -1,7 +1,6 @@
 (ns hickory.test.core
   (:use clojure.test
-        hickory.core)
-  (:require [clojure.zip :as zip]))
+        hickory.core))
 
 ;; This document tests: doctypes, comments, white space text nodes, attributes,
 ;; and cdata nodes.
@@ -64,68 +63,6 @@
            :content ["bar"]}]
          (map as-hickory
               (parse-fragment "<a href=\"foo\">foo</a> <a href=\"bar\">bar</a>")))))
-
-(deftest html-zipper
-  (is (= {:type :document,
-          :content [{:type :element,
-                     :attrs nil,
-                     :tag :html,
-                     :content [{:type :element,
-                                :attrs nil,
-                                :tag :head,
-                                :content nil}
-                               {:type :element,
-                                :attrs nil,
-                                :tag :body,
-                                :content [{:type :element,
-                                           :attrs nil,
-                                           :tag :a,
-                                           :content nil}]}]}]}
-         (zip/node (hickory-zip (as-hickory (parse "<a>"))))))
-  (is (= {:type :element,
-          :attrs nil,
-          :tag :html,
-          :content [{:type :element,
-                     :attrs nil,
-                     :tag :head,
-                     :content nil}
-                    {:type :element,
-                     :attrs nil,
-                     :tag :body,
-                     :content [{:type :element,
-                                :attrs nil,
-                                :tag :a,
-                                :content nil}]}]}
-         (-> (hickory-zip (as-hickory (parse "<a>")))
-             zip/next zip/node)))
-  (is (= {:type :element, :attrs nil, :tag :head, :content nil}
-       (-> (hickory-zip (as-hickory (parse "<a>")))
-           zip/next zip/next zip/node)))
-  (is (= {:type :element,
-          :attrs nil,
-          :tag :body,
-          :content [{:type :element,
-                     :attrs nil,
-                     :tag :a,
-                     :content nil}]}
-         (-> (hickory-zip (as-hickory (parse "<a>")))
-             zip/next zip/next zip/next zip/node)))
-  (is (= {:type :element,
-          :attrs nil,
-          :tag :html,
-          :content [{:type :element,
-                     :attrs nil,
-                     :tag :head,
-                     :content nil}
-                    {:type :element,
-                     :attrs nil,
-                     :tag :body,
-                     :content [{:type :element,
-                                :attrs nil,
-                                :tag :a,
-                                :content nil}]}]}
-         (-> (hickory-zip (as-hickory (parse "<a>")))
-             zip/next zip/next zip/next zip/up zip/node))))
 
 (deftest html-output
   (is (= "<!DOCTYPE html><html><head></head><body><p><!--hi--><a href=\"foo\" id=\"bar\">hi</a></p></body></html>"
