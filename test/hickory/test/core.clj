@@ -70,3 +70,9 @@
   ;; Make sure void elements don't have closing tags.
   (is (= "<html><head></head><body>Hi<br>There</body></html>"
          (hickory-to-html (as-hickory (parse "<html><head></head><body>Hi<br>There</body></html>"))))))
+
+(deftest doctypes
+  (is (= "<!DOCTYPE html><html><head></head><body></body></html>"
+         (hickory-to-html (as-hickory (parse "<!DOCTYPE html><html><head></head><body></body></html>")))))
+  (is (= "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body></html>"
+         (hickory-to-html (as-hickory (parse "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body</html>"))))))
