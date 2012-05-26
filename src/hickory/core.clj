@@ -133,13 +133,13 @@
   #{:area :base :br :col :command :embed :hr :img :input :keygen :link :meta
     :param :source :track :wbr})
 
-(defn dom-to-html
-  "Given an HTML DOM map structure (as returned by as-hickory), returns a
+(defn hickory-to-html
+  "Given a hickory HTML DOM map structure (as returned by as-hickory), returns a
    string containing HTML it represents.
 
    Note that it will NOT in general be the case that
 
-     (= my-html-src (dom-to-html (as-hickory (parse my-html-src))))
+     (= my-html-src (hickory-to-html (as-hickory (parse my-html-src))))
 
    as we do not keep any letter case or whitespace information, any
    \"tag-soupy\" elements, attribute quote characters used, etc."
@@ -148,7 +148,7 @@
     dom
     (case (:type dom)
       :document
-      (apply str (map dom-to-html (:content dom)))
+      (apply str (map hickory-to-html (:content dom)))
       :document-type
       (str "<!DOCTYPE " (get-in dom [:attrs :name])
            (get-in dom [:attrs :publicid]) (get-in dom [:attrs :systemid]) ">")
@@ -162,7 +162,7 @@
              (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
                              (:attrs dom)))
              ">"
-             (apply str (map dom-to-html (:content dom)))
+             (apply str (map hickory-to-html (:content dom)))
              "</" (name (:tag dom)) ">"))
       :comment
       (str "<!--" (apply str (:content dom)) "-->"))))
