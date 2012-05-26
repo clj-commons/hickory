@@ -33,7 +33,7 @@
      :type     - [:comment, :document, :document-type, :element]
      :tag      - node's tag, check :type to see if applicable
      :attrs    - node's attributes as a map, check :type to see if applicable
-     :content - node's child nodes, in a vector, check :type to see if
+     :content  - node's child nodes, in a vector, check :type to see if
                  applicable"
   (as-hickory [this]))
 
