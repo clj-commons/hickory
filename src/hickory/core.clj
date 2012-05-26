@@ -139,7 +139,7 @@
 
    as we do not keep any letter case or whitespace information, any
    \"tag-soupy\" elements, attribute quote characters used, etc."
-   [dom]
+  [dom]
   (if (string? dom)
     dom
     (case (:type dom)
@@ -151,8 +151,9 @@
       :element
       (str "<" (name (:tag dom))
            (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
-                           (:attrs dom))) ">"
-                           (apply str (map dom-to-html (:content dom)))
-                           "</" (name (:tag dom)) ">")
+                           (:attrs dom)))
+           ">"
+           (apply str (map dom-to-html (:content dom)))
+           "</" (name (:tag dom)) ">")
       :comment
       (str "<!--" (apply str (:content dom)) "-->"))))
