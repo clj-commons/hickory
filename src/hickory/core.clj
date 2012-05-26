@@ -119,7 +119,7 @@
                childNodes (get 1) ;; <body> tag
                childNodes)))      ;; contents of <body> tag
 
-(defn html-zip
+(defn hickory-zip
   "Returns a zipper for html dom maps (as from as-hickory),
   given a root element."
   [root]

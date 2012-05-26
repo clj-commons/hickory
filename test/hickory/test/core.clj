@@ -81,7 +81,7 @@
                                            :attrs nil,
                                            :tag :a,
                                            :content nil}]}]}]}
-         (zip/node (html-zip (as-hickory (parse "<a>"))))))
+         (zip/node (hickory-zip (as-hickory (parse "<a>"))))))
   (is (= {:type :element,
           :attrs nil,
           :tag :html,
@@ -96,10 +96,10 @@
                                 :attrs nil,
                                 :tag :a,
                                 :content nil}]}]}
-         (-> (html-zip (as-hickory (parse "<a>")))
+         (-> (hickory-zip (as-hickory (parse "<a>")))
              zip/next zip/node)))
   (is (= {:type :element, :attrs nil, :tag :head, :content nil}
-       (-> (html-zip (as-hickory (parse "<a>")))
+       (-> (hickory-zip (as-hickory (parse "<a>")))
            zip/next zip/next zip/node)))
   (is (= {:type :element,
           :attrs nil,
@@ -108,7 +108,7 @@
                      :attrs nil,
                      :tag :a,
                      :content nil}]}
-         (-> (html-zip (as-hickory (parse "<a>")))
+         (-> (hickory-zip (as-hickory (parse "<a>")))
              zip/next zip/next zip/next zip/node)))
   (is (= {:type :element,
           :attrs nil,
@@ -124,7 +124,7 @@
                                 :attrs nil,
                                 :tag :a,
                                 :content nil}]}]}
-         (-> (html-zip (as-hickory (parse "<a>")))
+         (-> (hickory-zip (as-hickory (parse "<a>")))
              zip/next zip/next zip/next zip/up zip/node))))
 
 (deftest html-output
