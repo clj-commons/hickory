@@ -129,6 +129,10 @@
                 (assoc node :content (and children (apply vector children))))
               root))
 
+(def ^{:private true} void-element
+  #{:area :base :br :col :command :embed :hr :img :input :keygen :link :meta
+    :param :source :track :wbr})
+
 (defn dom-to-html
   "Given an HTML DOM map structure (as returned by as-hickory), returns a
    string containing HTML it represents.
@@ -149,11 +153,16 @@
       (str "<!DOCTYPE " (get-in dom [:attrs :name])
            (get-in dom [:attrs :publicid]) (get-in dom [:attrs :systemid]) ">")
       :element
-      (str "<" (name (:tag dom))
-           (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
-                           (:attrs dom)))
-           ">"
-           (apply str (map dom-to-html (:content dom)))
-           "</" (name (:tag dom)) ">")
+      (if (void-element (:tag dom))
+        (str "<" (name (:tag dom))
+             (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
+                             (:attrs dom)))
+             ">")
+        (str "<" (name (:tag dom))
+             (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
+                             (:attrs dom)))
+             ">"
+             (apply str (map dom-to-html (:content dom)))
+             "</" (name (:tag dom)) ">"))
       :comment
       (str "<!--" (apply str (:content dom)) "-->"))))

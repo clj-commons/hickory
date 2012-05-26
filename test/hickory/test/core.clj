@@ -129,4 +129,7 @@
 
 (deftest html-output
   (is (= "<!DOCTYPE html><html><head></head><body><p><!--hi--><a href=\"foo\" id=\"bar\">hi</a></p></body></html>"
-         (dom-to-html (as-hickory (parse "<!DOCTYPE html><P><!--hi--><a href=foo id=\"bar\">hi"))))))
+         (dom-to-html (as-hickory (parse "<!DOCTYPE html><P><!--hi--><a href=foo id=\"bar\">hi")))))
+  ;; Make sure void elements don't have closing tags.
+  (is (= "<html><head></head><body>Hi<br>There</body></html>"
+         (dom-to-html (as-hickory (parse "<html><head></head><body>Hi<br>There</body></html>"))))))
