@@ -99,25 +99,7 @@
    in the tag hierarchy under <body>) into a list of DOM elements that can
    each be passed as input to as-hiccup or as-hickory."
   [s]
-  ;; Oh god. Oh God. This. is. *heinous*.
-  ;;
-  ;; Jsoup, excellent parser, has a bug in Parser/parseFragment when you do not
-  ;; supply the context arg. It has an uninitialized variable that causes an
-  ;; NPE. So, I found this problem and reported it. Haven't heard back. Project
-  ;; won't build for me, and I can't figure out why.
-  ;;
-  ;; So, after hours spent on this, it's time to make a strategic retreat to
-  ;; awfulness, and use the function that does work: parseBodyFragment. This
-  ;; parse the fragment into an entire html/head/body structure. We'll let it
-  ;; do that, and then *gulp* find the thing we wanted in that body and pull it
-  ;; back out.
-  ;;
-  ;; Seriously, soon as they fix parseFragment, fix this. The code should be
-  ;; (Parser/parseFragment s nil "") or something close.
-  (into [] (.. (Parser/parseBodyFragment s "")
-               childNodes (get 0) ;; <html> tag
-               childNodes (get 1) ;; <body> tag
-               childNodes)))      ;; contents of <body> tag
+  (into [] (Parser/parseFragment s (Element. (Tag/valueOf "body") "") "")))
 
 (def ^{:private true} void-element
   #{:area :base :br :col :command :embed :hr :img :input :keygen :link :meta
