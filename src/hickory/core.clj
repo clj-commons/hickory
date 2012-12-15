@@ -21,7 +21,7 @@
 (defprotocol HiccupRepresentable
   "Objects that can be represented as Hiccup nodes implement this protocol in
    order to make the conversion."
-  (as-hiccup [this]))
+  (as-hiccup-impl [this option-map]))
 
 (defprotocol HickoryRepresentable
   "Objects that can be represented as HTML DOM node maps, similar to
@@ -35,58 +35,100 @@
      :attrs    - node's attributes as a map, check :type to see if applicable
      :content  - node's child nodes, in a vector, check :type to see if
                  applicable"
-  (as-hickory [this]))
+  (as-hickory-impl [this option-map]))
 
 
 (extend-protocol HiccupRepresentable
   Attribute
-  (as-hiccup [this] [(lower-case-keyword (.getKey this))
-                     (.getValue this)])
+  (as-hiccup-impl [this option-map] [(lower-case-keyword (.getKey this))
+                                     (.getValue this)])
   Attributes
-  (as-hiccup [this] (into {} (map as-hiccup this)))
+  (as-hiccup-impl [this option-map] (into {} (map #(as-hiccup-impl % option-map)
+                                                  this)))
   Comment
-  (as-hiccup [this] (str "<!--" (.getData this) "-->"))
+  (as-hiccup-impl [this option-map] (str "<!--" (.getData this) "-->"))
   DataNode
-  (as-hiccup [this] (str this))
+  (as-hiccup-impl [this option-map] (str this))
   Document
-  (as-hiccup [this] (map as-hiccup (.childNodes this)))
+  (as-hiccup-impl [this option-map] (map #(as-hiccup-impl % option-map)
+                                         (.childNodes this)))
   DocumentType
-  (as-hiccup [this] (str this))
+  (as-hiccup-impl [this option-map] (str this))
   Element
-  (as-hiccup [this] (into [] (concat [(lower-case-keyword (.tagName this))
-                                      (as-hiccup (.attributes this))]
-                                     (map as-hiccup (.childNodes this)))))
+  (as-hiccup-impl [this option-map]
+    (into [] (concat [(lower-case-keyword (.tagName this))
+                      (as-hiccup-impl (.attributes this) option-map)]
+                     (map #(as-hiccup-impl % option-map) (.childNodes this)))))
   TextNode
-  (as-hiccup [this] (.text this))
+  (as-hiccup-impl [this {:keys [unencoded-text-nodes?]}]
+    (if unencoded-text-nodes?
+      (.text this)
+      (.outerHtml this)))
   XmlDeclaration
-  (as-hiccup [this] (str this)))
+  (as-hiccup-impl [this option-map] (str this)))
 
 (extend-protocol HickoryRepresentable
   Attribute
-  (as-hickory [this] [(lower-case-keyword (.getKey this))
-                      (.getValue this)])
+  (as-hickory-impl [this option-map] [(lower-case-keyword (.getKey this))
+                                      (.getValue this)])
   Attributes
-  (as-hickory [this] (not-empty (into {} (map as-hickory this))))
+  (as-hickory-impl [this option-map]
+    (not-empty (into {} (map #(as-hickory-impl % option-map)
+                             this))))
   Comment
-  (as-hickory [this] {:type :comment
-                      :content [(.getData this)]})
+  (as-hickory-impl [this option-map] {:type :comment
+                                      :content [(.getData this)]})
   DataNode
-  (as-hickory [this] (str this))
+  (as-hickory-impl [this option-map] (str this))
   Document
-  (as-hickory [this] {:type :document
-                      :content (not-empty (into [] (map as-hickory
-                                                        (.childNodes this))))})
+  (as-hickory-impl [this option-map]
+    {:type :document
+     :content (not-empty
+               (into [] (map #(as-hickory-impl % option-map)
+                             (.childNodes this))))})
   DocumentType
-  (as-hickory [this] {:type :document-type
-                      :attrs (as-hickory (.attributes this))})
+  (as-hickory-impl [this option-map] {:type :document-type
+                                      :attrs (as-hickory-impl (.attributes this)
+                                                              option-map)})
   Element
-  (as-hickory [this] {:type :element
-                      :attrs (as-hickory (.attributes this))
-                      :tag (lower-case-keyword (.tagName this))
-                      :content (not-empty (into [] (map as-hickory
-                                                        (.childNodes this))))})
+  (as-hickory-impl [this option-map]
+    {:type :element
+     :attrs (as-hickory-impl (.attributes this) option-map)
+     :tag (lower-case-keyword (.tagName this))
+     :content (not-empty
+               (into [] (map #(as-hickory-impl % option-map)
+                             (.childNodes this))))})
   TextNode
-  (as-hickory [this] (.text this)))
+  (as-hickory-impl [this {:keys [unencoded-text-nodes?]}]
+    (if unencoded-text-nodes?
+      (.text this)
+      (.outerHtml this))))
+
+(def default-options {:unencoded-text-nodes? true})
+
+(defn as-hiccup
+  "Converts the node given into a hiccup-format data structure. The
+   node must have an implementation of the HiccupRepresentable
+   protocol; nodes created by parse or parse-fragment already do.
+
+   Accepts the following options:
+       :unencoded-text-nodes? - If true, text nodes will be unencoded
+                                (ie, &amp; will appear in the text node as &).
+                                Default: true."
+  [node & {:as option-map}]
+  (as-hiccup-impl node (merge default-options option-map)))
+
+(defn as-hickory
+  "Converts the node given into a hickory-format data structure. The
+   node must have an implementation of the HickoryRepresentable protocol;
+   nodes created by parse or parse-fragment already do.
+
+   Accepts the following options:
+       :unencoded-text-nodes? - If true, text nodes will be unencoded
+                                (ie, &amp; will appear in the text node as &).
+                                Default: true."
+  ([node & {:as option-map}]
+     (as-hickory-impl node (merge default-options option-map))))
 
 (defn parse
   "Parse an entire HTML document into a DOM structure that can be

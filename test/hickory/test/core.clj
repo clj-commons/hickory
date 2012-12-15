@@ -64,6 +64,38 @@
          (map as-hickory
               (parse-fragment "<a href=\"foo\">foo</a> <a href=\"bar\">bar</a>")))))
 
+(deftest unencoded-text-nodes
+  (is (= [[:html {} [:head {}] [:body {} [:p {} "ABC& DEF."]]]]
+         (as-hiccup (parse "<p>ABC&amp;\n\nDEF.</p>"))))
+  (is (= [[:html {} [:head {}] [:body {} [:p {} "ABC& DEF."]]]]
+         (as-hiccup (parse "<p>ABC&amp;\n\nDEF.</p>")
+                    :unencoded-text-nodes? true)))
+  (is (= [[:html {} [:head {}] [:body {} [:p {} "ABC&amp; DEF."]]]]
+         (as-hiccup (parse "<p>ABC&amp;\n\nDEF.</p>")
+                    :unencoded-text-nodes? false)))
+  ;; pre tag preserves whitespace.
+  (is (= [[:html {} [:head {}] [:body {} [:pre {} "ABC& DEF."]]]]
+         (as-hiccup (parse "<pre>ABC&amp;\n\nDEF.</pre>"))))
+  (is (= [[:html {} [:head {}] [:body {} [:pre {} "ABC&amp;\n\nDEF."]]]]
+         (as-hiccup (parse "<pre>ABC&amp;\n\nDEF.</pre>")
+                    :unencoded-text-nodes? false)))
+  ;; Hickory versions
+  (is (= "ABC& DEF."
+         (get-in (as-hickory (parse "<p>ABC&amp;\n\nDEF.</p>"))
+                 [:content 0 :content 1 :content 0 :content 0])))
+  (is (= "ABC&amp; DEF."
+         (get-in (as-hickory (parse "<p>ABC&amp;\n\nDEF.</p>")
+                             :unencoded-text-nodes? false)
+                 [:content 0 :content 1 :content 0 :content 0])))
+  ;; pre tag preserves whitespace.
+  (is (= "ABC& DEF."
+         (get-in (as-hickory (parse "<pre>ABC&amp;\n\nDEF.</pre>"))
+                 [:content 0 :content 1 :content 0 :content 0])))
+  (is (= "ABC&amp;\n\nDEF."
+         (get-in (as-hickory (parse "<pre>ABC&amp;\n\nDEF.</pre>")
+                             :unencoded-text-nodes? false)
+                 [:content 0 :content 1 :content 0 :content 0]))))
+
 (deftest html-output
   (is (= "<!DOCTYPE html><html><head></head><body><p><!--hi--><a href=\"foo\" id=\"bar\">hi</a></p></body></html>"
          (hickory-to-html (as-hickory (parse "<!DOCTYPE html><P><!--hi--><a href=foo id=\"bar\">hi")))))
