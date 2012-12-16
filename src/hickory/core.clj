@@ -60,10 +60,7 @@
                       (as-hiccup-impl (.attributes this) option-map)]
                      (map #(as-hiccup-impl % option-map) (.childNodes this)))))
   TextNode
-  (as-hiccup-impl [this {:keys [unencoded-text-nodes?]}]
-    (if unencoded-text-nodes?
-      (.text this)
-      (.outerHtml this)))
+  (as-hiccup-impl [this option-map] (.getWholeText this))
   XmlDeclaration
   (as-hiccup-impl [this option-map] (str this)))
 
@@ -99,10 +96,7 @@
                (into [] (map #(as-hickory-impl % option-map)
                              (.childNodes this))))})
   TextNode
-  (as-hickory-impl [this {:keys [unencoded-text-nodes?]}]
-    (if unencoded-text-nodes?
-      (.text this)
-      (.outerHtml this))))
+  (as-hickory-impl [this option-map] (.getWholeText this)))
 
 (def default-options {:unencoded-text-nodes? true})
 
