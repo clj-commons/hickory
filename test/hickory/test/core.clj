@@ -64,12 +64,30 @@
          (map as-hickory
               (parse-fragment "<a href=\"foo\">foo</a> <a href=\"bar\">bar</a>")))))
 
+(deftest unencoded-text-nodes
+  (is (= [[:html {} [:head {}] [:body {} [:p {} "ABC&\n\nDEF."]]]]
+         (as-hiccup (parse "<p>ABC&amp;\n\nDEF.</p>"))))
+  ;; <pre> tag preserves whitespace.
+  (is (= [[:html {} [:head {}] [:body {} [:pre {} "ABC&\n\nDEF."]]]]
+         (as-hiccup (parse "<pre>ABC&amp;\n\nDEF.</pre>"))))
+  ;; Hickory versions
+  (is (= "ABC&\n\nDEF."
+         (get-in (as-hickory (parse "<p>ABC&amp;\n\nDEF.</p>"))
+                 [:content 0 :content 1 :content 0 :content 0])))
+  ;; <pre> tag preserves whitespace.
+  (is (= "ABC&\n\nDEF."
+         (get-in (as-hickory (parse "<pre>ABC&amp;\n\nDEF.</pre>"))
+                 [:content 0 :content 1 :content 0 :content 0]))))
+
 (deftest html-output
   (is (= "<!DOCTYPE html><html><head></head><body><p><!--hi--><a href=\"foo\" id=\"bar\">hi</a></p></body></html>"
          (hickory-to-html (as-hickory (parse "<!DOCTYPE html><P><!--hi--><a href=foo id=\"bar\">hi")))))
   ;; Make sure void elements don't have closing tags.
   (is (= "<html><head></head><body>Hi<br>There</body></html>"
-         (hickory-to-html (as-hickory (parse "<html><head></head><body>Hi<br>There</body></html>"))))))
+         (hickory-to-html (as-hickory (parse "<html><head></head><body>Hi<br>There</body></html>")))))
+  ;; Make sure text is properly escaped.
+  (is (= "<code>&lt;html&gt;</code>"
+         (hickory-to-html (as-hickory (first (parse-fragment "<code>&lt;html&gt;</code>")))))))
 
 (deftest doctypes
   (is (= "<!DOCTYPE html><html><head></head><body></body></html>"

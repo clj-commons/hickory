@@ -1,6 +1,7 @@
 (ns hickory.core
   (:require [clojure.string :as string]
-            [clojure.zip :as zip])
+            [clojure.zip :as zip]
+            [quoin.text :as qt])
   (:import [org.jsoup Jsoup]
            [org.jsoup.nodes Attribute Attributes Comment DataNode Document
             DocumentType Element Node TextNode XmlDeclaration]
@@ -21,7 +22,10 @@
 (defprotocol HiccupRepresentable
   "Objects that can be represented as Hiccup nodes implement this protocol in
    order to make the conversion."
-  (as-hiccup [this]))
+  (as-hiccup [this]
+    "Converts the node given into a hiccup-format data structure. The
+     node must have an implementation of the HiccupRepresentable
+     protocol; nodes created by parse or parse-fragment already do."))
 
 (defprotocol HickoryRepresentable
   "Objects that can be represented as HTML DOM node maps, similar to
@@ -35,13 +39,15 @@
      :attrs    - node's attributes as a map, check :type to see if applicable
      :content  - node's child nodes, in a vector, check :type to see if
                  applicable"
-  (as-hickory [this]))
+  (as-hickory [this]
+    "Converts the node given into a hickory-format data structure. The
+     node must have an implementation of the HickoryRepresentable protocol;
+     nodes created by parse or parse-fragment already do."))
 
 
 (extend-protocol HiccupRepresentable
   Attribute
-  (as-hiccup [this] [(lower-case-keyword (.getKey this))
-                     (.getValue this)])
+  (as-hiccup [this] [(lower-case-keyword (.getKey this)) (.getValue this)])
   Attributes
   (as-hiccup [this] (into {} (map as-hiccup this)))
   Comment
@@ -57,14 +63,13 @@
                                       (as-hiccup (.attributes this))]
                                      (map as-hiccup (.childNodes this)))))
   TextNode
-  (as-hiccup [this] (.text this))
+  (as-hiccup [this] (.getWholeText this))
   XmlDeclaration
   (as-hiccup [this] (str this)))
 
 (extend-protocol HickoryRepresentable
   Attribute
-  (as-hickory [this] [(lower-case-keyword (.getKey this))
-                      (.getValue this)])
+  (as-hickory [this] [(lower-case-keyword (.getKey this)) (.getValue this)])
   Attributes
   (as-hickory [this] (not-empty (into {} (map as-hickory this))))
   Comment
@@ -74,8 +79,9 @@
   (as-hickory [this] (str this))
   Document
   (as-hickory [this] {:type :document
-                      :content (not-empty (into [] (map as-hickory
-                                                        (.childNodes this))))})
+                      :content (not-empty
+                                (into [] (map as-hickory
+                                              (.childNodes this))))})
   DocumentType
   (as-hickory [this] {:type :document-type
                       :attrs (as-hickory (.attributes this))})
@@ -83,10 +89,11 @@
   (as-hickory [this] {:type :element
                       :attrs (as-hickory (.attributes this))
                       :tag (lower-case-keyword (.tagName this))
-                      :content (not-empty (into [] (map as-hickory
-                                                        (.childNodes this))))})
+                      :content (not-empty
+                                (into [] (map as-hickory
+                                              (.childNodes this))))})
   TextNode
-  (as-hickory [this] (.text this)))
+  (as-hickory [this] (.getWholeText this)))
 
 (defn parse
   "Parse an entire HTML document into a DOM structure that can be
@@ -99,25 +106,7 @@
    in the tag hierarchy under <body>) into a list of DOM elements that can
    each be passed as input to as-hiccup or as-hickory."
   [s]
-  ;; Oh god. Oh God. This. is. *heinous*.
-  ;;
-  ;; Jsoup, excellent parser, has a bug in Parser/parseFragment when you do not
-  ;; supply the context arg. It has an uninitialized variable that causes an
-  ;; NPE. So, I found this problem and reported it. Haven't heard back. Project
-  ;; won't build for me, and I can't figure out why.
-  ;;
-  ;; So, after hours spent on this, it's time to make a strategic retreat to
-  ;; awfulness, and use the function that does work: parseBodyFragment. This
-  ;; parse the fragment into an entire html/head/body structure. We'll let it
-  ;; do that, and then *gulp* find the thing we wanted in that body and pull it
-  ;; back out.
-  ;;
-  ;; Seriously, soon as they fix parseFragment, fix this. The code should be
-  ;; (Parser/parseFragment s nil "") or something close.
-  (into [] (.. (Parser/parseBodyFragment s "")
-               childNodes (get 0) ;; <html> tag
-               childNodes (get 1) ;; <body> tag
-               childNodes)))      ;; contents of <body> tag
+  (into [] (Parser/parseFragment s (Element. (Tag/valueOf "body") "") "")))
 
 (def ^{:private true} void-element
   #{:area :base :br :col :command :embed :hr :img :input :keygen :link :meta
@@ -135,7 +124,7 @@
    \"tag-soupy\" elements, attribute quote characters used, etc."
   [dom]
   (if (string? dom)
-    dom
+    (qt/html-escape dom)
     (case (:type dom)
       :document
       (apply str (map hickory-to-html (:content dom)))
