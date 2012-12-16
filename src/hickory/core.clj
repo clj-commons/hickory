@@ -1,6 +1,7 @@
 (ns hickory.core
   (:require [clojure.string :as string]
-            [clojure.zip :as zip])
+            [clojure.zip :as zip]
+            [quoin.text :as qt])
   (:import [org.jsoup Jsoup]
            [org.jsoup.nodes Attribute Attributes Comment DataNode Document
             DocumentType Element Node TextNode XmlDeclaration]
@@ -153,7 +154,7 @@
    \"tag-soupy\" elements, attribute quote characters used, etc."
   [dom]
   (if (string? dom)
-    dom
+    (qt/html-escape dom)
     (case (:type dom)
       :document
       (apply str (map hickory-to-html (:content dom)))

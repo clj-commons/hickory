@@ -84,7 +84,10 @@
          (hickory-to-html (as-hickory (parse "<!DOCTYPE html><P><!--hi--><a href=foo id=\"bar\">hi")))))
   ;; Make sure void elements don't have closing tags.
   (is (= "<html><head></head><body>Hi<br>There</body></html>"
-         (hickory-to-html (as-hickory (parse "<html><head></head><body>Hi<br>There</body></html>"))))))
+         (hickory-to-html (as-hickory (parse "<html><head></head><body>Hi<br>There</body></html>")))))
+  ;; Make sure text is properly escaped.
+  (is (= "<code>&lt;html&gt;</code>"
+         (hickory-to-html (as-hickory (first (parse-fragment "<code>&lt;html&gt;</code>")))))))
 
 (deftest doctypes
   (is (= "<!DOCTYPE html><html><head></head><body></body></html>"
