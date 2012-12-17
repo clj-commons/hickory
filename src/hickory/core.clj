@@ -123,29 +123,30 @@
    as we do not keep any letter case or whitespace information, any
    \"tag-soupy\" elements, attribute quote characters used, etc."
   [dom]
-  (if (string? dom)
-    (qt/html-escape dom)
-    (case (:type dom)
-      :document
-      (apply str (map hickory-to-html (:content dom)))
-      :document-type
-      (str "<!DOCTYPE " (get-in dom [:attrs :name])
-           (when-let [publicid (not-empty (get-in dom [:attrs :publicid]))]
-             (str " PUBLIC \"" publicid "\""))
-           (when-let [systemid (not-empty (get-in dom [:attrs :systemid]))]
-             (str " \"" systemid "\""))
-           ">")
-      :element
-      (if (void-element (:tag dom))
-        (str "<" (name (:tag dom))
-             (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
-                             (:attrs dom)))
-             ">")
-        (str "<" (name (:tag dom))
-             (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
-                             (:attrs dom)))
-             ">"
-             (apply str (map hickory-to-html (:content dom)))
-             "</" (name (:tag dom)) ">"))
-      :comment
-      (str "<!--" (apply str (:content dom)) "-->"))))
+  (cond
+   (string? dom) (qt/html-escape dom)
+   (nil? dom) nil
+   :else (case (:type dom)
+           :document
+           (apply str (map hickory-to-html (:content dom)))
+           :document-type
+           (str "<!DOCTYPE " (get-in dom [:attrs :name])
+                (when-let [publicid (not-empty (get-in dom [:attrs :publicid]))]
+                  (str " PUBLIC \"" publicid "\""))
+                (when-let [systemid (not-empty (get-in dom [:attrs :systemid]))]
+                  (str " \"" systemid "\""))
+                ">")
+           :element
+           (if (void-element (:tag dom))
+             (str "<" (name (:tag dom))
+                  (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
+                                  (:attrs dom)))
+                  ">")
+             (str "<" (name (:tag dom))
+                  (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
+                                  (:attrs dom)))
+                  ">"
+                  (apply str (map hickory-to-html (:content dom)))
+                  "</" (name (:tag dom)) ">"))
+           :comment
+           (str "<!--" (apply str (:content dom)) "-->"))))
