@@ -112,6 +112,8 @@
   #{:area :base :br :col :command :embed :hr :img :input :keygen :link :meta
     :param :source :track :wbr})
 
+(def ^{:private true} unescapable-content #{:script :style})
+
 (defn hickory-to-html
   "Given a hickory HTML DOM map structure (as returned by as-hickory), returns a
    string containing HTML it represents.
@@ -136,16 +138,25 @@
              (str " \"" systemid "\""))
            ">")
       :element
-      (if (void-element (:tag dom))
-        (str "<" (name (:tag dom))
-             (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
-                             (:attrs dom)))
-             ">")
-        (str "<" (name (:tag dom))
-             (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
-                             (:attrs dom)))
-             ">"
-             (apply str (map hickory-to-html (:content dom)))
-             "</" (name (:tag dom)) ">"))
+      (cond
+       (void-element (:tag dom))
+       (str "<" (name (:tag dom))
+            (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
+                            (:attrs dom)))
+            ">")
+       (unescapable-content (:tag dom))
+       (str "<" (name (:tag dom))
+            (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
+                            (:attrs dom)))
+            ">"
+            (apply str (:content dom)) ;; Won't get html-escaped.
+            "</" (name (:tag dom)) ">")
+       :else
+       (str "<" (name (:tag dom))
+            (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
+                            (:attrs dom)))
+            ">"
+            (apply str (map hickory-to-html (:content dom)))
+            "</" (name (:tag dom)) ">"))
       :comment
       (str "<!--" (apply str (:content dom)) "-->"))))

@@ -42,8 +42,7 @@
                                            :attrs {:src "blah.js"},
                                            :tag :script,
                                            :content ["alert(\"hi\");"]}]}]}]}
-         (as-hickory (parse "<!DOCTYPE html><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script>"))))
-  )
+         (as-hickory (parse "<!DOCTYPE html><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script>")))))
 
 ;; Want to test a document fragment that has multiple nodes with no parent,
 ;; as well as a text node between nodes.
@@ -87,7 +86,11 @@
          (hickory-to-html (as-hickory (parse "<html><head></head><body>Hi<br>There</body></html>")))))
   ;; Make sure text is properly escaped.
   (is (= "<code>&lt;html&gt;</code>"
-         (hickory-to-html (as-hickory (first (parse-fragment "<code>&lt;html&gt;</code>")))))))
+         (hickory-to-html (as-hickory (first (parse-fragment "<code>&lt;html&gt;</code>"))))))
+  ;; Make sure the contents of script/style tags do not get html escaped.
+  (is (= "<script>Test<!--Test&Test-->Test</script>"
+         (hickory-to-html (as-hickory
+                           (first (parse-fragment "<script>Test<!--Test&Test-->Test</script>")))))))
 
 (deftest doctypes
   (is (= "<!DOCTYPE html><html><head></head><body></body></html>"

@@ -147,12 +147,14 @@ the parsed data, like doctype and comments.
 To get hickory, add
 
 ```clojure
-[hickory "0.2.1"]
+[hickory "0.2.2"]
 ```
 
 to your project.clj, or an equivalent entry for your Maven-compatible build tool.
 
 ## Changes
+
+- Released version 0.2.2. Fixes a bug where hickory-to-html was improperly html-escaping the contents of script/style tags.
 
 - Released version 0.2.1. This version fixes bugs:
     * hickory-to-html now properly escapes text nodes
