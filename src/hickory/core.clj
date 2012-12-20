@@ -114,6 +114,12 @@
 
 (def ^{:private true} unescapable-content #{:script :style})
 
+(defn- render-attribute
+  "Given a map entry m, representing the attribute name and value, returns a
+   string representing that key/value pair as it would be rendered into HTML."
+  [m]
+  (str " " (name (key m)) "=\"" (qt/html-escape (val m)) "\""))
+
 (defn hickory-to-html
   "Given a hickory HTML DOM map structure (as returned by as-hickory), returns a
    string containing HTML it represents.
@@ -141,20 +147,17 @@
       (cond
        (void-element (:tag dom))
        (str "<" (name (:tag dom))
-            (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
-                            (:attrs dom)))
+            (apply str (map render-attribute (:attrs dom)))
             ">")
        (unescapable-content (:tag dom))
        (str "<" (name (:tag dom))
-            (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
-                            (:attrs dom)))
+            (apply str (map render-attribute (:attrs dom)))
             ">"
             (apply str (:content dom)) ;; Won't get html-escaped.
             "</" (name (:tag dom)) ">")
        :else
        (str "<" (name (:tag dom))
-            (apply str (map #(str " " (name (key %)) "=\"" (val %) "\"")
-                            (:attrs dom)))
+            (apply str (map render-attribute (:attrs dom)))
             ">"
             (apply str (map hickory-to-html (:content dom)))
             "</" (name (:tag dom)) ">"))
