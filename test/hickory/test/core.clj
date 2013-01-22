@@ -100,3 +100,13 @@
          (hickory-to-html (as-hickory (parse "<!DOCTYPE html><html><head></head><body></body></html>")))))
   (is (= "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body></html>"
          (hickory-to-html (as-hickory (parse "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body</html>"))))))
+
+(deftest error-handling
+  (let [data {:type :foo :tag :a :attrs {:foo "bar"}}]
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"^Not a valid node: nil"
+          (hickory-to-html nil)))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"^Not a valid node: \{:type :foo, :attrs \{:foo \"bar\"\}, :tag :a\}"
+          (hickory-to-html data)))
+    (is (= data 
+           (try (hickory-to-html data)
+                (catch Exception e (:dom (ex-data e))))))))
