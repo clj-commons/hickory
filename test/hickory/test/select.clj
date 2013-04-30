@@ -15,7 +15,7 @@
 <a href=\"http://example.com\">Link</a>
 <div class=\"aclass bclass cool\">
 <span disabled anotherattr=\"\" thirdthing=\"44\" id=\"attrspan\"
-      capitalized=\"UPPERCASED\">
+      Capitalized=\"UPPERCASED\">
 <div class=\"subdiv cool\" id=\"deepestdiv\">Div</div>
 </span>
 <!-- Comment 2 -->

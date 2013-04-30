@@ -96,16 +96,32 @@
           hzip-loc)))))
 
 (defn attr
+  "Returns a function that takes a zip-loc argument and returns the
+   zip-loc passed in iff it has the given attribute, and that attribute
+   optionally satisfies a predicate given as an additional argument. With
+   a single argument, the attribute name (a string, keyword, or symbol),
+   the function returned will return the zip-loc if that attribute is
+   present (and has any value) on the zip-loc's node. The attribute name
+   will be compared case-insensitively, but the attribute value (if present),
+   will be passed as-is to the predicate.
+
+   If the predicate argument is given, it will only return the zip-loc if
+   that predicate is satisfied when given the attribute's value as its only
+   argument. Note that the predicate only gets called when the attribute is
+   present, so it can assume its argument is not nil."
   ([attr-name]
      ;; Since we want this call to succeed in any case where this attr
      ;; is present, we pass in a function that always returns true.
      (attr attr-name (fn [_] true)))
   ([attr-name predicate]
+     ;; Note that attribute names are normalized to lowercase by
+     ;; jsoup, as an html5 parser should; see here:
+     ;; http://www.whatwg.org/specs/web-apps/current-work/#attribute-name-state
      (fn [hzip-loc]
        (let [node (zip/node hzip-loc)
              attr-key (keyword (string/lower-case (name attr-name)))]
-         ;; If the attribute does not exist, we'll return null. Otherwise,
-         ;; we'll ask the predicate if we should return this hzip-loc.
+         ;; If the attribute does not exist, we'll definitely return null.
+         ;; Otherwise, we'll ask the predicate if we should return hzip-loc.
          (if (and (contains? (:attrs node) attr-key)
                   (predicate (get-in node [:attrs attr-key])))
            hzip-loc)))))
