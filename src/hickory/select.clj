@@ -49,6 +49,19 @@
 ;; Selectors
 ;;
 
+(defn tag
+  "Return a function that takes a zip-loc argument and returns the
+   zip-loc passed in iff it has the given tag. The tag name comparison
+   is done case-insensitively."
+  [tag]
+  (fn [hzip-loc]
+    (let [node (zip/node hzip-loc)
+          node-tag (-> node :tag)]
+      (if (and node-tag
+               (= (string/lower-case (name node-tag))
+                  (string/lower-case tag)))
+        hzip-loc))))
+
 (defn id
   "Returns a function that takes a zip-loc argument and returns the
    zip-loc passed in iff it has the given id. The id name comparison

@@ -60,6 +60,18 @@
                  (every? true? (map #(= :comment (:type %))
                                     selection))))))))
 
+(deftest tag-test
+  (testing "tag selector"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/tag "h1")
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :h1 (-> selection first :tag)))))
+      (let [selection (select/select (select/tag "H1")
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :h1 (-> selection first :tag))))))))
+
 (deftest id-test
   (testing "id selector"
     (let [htree (hickory/as-hickory (hickory/parse html1))]
