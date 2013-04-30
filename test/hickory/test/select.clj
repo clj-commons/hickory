@@ -60,15 +60,15 @@
                  (every? true? (map #(= :comment (:type %))
                                     selection))))))))
 
-(deftest has-class?-test
-  (testing "has-class? selectory"
+(deftest class-test
+  (testing "class selector"
     (let [htree (hickory/as-hickory (hickory/parse html1))]
-      (let [selection (select/select (select/has-class? "aclass")
+      (let [selection (select/select (select/class "aclass")
                                      htree)]
         (is (and (= 1 (count selection))
                  (re-find #"aclass"
                           (-> selection first :attrs :class)))))
-      (let [selection (select/select (select/has-class? "cool")
+      (let [selection (select/select (select/class "cool")
                                      htree)]
         (is (and (= 3 (count selection))
                  (every? #(not (nil? %))

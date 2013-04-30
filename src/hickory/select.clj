@@ -4,7 +4,8 @@
    See clojure.zip for more information on zippers, locs, nodes, next, etc."
   (:require [clojure.zip :as zip]
             [clojure.string :as string]
-            [hickory.zip :as hzip]))
+            [hickory.zip :as hzip])
+  (:refer-clojure :exclude [class]))
 
 
 ;;
@@ -48,7 +49,7 @@
 ;; Selectors
 ;;
 
-(defn has-class?
+(defn class
   "Returns a function that takes a zip-loc argument and returns the
   zip-loc passed in iff it has the given class. The class name comparison
   is done case-insensitively."
