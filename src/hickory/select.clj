@@ -15,8 +15,8 @@
   "Given a selector function and a loc inside a hickory zip data structure,
    returns the next zipper loc that satisfies the selection function. This can
    be the loc that is passed in, so be sure to move to the next loc if you
-   want to use this function to search through a tree manually. Note that if
-   there is no next node that satisfies the selection function, nil
+   want to use this function to exhaustively search through a tree manually.
+   Note that if there is no next node that satisfies the selection function, nil
    is returned."
   [selector-fn hzip-loc]
   (loop [loc hzip-loc]
@@ -30,14 +30,13 @@
   "Given a selector function and a hickory data structure, returns a vector
    containing all of the zipper locs selected by the selector function."
   [selector-fn hickory-tree]
-  (loop [loc (hzip/hickory-zip hickory-tree)
+  (loop [loc (select-next-loc selector-fn
+                              (hzip/hickory-zip hickory-tree))
          selected-nodes (transient [])]
-    (if (zip/end? loc)
+    (if (nil? loc)
       (persistent! selected-nodes)
-      (recur (zip/next loc)
-             (if (selector-fn loc)
-               (conj! selected-nodes loc)
-               selected-nodes)))))
+      (recur (select-next-loc selector-fn (zip/next loc))
+             (conj! selected-nodes loc)))))
 
 (defn select
   "Given a selector function and a hickory data structure, returns a vector
