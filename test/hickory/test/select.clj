@@ -14,7 +14,10 @@
 <p>Paragraph</p>
 <a href=\"http://example.com\">Link</a>
 <div class=\"aclass bclass cool\">
+<span disabled anotherattr=\"\" thirdthing=\"44\" id=\"attrspan\"
+      capitalized=\"UPPERCASED\">
 <div class=\"subdiv cool\" id=\"deepestdiv\">Div</div>
+</span>
 <!-- Comment 2 -->
 <span id=\"anid\" class=\"cool\">Span</span>
 </div>
@@ -81,6 +84,33 @@
                                      htree)]
         (is (and (= 1 (count selection))
                  (= :h1 (-> selection first :tag))))))))
+
+(deftest attr-test
+  (testing "attr selector"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/attr :disabled)
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= "attrspan" (-> selection first :attrs :id)))))
+      (let [selection (select/select (select/attr "anotherattr")
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= "attrspan" (-> selection first :attrs :id)))))
+      (let [selection (select/select (select/attr :thirdthing #(= "44" %))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= "attrspan" (-> selection first :attrs :id)))))
+      ;; Case-insensitivity of names and non-equality predicate test
+      (let [selection (select/select (select/attr "CAPITALIZED"
+                                                  #(.startsWith % "UPPER"))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= "attrspan" (-> selection first :attrs :id)))))
+      ;; Graceful failure to find anything
+      (let [selection (select/select (select/attr "notpresent"
+                                                  #(.startsWith % "never"))
+                                     htree)]
+        (is (= 0 (count selection)))))))
 
 (deftest id-test
   (testing "id selector"

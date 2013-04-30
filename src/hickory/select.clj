@@ -94,3 +94,18 @@
                       (parse-classes class-str))]
         (if (contains? classes (string/lower-case (name class-name)))
           hzip-loc)))))
+
+(defn attr
+  ([attr-name]
+     ;; Since we want this call to succeed in any case where this attr
+     ;; is present, we pass in a function that always returns true.
+     (attr attr-name (fn [_] true)))
+  ([attr-name predicate]
+     (fn [hzip-loc]
+       (let [node (zip/node hzip-loc)
+             attr-key (keyword (string/lower-case (name attr-name)))]
+         ;; If the attribute does not exist, we'll return null. Otherwise,
+         ;; we'll ask the predicate if we should return this hzip-loc.
+         (if (and (contains? (:attrs node) attr-key)
+                  (predicate (get-in node [:attrs attr-key])))
+           hzip-loc)))))
