@@ -60,6 +60,10 @@
                  (every? true? (map #(= :comment (:type %))
                                     selection))))))))
 
+;;
+;; Selector tests
+;;
+
 (deftest tag-test
   (testing "tag selector"
     (let [htree (hickory/as-hickory (hickory/parse html1))]
@@ -69,6 +73,11 @@
                  (= :h1 (-> selection first :tag)))))
       ;; Case-insensitivity test
       (let [selection (select/select (select/tag "H1")
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :h1 (-> selection first :tag)))))
+      ;; Non-string argument test
+      (let [selection (select/select (select/tag :h1)
                                      htree)]
         (is (and (= 1 (count selection))
                  (= :h1 (-> selection first :tag))))))))
@@ -91,6 +100,12 @@
                                      htree)]
         (is (and (= 1 (count selection))
                  (re-find #"anid"
+                          (-> selection first :attrs :id)))))
+      ;; Non-string argument test
+      (let [selection (select/select (select/id :anid)
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (re-find #"anid"
                           (-> selection first :attrs :id))))))))
 
 (deftest class-test
@@ -101,17 +116,23 @@
         (is (and (= 1 (count selection))
                  (re-find #"aclass"
                           (-> selection first :attrs :class)))))
-      ;; Case-insensitivity test
-      (let [selection (select/select (select/class "Aclass")
-                                     htree)]
-        (is (and (= 1 (count selection))
-                 (re-find #"aclass"
-                          (-> selection first :attrs :class)))))
       (let [selection (select/select (select/class "cool")
                                      htree)]
         (is (and (= 3 (count selection))
                  (every? #(not (nil? %))
                          (map #(re-find #"cool"
                                         (-> % :attrs :class))
-                              selection))))))))
+                              selection)))))
+      ;; Case-insensitivity test
+      (let [selection (select/select (select/class "Aclass")
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (re-find #"aclass"
+                          (-> selection first :attrs :class)))))
+      ;; Non-string argument test
+      (let [selection (select/select (select/class :aclass)
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (re-find #"aclass"
+                          (-> selection first :attrs :class))))))))
 

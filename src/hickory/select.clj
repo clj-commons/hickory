@@ -51,7 +51,8 @@
 
 (defn tag
   "Return a function that takes a zip-loc argument and returns the
-   zip-loc passed in iff it has the given tag. The tag name comparison
+   zip-loc passed in iff it has the given tag. The tag argument can be
+   a String or Named (keyword, symbol). The tag name comparison
    is done case-insensitively."
   [tag]
   (fn [hzip-loc]
@@ -64,7 +65,8 @@
 
 (defn id
   "Returns a function that takes a zip-loc argument and returns the
-   zip-loc passed in iff it has the given id. The id name comparison
+   zip-loc passed in iff it has the given id. The id argument can be
+   a String or Named (keyword, symbol). The id name comparison
    is done case-insensitively."
   [id]
   (fn [hzip-loc]
@@ -77,7 +79,8 @@
 
 (defn class
   "Returns a function that takes a zip-loc argument and returns the
-  zip-loc passed in iff it has the given class. The class name comparison
+  zip-loc passed in iff it has the given class. The class argument can
+  be a String or Named (keyword, symbol). The class name comparison
   is done case-insensitively."
   [class-name]
   (letfn [(parse-classes [class-str]
