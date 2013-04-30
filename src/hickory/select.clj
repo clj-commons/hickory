@@ -59,7 +59,7 @@
           node-tag (-> node :tag)]
       (if (and node-tag
                (= (string/lower-case (name node-tag))
-                  (string/lower-case tag)))
+                  (string/lower-case (name tag))))
         hzip-loc))))
 
 (defn id
@@ -72,7 +72,7 @@
           id-str (-> node :attrs :id)]
       (if (and id-str
                (= (string/lower-case id-str)
-                  (string/lower-case id)))
+                  (string/lower-case (name id))))
         hzip-loc))))
 
 (defn class
@@ -89,5 +89,5 @@
             ;; Check first, since not all nodes will have :attrs key
             classes (if class-str
                       (parse-classes class-str))]
-        (if (contains? classes (string/lower-case class-name))
+        (if (contains? classes (string/lower-case (name class-name)))
           hzip-loc)))))
