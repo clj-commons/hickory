@@ -49,6 +49,17 @@
 ;; Selectors
 ;;
 
+(defn id
+  "Returns a function that takes a zip-loc argument and returns the
+   zip-loc passed in iff it has the given id. The id name comparison
+   is done case-insensitively."
+  [id]
+  (fn [hzip-loc]
+    (let [node (zip/node hzip-loc)
+          id-str (-> node :attrs :id)]
+      (if (= id-str id)
+        hzip-loc))))
+
 (defn class
   "Returns a function that takes a zip-loc argument and returns the
   zip-loc passed in iff it has the given class. The class name comparison

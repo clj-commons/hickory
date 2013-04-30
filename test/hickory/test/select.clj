@@ -60,6 +60,20 @@
                  (every? true? (map #(= :comment (:type %))
                                     selection))))))))
 
+(deftest id-test
+  (testing "id selector"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/id "deepestdiv")
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (re-find #"deepestdiv"
+                          (-> selection first :attrs :id)))))
+      (let [selection (select/select (select/id "anid")
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (re-find #"anid"
+                          (-> selection first :attrs :id))))))))
+
 (deftest class-test
   (testing "class selector"
     (let [htree (hickory/as-hickory (hickory/parse html1))]
