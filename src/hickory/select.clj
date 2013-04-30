@@ -70,7 +70,9 @@
   (fn [hzip-loc]
     (let [node (zip/node hzip-loc)
           id-str (-> node :attrs :id)]
-      (if (= id-str id)
+      (if (and id-str
+               (= (string/lower-case id-str)
+                  (string/lower-case id)))
         hzip-loc))))
 
 (defn class

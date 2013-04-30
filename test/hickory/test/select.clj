@@ -67,6 +67,7 @@
                                      htree)]
         (is (and (= 1 (count selection))
                  (= :h1 (-> selection first :tag)))))
+      ;; Case-insensitivity test
       (let [selection (select/select (select/tag "H1")
                                      htree)]
         (is (and (= 1 (count selection))
@@ -84,12 +85,24 @@
                                      htree)]
         (is (and (= 1 (count selection))
                  (re-find #"anid"
+                          (-> selection first :attrs :id)))))
+      ;; Case-insensitivity test
+      (let [selection (select/select (select/id "ANID")
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (re-find #"anid"
                           (-> selection first :attrs :id))))))))
 
 (deftest class-test
   (testing "class selector"
     (let [htree (hickory/as-hickory (hickory/parse html1))]
       (let [selection (select/select (select/class "aclass")
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (re-find #"aclass"
+                          (-> selection first :attrs :class)))))
+      ;; Case-insensitivity test
+      (let [selection (select/select (select/class "Aclass")
                                      htree)]
         (is (and (= 1 (count selection))
                  (re-find #"aclass"
