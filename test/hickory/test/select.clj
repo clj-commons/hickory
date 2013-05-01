@@ -225,3 +225,34 @@
                                      htree)]
         (is (and (= 2 (count selection))
                  (every? true? (map #(= :div (:tag %)) selection))))))))
+
+(deftest child-test
+  (testing "child selector combinator"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/child)
+                                     htree)]
+        (= [] selection))
+      (let [selection (select/select (select/child (select/tag :html)
+                                                   (select/tag :div)
+                                                   (select/tag :span))
+                                     htree)]
+        (is (= [] selection)))
+      (let [selection (select/select (select/child (select/tag :body)
+                                                   (select/tag :div)
+                                                   (select/tag :span))
+                                     htree)]
+        (is (and (= 2 (count selection))
+                 (every? true? (map #(= :span (:tag %)) selection))))))
+    (let [htree (hickory/as-hickory (hickory/parse "<div><span class=\"foo\"><input disabled></input></span></div>"))]
+      (let [selection (select/select (select/child (select/tag :div)
+                                                   (select/class :foo)
+                                                   (select/attr :disabled))
+                                     htree)]
+        (is (= :input (-> selection first :tag)))))
+    (let [htree (hickory/as-hickory (hickory/parse "<div><span class=\"foo\"><b><input disabled></input></b></span></div>"))]
+      (let [selection (select/select (select/child (select/tag :div)
+                                                   (select/class :foo)
+                                                   (select/attr :disabled))
+                                     htree)]
+        (is (= [] selection))))))
+

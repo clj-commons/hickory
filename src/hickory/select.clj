@@ -150,3 +150,28 @@
   (fn [zip-loc]
     (if (some #(% zip-loc) selectors)
       zip-loc)))
+
+(defn child
+  "Takes any number of selectors as arguments and returns a selector that
+   returns true when the zip-loc given as the argument is at the end of
+   a chain of direct child relationships specified by the selectors given as
+   arguments.
+
+   Example: (child (tag :div) (class :foo) (attr :disabled))
+     will select the input in
+   <div><span class=\"foo\"><input disabled></input></span></div>
+     but not in
+   <div><span class=\"foo\"><b><input disabled></input></b></span></div>"
+  [& selectors]
+  ;; We'll start at the end of the list of selectors and work back up the tree.
+  ;; By reversing the selector list now, it won't have to be done every time the
+  ;; selector executes.
+  (let [selectors-r (reverse selectors)]
+    (fn [hzip-loc]
+      (loop [curr-loc hzip-loc
+             selectors selectors-r]
+        (if (empty? selectors)
+          hzip-loc ;; Got this far satisfying selectors, return the loc.
+          (if-let [next-loc ((first selectors) curr-loc)]
+            (recur (zip/up next-loc)
+                   (rest selectors))))))))
