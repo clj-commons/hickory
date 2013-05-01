@@ -194,3 +194,21 @@
                                                  (select/id :attrspan))
                                      htree)]
         (is (= [] selection))))))
+
+(deftest or-test
+  (testing "or selector combinator"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/or (select/tag :a)
+                                                (select/class "notpresent")
+                                                (select/id :nothere))
+                                     htree)]
+        (= [] selection))
+      (let [selection (select/select (select/or (select/tag :div))
+                                     htree)]
+        (is (and (= 2 (count selection))
+                 (every? true? (map #(= :div (:tag %)) selection)))))
+      (let [selection (select/select (select/or (select/id "deepestdiv")
+                                                (select/class "bclass"))
+                                     htree)]
+        (is (and (= 2 (count selection))
+                 (every? true? (map #(= :div (:tag %)) selection))))))))

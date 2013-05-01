@@ -128,3 +128,11 @@
   (fn [zip-loc]
     (if (every? #(% zip-loc) selectors)
       zip-loc)))
+
+(defn or
+  "Takes any number of selectors and returns a selector that is true if
+   any of the argument selectors are true."
+  [& selectors]
+  (fn [zip-loc]
+    (if (some #(% zip-loc) selectors)
+      zip-loc)))
