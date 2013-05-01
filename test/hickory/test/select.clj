@@ -243,6 +243,7 @@
                                      htree)]
         (is (and (= 2 (count selection))
                  (every? true? (map #(= :span (:tag %)) selection))))))
+    ;; Check examples from the doc string.
     (let [htree (-> "<div><span class=\"foo\"><input disabled></input></span></div>"
                     hickory/parse hickory/as-hickory)]
       (let [selection (select/select (select/child (select/tag :div)

@@ -163,18 +163,19 @@
      but not in
    <div><span class=\"foo\"><b><input disabled></input></b></span></div>"
   [& selectors]
-  ;; We'll start at the end of the list of selectors and work back up the tree.
-  ;; By reversing the selector list now, it won't have to be done every time the
-  ;; selector executes.
-  (let [selectors-r (reverse selectors)]
+  ;; We'll work backwards through the selector list with an index. First we'll
+  ;; build the selector list into an array for quicker access. We'll do it
+  ;; immediately and then closure-capture the result, so it does not get
+  ;; redone every time the selector is called.
+  (let [selectors (into-array clojure.lang.IFn selectors)]
     (fn [hzip-loc]
       (loop [curr-loc hzip-loc
-             selectors selectors-r]
-        (if (empty? selectors)
+             idx (dec (count selectors))]
+        (if (< idx 0)
           hzip-loc ;; Got this far satisfying selectors, return the loc.
-          (if-let [next-loc ((first selectors) curr-loc)]
+          (if-let [next-loc ((nth selectors idx) curr-loc)]
             (recur (zip/up next-loc)
-                   (rest selectors))))))))
+                   (dec idx))))))))
 
 (defn descendant
   "Takes any number of selectors as arguments and returns a selector that
