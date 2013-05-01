@@ -166,3 +166,31 @@
                  (re-find #"aclass"
                           (-> selection first :attrs :class))))))))
 
+;;
+;; Selector Combinators
+;;
+
+(deftest and-test
+  (testing "and selector combinator"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/and (select/tag :div))
+                                     htree)]
+        (is (and (= 2 (count selection))
+                 (every? true? (map #(= :div (:tag %)) selection)))))
+      (let [selection (select/select (select/and (select/tag :div)
+                                                 (select/class "bclass"))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (re-find #"bclass"
+                          (-> selection first :attrs :class)))))
+      (let [selection (select/select (select/and (select/class "cool")
+                                                 (select/tag :span))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= "anid" (-> selection first :attrs :id)))))
+
+      (let [selection (select/select (select/and (select/class "cool")
+                                                 (select/tag :span)
+                                                 (select/id :attrspan))
+                                     htree)]
+        (is (= [] selection))))))

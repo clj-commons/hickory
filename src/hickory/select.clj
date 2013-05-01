@@ -5,7 +5,9 @@
   (:require [clojure.zip :as zip]
             [clojure.string :as string]
             [hickory.zip :as hzip])
-  (:refer-clojure :exclude [class]))
+  (:refer-clojure :exclude [class]
+                  :rename {and core-and
+                           or core-or}))
 
 
 ;;
@@ -58,7 +60,7 @@
   (fn [hzip-loc]
     (let [node (zip/node hzip-loc)
           node-tag (-> node :tag)]
-      (if (and node-tag
+      (if (core-and node-tag
                (= (string/lower-case (name node-tag))
                   (string/lower-case (name tag))))
         hzip-loc))))
@@ -90,7 +92,7 @@
              attr-key (keyword (string/lower-case (name attr-name)))]
          ;; If the attribute does not exist, we'll definitely return null.
          ;; Otherwise, we'll ask the predicate if we should return hzip-loc.
-         (if (and (contains? (:attrs node) attr-key)
+         (if (core-and (contains? (:attrs node) attr-key)
                   (predicate (get-in node [:attrs attr-key])))
            hzip-loc)))))
 
@@ -114,3 +116,15 @@
                                        (string/split class-str #" "))))]
     (attr :class #(contains? (parse-classes %)
                              (string/lower-case (name class-name))))))
+
+;;
+;; Selector combinators
+;;
+
+(defn and
+  "Takes any number of selectors and returns a selector that is true if
+   all of the argument selectors are true."
+  [& selectors]
+  (fn [zip-loc]
+    (if (every? #(% zip-loc) selectors)
+      zip-loc)))
