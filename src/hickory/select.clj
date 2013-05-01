@@ -175,3 +175,43 @@
           (if-let [next-loc ((first selectors) curr-loc)]
             (recur (zip/up next-loc)
                    (rest selectors))))))))
+
+(defn descendant
+  "Takes any number of selectors as arguments and returns a selector that
+   returns true when the zip-loc given as the argument is at the end of
+   a chain of descendant relationships specified by the
+   selectors given as arguments. To be clear, the node selected matches
+   the final selector, but the previous selectors can match anywhere in
+   the node's ancestry, provided they match in the order they are given
+   as arguments, from top to bottom.
+
+   Example: (child (tag :div) (class :foo) (attr :disabled))
+     will select the input in both
+   <div><span class=\"foo\"><input disabled></input></span></div>
+     and
+   <div><span class=\"foo\"><b><input disabled></input></b></span></div>"
+  [& selectors]
+  ;; This function is a lot like child, above, but:
+  ;; 1) we need to make sure the final selector matches the loc under
+  ;;    consideration, and not merely one of its ancestors.
+  ;; 2) failing to fulfill a selector does not stop us going up the tree.
+  (let [selectors (into-array clojure.lang.IFn selectors)]
+    (fn [hzip-loc]
+      ;; First need to check that the last selector matches the current loc,
+      ;; or else we can return nil immediately.
+      (let [last-selector-idx (dec (count selectors))
+            last-selector (nth selectors last-selector-idx)]
+        (if (last-selector hzip-loc)
+          ;; Last selector matches this node, so now check ancestry.
+          (loop [curr-loc (zip/up hzip-loc)
+                 idx (dec last-selector-idx)]
+            (cond (< idx 0)
+                  curr-loc ;; Satisfied all selectors, so return the loc.
+                  (nil? curr-loc)
+                  nil ;; Ran out of parents before selectors, return nil.
+                  :else
+                  (if ((nth selectors idx) curr-loc)
+                    (recur (zip/up curr-loc)
+                           (dec idx))
+                    ;; Failed, so go up to parent but retry the same selector
+                    (recur (zip/up curr-loc) idx)))))))))

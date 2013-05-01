@@ -258,3 +258,33 @@
                                      htree)]
         (is (= [] selection))))))
 
+(deftest descendant-test
+  (testing "descendant selector combinator"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/descendant (select/tag :h1))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :h1 (-> selection first :tag)))))
+      (let [selection (select/select (select/descendant (select/class "cool")
+                                                        (select/tag :div))
+                                     htree)]
+        (is (= 1 (count selection))
+            (= "deepestdiv" (-> selection first :attrs :id)))))
+
+    ;; Check examples from doc string.
+    (let [htree (-> "<div><span class=\"foo\"><input disabled></input></span></div>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/descendant (select/tag :div)
+                                                        (select/class :foo)
+                                                        (select/attr :disabled))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :input (-> selection first :tag))))))
+    (let [htree (-> "<div><span class=\"foo\"><b><input disabled></input></b></span></div>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/descendant (select/tag :div)
+                                                        (select/class :foo)
+                                                        (select/attr :disabled))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :input (-> selection first :tag))))))))
