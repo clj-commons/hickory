@@ -63,38 +63,6 @@
                   (string/lower-case (name tag))))
         hzip-loc))))
 
-(defn id
-  "Returns a function that takes a zip-loc argument and returns the
-   zip-loc passed in iff it has the given id. The id argument can be
-   a String or Named (keyword, symbol). The id name comparison
-   is done case-insensitively."
-  [id]
-  (fn [hzip-loc]
-    (let [node (zip/node hzip-loc)
-          id-str (-> node :attrs :id)]
-      (if (and id-str
-               (= (string/lower-case id-str)
-                  (string/lower-case (name id))))
-        hzip-loc))))
-
-(defn class
-  "Returns a function that takes a zip-loc argument and returns the
-  zip-loc passed in iff it has the given class. The class argument can
-  be a String or Named (keyword, symbol). The class name comparison
-  is done case-insensitively."
-  [class-name]
-  (letfn [(parse-classes [class-str]
-            (into #{} (mapv string/lower-case
-                            (string/split class-str #" "))))]
-    (fn [hzip-loc]
-      (let [node (zip/node hzip-loc)
-            class-str (-> node :attrs :class)
-            ;; Check first, since not all nodes will have :attrs key
-            classes (if class-str
-                      (parse-classes class-str))]
-        (if (contains? classes (string/lower-case (name class-name)))
-          hzip-loc)))))
-
 (defn attr
   "Returns a function that takes a zip-loc argument and returns the
    zip-loc passed in iff it has the given attribute, and that attribute
@@ -125,3 +93,24 @@
          (if (and (contains? (:attrs node) attr-key)
                   (predicate (get-in node [:attrs attr-key])))
            hzip-loc)))))
+
+(defn id
+  "Returns a function that takes a zip-loc argument and returns the
+   zip-loc passed in iff it has the given id. The id argument can be
+   a String or Named (keyword, symbol). The id name comparison
+   is done case-insensitively."
+  [id]
+  (attr :id #(= (string/lower-case %)
+                (string/lower-case (name id)))))
+
+(defn class
+  "Returns a function that takes a zip-loc argument and returns the
+   zip-loc passed in iff it has the given class. The class argument can
+   be a String or Named (keyword, symbol). The class name comparison
+   is done case-insensitively."
+  [class-name]
+  (letfn [(parse-classes [class-str]
+                       (into #{} (mapv string/lower-case
+                                       (string/split class-str #" "))))]
+    (attr :class #(contains? (parse-classes %)
+                             (string/lower-case (name class-name))))))
