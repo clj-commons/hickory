@@ -243,13 +243,15 @@
                                      htree)]
         (is (and (= 2 (count selection))
                  (every? true? (map #(= :span (:tag %)) selection))))))
-    (let [htree (hickory/as-hickory (hickory/parse "<div><span class=\"foo\"><input disabled></input></span></div>"))]
+    (let [htree (-> "<div><span class=\"foo\"><input disabled></input></span></div>"
+                    hickory/parse hickory/as-hickory)]
       (let [selection (select/select (select/child (select/tag :div)
                                                    (select/class :foo)
                                                    (select/attr :disabled))
                                      htree)]
         (is (= :input (-> selection first :tag)))))
-    (let [htree (hickory/as-hickory (hickory/parse "<div><span class=\"foo\"><b><input disabled></input></b></span></div>"))]
+    (let [htree (-> "<div><span class=\"foo\"><b><input disabled></input></b></span></div>"
+                    hickory/parse hickory/as-hickory)]
       (let [selection (select/select (select/child (select/tag :div)
                                                    (select/class :foo)
                                                    (select/attr :disabled))
