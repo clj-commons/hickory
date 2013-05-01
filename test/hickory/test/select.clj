@@ -67,6 +67,19 @@
 ;; Selector tests
 ;;
 
+(deftest node-type-test
+  (testing "node-type selector"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/node-type :document-type)
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :document-type (-> selection first :type)))))
+      (let [selection (select/select (select/node-type :comment)
+                                     htree)]
+        (is (and (= 2 (count selection))
+                 (every? true? (map #(= :comment (:type %))
+                                    selection))))))))
+
 (deftest tag-test
   (testing "tag selector"
     (let [htree (hickory/as-hickory (hickory/parse html1))]

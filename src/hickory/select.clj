@@ -51,6 +51,20 @@
 ;; Selectors
 ;;
 
+(defn node-type
+  "Return a function that takes a zip-loc argument and returns the
+   zip-loc passed in iff it has the given node type. The type
+   argument can be a String or Named (keyword, symbol). The node type
+   comparison is done case-insensitively."
+  [type]
+  (fn [hzip-loc]
+    (let [node (zip/node hzip-loc)
+          node-type (-> node :type)]
+      (if (core-and node-type
+                    (= (string/lower-case (name node-type))
+                       (string/lower-case (name type))))
+        hzip-loc))))
+
 (defn tag
   "Return a function that takes a zip-loc argument and returns the
    zip-loc passed in iff it has the given tag. The tag argument can be
@@ -61,8 +75,8 @@
     (let [node (zip/node hzip-loc)
           node-tag (-> node :tag)]
       (if (core-and node-tag
-               (= (string/lower-case (name node-tag))
-                  (string/lower-case (name tag))))
+                    (= (string/lower-case (name node-tag))
+                       (string/lower-case (name tag))))
         hzip-loc))))
 
 (defn attr
