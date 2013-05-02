@@ -131,6 +131,13 @@
     (attr :class #(contains? (parse-classes %)
                              (string/lower-case (name class-name))))))
 
+(defn any
+  "This selector takes no args, it simply is the selector function. It returns
+   true on any element it is called on; corresponds to the CSS '*' selector."
+  [hzip-loc]
+  (if (= :element (-> (zip/node hzip-loc) :type))
+    hzip-loc))
+
 ;;
 ;; Selector combinators
 ;;

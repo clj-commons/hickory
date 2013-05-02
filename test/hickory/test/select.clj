@@ -9,6 +9,7 @@
   "<!DOCTYPE html>
 <!-- Comment 1 -->
 <html>
+<head></head>
 <body>
 <h1>Heading</h1>
 <p>Paragraph</p>
@@ -179,6 +180,13 @@
                  (re-find #"aclass"
                           (-> selection first :attrs :class))))))))
 
+(deftest any-test
+  (testing "any selector"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select select/any
+                                     htree)]
+        (is (= 10 (count selection)))))))
+
 ;;
 ;; Selector Combinators
 ;;
@@ -242,7 +250,14 @@
                                                    (select/tag :span))
                                      htree)]
         (is (and (= 2 (count selection))
-                 (every? true? (map #(= :span (:tag %)) selection))))))
+                 (every? true? (map #(= :span (:tag %)) selection)))))
+      (let [selection (select/select (select/child (select/tag :div)
+                                                   select/any)
+                                     htree)]
+        (is (and (= 2 (count selection))
+                 (every? true? (map #(or (= :span (-> % :tag))
+                                         (= :div (-> % :tag)))
+                                    selection))))))
     ;; Check examples from the doc string.
     (let [htree (-> "<div><span class=\"foo\"><input disabled></input></span></div>"
                     hickory/parse hickory/as-hickory)]
@@ -270,8 +285,11 @@
                                                         (select/tag :div))
                                      htree)]
         (is (= 1 (count selection))
-            (= "deepestdiv" (-> selection first :attrs :id)))))
-
+            (= "deepestdiv" (-> selection first :attrs :id))))
+      (let [selection (select/select (select/descendant (select/tag :div)
+                                                        select/any)
+                                     htree)]
+        (is (= 3 (count selection)))))
     ;; Check examples from doc string.
     (let [htree (-> "<div><span class=\"foo\"><input disabled></input></span></div>"
                     hickory/parse hickory/as-hickory)]
