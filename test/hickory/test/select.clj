@@ -261,9 +261,9 @@
 (deftest child-test
   (testing "child selector combinator"
     (let [htree (hickory/as-hickory (hickory/parse html1))]
-      (let [selection (select/select (select/child)
+      (let [selection (select/select (select/child (select/el-not select/any))
                                      htree)]
-        (= [] selection))
+        (is (= [] selection)))
       (let [selection (select/select (select/child (select/tag :html)
                                                    (select/tag :div)
                                                    (select/tag :span))
