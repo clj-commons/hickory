@@ -187,6 +187,14 @@
                                      htree)]
         (is (= 10 (count selection)))))))
 
+(deftest root-test
+  (testing "root selector"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select select/root
+                                     htree)]
+        (is (= :html (-> selection first :tag)))))))
+
+
 ;;
 ;; Selector Combinators
 ;;

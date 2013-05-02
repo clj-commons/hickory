@@ -143,6 +143,13 @@
   (if (= :element (-> (zip/node hzip-loc) :type))
     hzip-loc))
 
+(defn root
+  "This selector takes no args, it simply is the selector function. It returns
+   the zip-loc of the root node (the HTML element)."
+  [hzip-loc]
+  (if (= :html (-> (zip/node hzip-loc) :tag))
+    hzip-loc))
+
 ;;
 ;; Selector combinators
 ;;
