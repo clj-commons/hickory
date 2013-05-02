@@ -234,6 +234,30 @@
         (is (and (= 2 (count selection))
                  (every? true? (map #(= :div (:tag %)) selection))))))))
 
+(deftest not-test
+  (testing "not selector combinator"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/and (select/node-type :element)
+                                                 (select/not (select/class :cool)))
+                                     htree)]
+        (is (and (= 7 (count selection))
+                 (every? true? (map #(and (= :element (-> % :type))
+                                          (or (not (-> % :attrs :class))
+                                              (not (re-find #"cool"
+                                                            (-> % :attrs :class)))))
+                                    selection)))))
+      (let [selection (select/select (select/el-not (select/class :cool))
+                                     htree)]
+        (is (and (= 7 (count selection))
+                 (every? true? (map #(and (= :element (-> % :type))
+                                          (or (not (-> % :attrs :class))
+                                              (not (re-find #"cool"
+                                                            (-> % :attrs :class)))))
+                                    selection)))))
+      (let [selection (select/select (select/not (select/class :cool))
+                                     htree)]
+        (is (= 31 (count selection)))))))
+
 (deftest child-test
   (testing "child selector combinator"
     (let [htree (hickory/as-hickory (hickory/parse html1))]

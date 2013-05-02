@@ -7,7 +7,8 @@
             [hickory.zip :as hzip])
   (:refer-clojure :exclude [class]
                   :rename {and core-and
-                           or core-or}))
+                           or core-or
+                           not core-not}))
 
 
 ;;
@@ -49,6 +50,10 @@
 
 ;;
 ;; Selectors
+;;
+;; Mostly based off the spec at http://www.w3.org/TR/selectors/#selectors
+;; Some selectors are simply not possible outside a browser (active,
+;; visited, etc).
 ;;
 
 (defn node-type
@@ -157,6 +162,24 @@
   (fn [zip-loc]
     (if (some #(% zip-loc) selectors)
       zip-loc)))
+
+(defn not
+  "Takes a selector argument and returns a selector that is true if
+   the underlying selector is false on its argument, and vice versa."
+  [selector]
+  (fn [hzip-loc]
+    (if (core-not (selector hzip-loc))
+      hzip-loc)))
+
+(defn el-not
+  "Takes a selector argument and returns a selector that is true if
+   the underlying selector is false on its argument and vice versa, and
+   additionally that argument is an element node. Compared to the 'not'
+   selector, this corresponds more closely to the CSS equivalent, which
+   will only ever select elements."
+  [selector]
+  (and (node-type :element)
+       (not selector)))
 
 (defn child
   "Takes any number of selectors as arguments and returns a selector that
