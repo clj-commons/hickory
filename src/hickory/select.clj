@@ -10,6 +10,59 @@
                            or core-or
                            not core-not}))
 
+;;
+;; Utilities
+;;
+
+(defn until
+  "Calls f on val until pred called on the result is true. If not, it
+   repeats by calling f on the result, etc. The value that made pred
+   return true is returned."
+  [f val pred]
+  (let [next-val (f val)]
+    (if (pred next-val)
+      next-val
+      (recur f next-val pred))))
+
+(defn count-until
+  "Calls f on val until pred called on the result is true. If not, it
+   repeats by calling f on the result, etc. The count of times this
+   process was repeated until pred returned true is returned."
+  [f val pred]
+  (loop [next-val val
+         cnt 0]
+    (if (pred next-val)
+      cnt
+      (recur (f next-val) (inc cnt)))))
+
+(defn next-of-node-type
+  "Like clojure.zip/next, but only counts moves to nodes that have
+   the given type."
+  [hzip-loc node-type]
+  (until zip/next hzip-loc #(core-or (zip/end? %)
+                                     (= node-type (:type (zip/node %))))))
+
+(defn prev-of-node-type
+  "Like clojure.zip/prev, but only counts moves to nodes that have
+   the given type."
+  [hzip-loc node-type]
+  (until zip/prev hzip-loc #(core-or (nil? %)
+                                     (= node-type (:type (zip/node %))))))
+
+(defn left-of-node-type
+  "Like clojure.zip/left, but only counts moves to nodes that have
+   the given type."
+  [hzip-loc node-type]
+  (until zip/left hzip-loc #(core-or (nil? %)
+                                     (= node-type (:type (zip/node %))))))
+
+(defn right-of-node-type
+  "Like clojure.zip/right, but only counts moves to nodes that have
+   the given type."
+  [hzip-loc node-type]
+  (until zip/right hzip-loc #(core-or (nil? %)
+                                      (= node-type (:type (zip/node %))))))
+
 
 ;;
 ;; Select
@@ -143,12 +196,45 @@
   (if (= :element (-> (zip/node hzip-loc) :type))
     hzip-loc))
 
+(def element
+  "Another name for the any selector, to express that it can be used to only
+   select elements."
+  any)
+
 (defn root
   "This selector takes no args, it simply is the selector function. It returns
    the zip-loc of the root node (the HTML element)."
   [hzip-loc]
   (if (= :html (-> (zip/node hzip-loc) :tag))
     hzip-loc))
+
+(defn nth-child
+  "Returns a function that returns true if the node is the nth child of
+   its parent (and it has a parent). First element is 1, last is n."
+  ([c]
+     (cond (= :odd c)
+           (nth-child 2 1)
+           (= :even c)
+           (nth-child 2 0)
+           :else
+           (nth-child 0 c)))
+  ([n c]
+     (fn [hzip-loc]
+       ;; We're only interested in elements whose parents are also elements,
+       ;; so check this up front and maybe save some work.
+       (if (core-and (element hzip-loc)
+                     (element (zip/up hzip-loc)))
+         (let [left-dist (count-until #(left-of-node-type % :element)
+                                      hzip-loc
+                                      nil?)]
+           (if (== 0 n)
+             ;; No stride, so left-dist must = c to select.
+             (if (== left-dist c)
+               hzip-loc)
+             ;; There's a stride, so need to subtract c and see if the
+             ;; remaining distance is a multiple of n.
+             (if (== 0 (rem (- left-dist c) n))
+               hzip-loc)))))))
 
 ;;
 ;; Selector combinators

@@ -25,6 +25,22 @@
 </body>
 </html>")
 
+(def html2
+  "<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+<p>Paragraph 1</p>
+<p>Paragraph 2</p>
+<p>Paragraph 3</p>
+<p>Paragraph 4</p>
+<p>Paragraph 5</p>
+<p>Paragraph 6</p>
+<p>Paragraph 7</p>
+<p>Paragraph 8</p>
+</body>
+</html>")
+
 (deftest select-next-loc-test
   (testing "The select-next-loc function."
     (let [htree (hickory/as-hickory (hickory/parse html1))
@@ -194,6 +210,48 @@
                                      htree)]
         (is (= :html (-> selection first :tag)))))))
 
+(deftest nth-child-test
+  (testing "nth-child selector"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/and (select/tag :div)
+                                                 (select/nth-child 0 1))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= "deepestdiv" (-> selection first :attrs :id)))))
+      (let [selection (select/select (select/and (select/tag :div)
+                                                 (select/nth-child 1 1))
+                                     htree)]
+        (is (and (= 2 (count selection))
+                 (every? true? (map #(= :div (:tag %))
+                                    selection)))))
+      (let [selection (select/select (select/and (select/tag :div)
+                                                 (select/nth-child :odd))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= "deepestdiv" (-> selection first :attrs :id)))))
+      (let [selection (select/select (select/and (select/node-type :element)
+                                                 (select/nth-child :even))
+                                     htree)]
+        (is (and (= 4 (count selection))
+                 (= :element (-> selection first :type))))))
+    (let [htree (hickory/as-hickory (hickory/parse html2))]
+      (let [selection (select/select (select/and (select/node-type :element)
+                                                 (select/nth-child :even))
+                                     htree)]
+        (is (and (= 5 (count selection))
+                 (every? true? (map #(contains? #{:body :p} (:tag %))
+                                    selection)))))
+      (let [selection (select/select (select/nth-child 3 0)
+                                     htree)]
+        (is (and (= 2 (count selection))
+                 (every? true? (map #(= :p (:tag %))
+                                    selection)))))
+      (let [selection (select/select (select/child (select/tag :body)
+                                                   (select/nth-child 3 1))
+                                     htree)]
+        (is (and (= 3 (count selection))
+                 (every? true? (map #(= :p (:tag %))
+                                    selection))))))))
 
 ;;
 ;; Selector Combinators
