@@ -208,6 +208,38 @@
   (if (= :html (-> (zip/node hzip-loc) :tag))
     hzip-loc))
 
+(defn n-moves-until
+  "This selector returns a selector function that selects its argument if
+   that argument is some \"distance\" from a \"boundary.\" This is an abstract
+   way of phrasing it, but it captures the full generality.
+
+   The selector this function returns will apply the move argument to its own
+   output, beginning with its zipper loc argument, until the term-pred argument
+   called on its output returns true. At that point, the number of times the
+   move function was called successfully is compared to kn+c; if there exists
+   some value of k such that the two quantities are equal, then the selector
+   will return the argument zipper loc successfully.
+
+   For example, (n-moves-until 2 1 clojure.zip/left nil?) will return a selector
+   that calls zip/left on its own output, beginning with the argument zipper
+   loc, until its return value is nil (nil? returns true). Suppose it called
+   left 5 times before zip/left returned nil. Then the selector will return
+   with success, since 2k+1 = 5 for k = 2.
+
+   Most nth-child-* selectors in this package use n-moves-until in their
+   implementation."
+  [n c move term-pred]
+  (fn [hzip-loc]
+    (let [distance (count-until move hzip-loc term-pred)]
+      (if (== 0 n)
+        ;; No stride, so distance must = c to select.
+        (if (== distance c)
+          hzip-loc)
+        ;; There's a stride, so need to subtract c and see if the
+        ;; remaining distance is a multiple of n.
+        (if (== 0 (rem (- distance c) n))
+          hzip-loc)))))
+
 (defn nth-child
   "Returns a function that returns true if the node is the nth child of
    its parent (and it has a parent). First element is 1, last is n."
@@ -224,17 +256,8 @@
        ;; so check this up front and maybe save some work.
        (if (core-and (element hzip-loc)
                      (element (zip/up hzip-loc)))
-         (let [left-dist (count-until #(left-of-node-type % :element)
-                                      hzip-loc
-                                      nil?)]
-           (if (== 0 n)
-             ;; No stride, so left-dist must = c to select.
-             (if (== left-dist c)
-               hzip-loc)
-             ;; There's a stride, so need to subtract c and see if the
-             ;; remaining distance is a multiple of n.
-             (if (== 0 (rem (- left-dist c) n))
-               hzip-loc)))))))
+         (let [sel (n-moves-until n c #(left-of-node-type % :element) nil?)]
+           (sel hzip-loc))))))
 
 ;;
 ;; Selector combinators
