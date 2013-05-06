@@ -498,9 +498,9 @@
         ;; We want to be able to specify a namespace to find the selector in
         ;; so we check if there is one on an instance of Named, otherwise
         ;; we default to this namespace.
-        sel-ns (core-or (if (instance? clojure.lang.Named sel-spec)
-                          (namespace sel-spec))
-                        'hickory.select) ;; ns can be nil on Nameds.
+        sel-ns (symbol (core-or (if (instance? clojure.lang.Named sel-spec)
+                                  (namespace sel-spec))
+                                'hickory.select)) ;; ns can be nil on Nameds.
         sel-var (ns-resolve sel-ns sel-sym)
         ;; To handle sub-selectors, call ourselves recursively on sequential
         ;; args, and just let all other args pass through.
