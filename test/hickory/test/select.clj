@@ -485,28 +485,3 @@
                                      htree)]
         (is (and (= 1 (count selection))
                  (= :input (-> selection first :tag))))))))
-
-;;
-;; DSL
-;;
-
-(def tag-sel (fn [tagname]
-               #(= (keyword tagname) (:tag (zip/node %)))))
-
-(deftest compile-selector-test
-  (testing "compile-selector function"
-    (let [htree (hickory/as-hickory (hickory/parse html1))]
-      (let [selector (select/compile-selector [:descendant
-                                               [:tag :body]
-                                               [:and
-                                                [:class "cool"]
-                                                [:id "deepestdiv"]]])
-            selection (select/select selector htree)]
-        (is (and (= 1 (count selection))
-                 (= "deepestdiv" (-> selection first :attrs :id)))))
-      ;; Test use of a custom selector function in our own namespace
-      (let [selector (select/compile-selector [:hickory.test.select/tag-sel
-                                               "div"])
-            selection (select/select selector htree)]
-        (is (and (= 2 (count selection))
-                 (every? true? (map #(= :div (-> % :tag)) selection))))))))
