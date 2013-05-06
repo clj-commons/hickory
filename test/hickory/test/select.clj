@@ -323,6 +323,23 @@
                  (every? true? (map #(= :p (:tag %))
                                     selection))))))))
 
+(deftest first-child-test
+  (testing "first-child selector"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/child (select/tag :div)
+                                                   select/first-child)
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= "attrspan" (-> selection first :attrs :id))))))))
+
+(deftest last-child-test
+  (testing "last-child selector"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/child (select/tag :div)
+                                                   select/last-child)
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= "anid" (-> selection first :attrs :id))))))))
 
 ;;
 ;; Selector Combinators

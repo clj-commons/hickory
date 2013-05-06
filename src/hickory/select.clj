@@ -357,6 +357,24 @@
          (let [sel (n-moves-until n c #(right-of-node-type % :element) nil?)]
            (sel hzip-loc))))))
 
+(defn first-child
+  "This selector takes no args, it is simply the selector. Returns
+   true if the node is the first child of its parent (and it has a
+   parent)."
+  [hzip-loc]
+  (core-and (element hzip-loc)
+            (element (zip/up hzip-loc))
+            ((nth-child 1) hzip-loc)))
+
+(defn last-child
+  "This selector takes no args, it is simply the selector. Returns
+   true if the node is the last child of its parent (and it has a
+   parent."
+  [hzip-loc]
+  (core-and (element hzip-loc)
+            (element (zip/up hzip-loc))
+            ((nth-last-child 1) hzip-loc)))
+
 ;;
 ;; Selector combinators
 ;;
