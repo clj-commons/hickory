@@ -35,33 +35,61 @@
       cnt
       (recur (f next-val) (inc cnt)))))
 
+(defn next-pred
+  "Like clojure.zip/next, but moves until it reaches a node that returns
+   true when the function in the pred argument is called on them, or reaches
+   the end."
+  [hzip-loc pred]
+  (until zip/next hzip-loc #(core-or (zip/end? %)
+                                     (pred %))))
+
+(defn prev-pred
+  "Like clojure.zip/prev, but moves until it reaches a node that returns
+   true when the function in the pred argument is called on them, or reaches
+   the beginning."
+  [hzip-loc pred]
+  (until zip/prev hzip-loc #(core-or (nil? %)
+                                     (pred %))))
+
+(defn left-pred
+  "Like clojure.zip/left, but moves until it reaches a node that returns
+   true when the function in the pred argument is called on them, or reaches
+   the left boundary of the current group of siblings."
+  [hzip-loc pred]
+  (until zip/left hzip-loc #(core-or (nil? %)
+                                     (pred %))))
+
+(defn right-pred
+  "Like clojure.zip/right, but moves until it reaches a node that returns
+   true when the function in the pred argument is called on them, or reaches
+   the right boundary of the current group of siblings."
+  [hzip-loc pred]
+  (until zip/right hzip-loc #(core-or (nil? %)
+                                      (pred %))))
+
 (defn next-of-node-type
   "Like clojure.zip/next, but only counts moves to nodes that have
    the given type."
   [hzip-loc node-type]
-  (until zip/next hzip-loc #(core-or (zip/end? %)
-                                     (= node-type (:type (zip/node %))))))
+  (next-pred hzip-loc #(= node-type (:type (zip/node %)))))
 
 (defn prev-of-node-type
   "Like clojure.zip/prev, but only counts moves to nodes that have
    the given type."
   [hzip-loc node-type]
-  (until zip/prev hzip-loc #(core-or (nil? %)
-                                     (= node-type (:type (zip/node %))))))
+  (prev-pred hzip-loc #(= node-type (:type (zip/node %)))))
 
 (defn left-of-node-type
   "Like clojure.zip/left, but only counts moves to nodes that have
    the given type."
   [hzip-loc node-type]
-  (until zip/left hzip-loc #(core-or (nil? %)
-                                     (= node-type (:type (zip/node %))))))
+  (left-pred hzip-loc #(= node-type (:type (zip/node %)))))
 
 (defn right-of-node-type
   "Like clojure.zip/right, but only counts moves to nodes that have
    the given type."
   [hzip-loc node-type]
-  (until zip/right hzip-loc #(core-or (nil? %)
-                                      (= node-type (:type (zip/node %))))))
+  (right-pred hzip-loc #(= node-type (:type (zip/node %)))))
 
 
 ;;
@@ -240,6 +268,56 @@
         (if (== 0 (rem (- distance c) n))
           hzip-loc)))))
 
+(defn nth-of-type
+  "Returns a function that returns true if the node is the nth child of
+   its parent (and it has a parent) of the given tag type. First element is 1,
+   last is n."
+  ([c typ]
+     (cond (= :odd c)
+           (nth-of-type 2 1 typ)
+           (= :even c)
+           (nth-of-type 2 0 typ)
+           :else
+           (nth-of-type 0 c typ)))
+  ([n c typ]
+     (fn [hzip-loc]
+       ;; We're only interested in elements whose parents are also elements,
+       ;; so check this up front and maybe save some work.
+       (if (core-and (element hzip-loc)
+                     (element (zip/up hzip-loc))
+                     (= typ (:tag (zip/node hzip-loc))))
+         (let [sel (n-moves-until n c
+                                  #(left-pred % (fn [x] (-> (zip/node x)
+                                                            :tag
+                                                            (= typ))))
+                                  nil?)]
+           (sel hzip-loc))))))
+
+(defn nth-last-of-type
+  "Returns a function that returns true if the node is the nth last child of
+   its parent (and it has a parent) of the given tag type. First element is 1,
+   last is n."
+  ([c typ]
+     (cond (= :odd c)
+           (nth-last-of-type 2 1 typ)
+           (= :even c)
+           (nth-last-of-type 2 0 typ)
+           :else
+           (nth-last-of-type 0 c typ)))
+  ([n c typ]
+     (fn [hzip-loc]
+       ;; We're only interested in elements whose parents are also elements,
+       ;; so check this up front and maybe save some work.
+       (if (core-and (element hzip-loc)
+                     (element (zip/up hzip-loc))
+                     (= typ (:tag (zip/node hzip-loc))))
+         (let [sel (n-moves-until n c
+                                  #(right-pred % (fn [x] (-> (zip/node x)
+                                                             :tag
+                                                             (= typ))))
+                                  nil?)]
+           (sel hzip-loc))))))
+
 (defn nth-child
   "Returns a function that returns true if the node is the nth child of
    its parent (and it has a parent). First element is 1, last is n."
@@ -257,6 +335,26 @@
        (if (core-and (element hzip-loc)
                      (element (zip/up hzip-loc)))
          (let [sel (n-moves-until n c #(left-of-node-type % :element) nil?)]
+           (sel hzip-loc))))))
+
+
+(defn nth-last-child
+  "Returns a function that returns true if the node has n siblings after it,
+   and has a parent."
+  ([c]
+     (cond (= :odd c)
+           (nth-last-child 2 1)
+           (= :even c)
+           (nth-last-child 2 0)
+           :else
+           (nth-last-child 0 c)))
+  ([n c]
+     (fn [hzip-loc]
+       ;; We're only interested in elements whose parents are also elements,
+       ;; so check this up front and maybe save some work.
+       (if (core-and (element hzip-loc)
+                     (element (zip/up hzip-loc)))
+         (let [sel (n-moves-until n c #(right-of-node-type % :element) nil?)]
            (sel hzip-loc))))))
 
 ;;

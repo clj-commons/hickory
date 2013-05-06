@@ -210,6 +210,33 @@
                                      htree)]
         (is (= :html (-> selection first :tag)))))))
 
+(deftest n-moves-until-test
+  (testing "n-moves-until selector"
+    ;; This function is actually pretty well exercised by nth-child, etc.
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/and (select/tag :div)
+                                                 (select/n-moves-until 0 6
+                                                                       zip/up
+                                                                       nil?))
+                                     htree)]
+        (is (= "deepestdiv" (-> selection first :attrs :id)))))))
+
+(deftest nth-of-type-test
+  (testing "nth-of-type selector"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/nth-of-type 1 :body)
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :body (:tag (first selection)))))))))
+
+(deftest nth-last-of-type-test
+  (testing "nth-last-of-type selector"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/nth-last-of-type 1 :span)
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= "anid" (-> selection first :attrs :id))))))))
+
 (deftest nth-child-test
   (testing "nth-child selector"
     (let [htree (hickory/as-hickory (hickory/parse html1))]
@@ -252,6 +279,50 @@
         (is (and (= 3 (count selection))
                  (every? true? (map #(= :p (:tag %))
                                     selection))))))))
+
+(deftest nth-last-child-test
+  (testing "nth-last-child selector"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/and (select/tag :div)
+                                                 (select/nth-last-child 0 1))
+                                     htree)]
+        (is (and (= 2 (count selection))
+                 (every? true? (map #(= :div (:tag %)) selection)))))
+      (let [selection (select/select (select/and (select/tag :div)
+                                                 (select/nth-last-child 1 1))
+                                     htree)]
+        (is (and (= 2 (count selection))
+                 (every? true? (map #(= :div (:tag %))
+                                    selection)))))
+      (let [selection (select/select (select/and (select/tag :div)
+                                                 (select/nth-last-child :odd))
+                                     htree)]
+        (is (and (= 2 (count selection))
+                 (every? true? (map #(= :div (:tag %)) selection)))))
+      (let [selection (select/select (select/and (select/node-type :element)
+                                                 (select/nth-last-child :even))
+                                     htree)]
+        (is (and (= 4 (count selection))
+                 (= :element (-> selection first :type))))))
+    (let [htree (hickory/as-hickory (hickory/parse html2))]
+      (let [selection (select/select (select/and (select/node-type :element)
+                                                 (select/nth-last-child :even))
+                                     htree)]
+        (is (and (= 5 (count selection))
+                 (every? true? (map #(contains? #{:head :p} (:tag %))
+                                    selection)))))
+      (let [selection (select/select (select/nth-last-child 3 0)
+                                     htree)]
+        (is (and (= 2 (count selection))
+                 (every? true? (map #(= :p (:tag %))
+                                    selection)))))
+      (let [selection (select/select (select/child (select/tag :body)
+                                                   (select/nth-last-child 3 1))
+                                     htree)]
+        (is (and (= 3 (count selection))
+                 (every? true? (map #(= :p (:tag %))
+                                    selection))))))))
+
 
 ;;
 ;; Selector Combinators
