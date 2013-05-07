@@ -7,6 +7,8 @@ map-based DOM-like format very similar to that used by clojure.xml.
 
 ## Usage
 
+### Parsing
+
 To start, you will want to process your HTML into a parsed
 representation. Once the HTML is in this form, it can be converted to
 either Hiccup or Hickory format for further processing. There are two
@@ -102,6 +104,83 @@ modification is made using Hickory forms and zippers. Finally, the
 modified Hickory version is printed back to HTML using the
 `hickory-to-html` function.
 
+### Selectors
+
+Hickory also comes with a set of CSS-style selectors that operate on hickory-format data in the `hickory.select` namespace. These selectors do not exactly mirror the selectors in CSS, and are often more powerful. There is no version of these selectors for hiccup-format data, at this point.
+
+A selector is simply a function that takes a zipper loc from a hickory html tree data structure as its only argument. The selector will return its argument if the selector applies to it, and nil otherwise. Writing useful selectors can often be involved, so most of the `hickory.select` package is actually made up of selector combinators; functions that return useful selector functions by specializing them to the data given as arguments, or by combining together multiple selectors. For example, if we wanted to figure out the dates of the next Formula 1 race weekend, we could do something like this:
+
+```clojure
+user=> (use 'hickory.core)
+nil
+user=> (require '[hickory.select :as s])
+nil
+user=> (require '[clj-http.client :as client])
+nil
+user=> (require '[clojure.string :as string])
+nil
+user=> (def site-htree (-> (client/get "http://formula1.com/default.html") :body parse as-hickory))
+#'user/site-htree
+user=> (-> (s/select (s/child (s/class "subCalender") 
+                              (s/tag :div) 
+                              (s/id :raceDates) 
+                              s/first-child
+                              (s/tag :b)) 
+                     site-htree) 
+           first :content first string/trim)
+"10, 11, 12 May 2013"
+```
+
+In this example, we get the contents of the homepage and use `select` to give us any nodes that satisfy the criteria laid out by the selectors. The selector in this example is overly precise in order to illustrate more selectors than we need; we could have gotten by just selecting the contents of the P and then B tags inside the element with id "raceDates". 
+
+Using the selectors allows you to search large HTML documents for nodes of interest with a relatively small amount of code. There are many selectors available in the `hickory.select` namespace:
+
+- `node-type`: Give this function a keyword or string that names the contents of the `:type` field in a hickory node, and it gives you a selector that will select nodes of that type. Example: `(node-type :comment)`
+- `tag`: Give this function a keyword or string that names the contents of the `:tag` field in a hickory node, and it gives you a selector that will select nodes with that tag. Example: `(tag :div)`
+- `attr`: Give this function a keyword or string that names an attribute in the `:attrs` map of a hickory node, and it gives you a selector that will select nodes whose `:attrs` map contains that key. Give a single-argument function as an additional argument, and the resulting selector function will additionally require the value of that key to be such that the function given as the last argument returns true. Example: `(attr :id #(.startsWith % "foo"))`
+- `id`: Give this function a keyword or string that names the `:id` attribute in the `:attrs` map and it will return a selector function that selects nodes that have that id (this comparison is case-insensitive). Example: `(id :raceDates)`
+- `class`: Give this function a keyword or string that names a class that the node should have in the `:class` attribute in the `:attrs` map, and it will return a function that selects nodes that have the given class somewhere in their class string. Example: `(class :foo)`
+- `any`: This selector takes no arguments, do not invoke it; returns any node that is an element, similarly to CSS's '*' selector.
+- `element`: This selector is equivalent to the `any` selector; this alternate name can make it clearer when the intention is to exclude non-element nodes from consideration.
+- `root`: This selector takes no arguments and should not be invoked; simply returns the root node (the HTML element).
+- `n-moves-until`: This selector returns a selector function that selects its argument if that argument is some distance from a boundary. The first two arguments, `n` and `c` define the counting: it only selects nodes whose distance can be written in the form `nk+c` for some natural number `k`. The distance and boundary are defined by the number of times the zipper-movement function in the third argument is applied before the boundary function in the last argument is true. See doc string for details.
+- `nth-of-type`: This selector returns a selector function that selects its argument if that argument is the `(nk+c)`'th child of the given tag type of some parent node for some natural `k`. Optionally, instead of the `n` and `c` arguments, the keywords `:odd` and `:even` can be given.
+- `nth-last-of-type`: Just like `nth-of-type` but counts backwards from the last sibling.
+- `nth-child`: This selector returns a selector function that selects its argument if that argument is the `(nk+c)`'th child of its parent node for some natural `k`. Instead of the `n` and `c` arguments, the keywords `:odd` and `:even` can be given.
+- `nth-last-child`: Just like `nth-last-child` but counts backwards from the last sibling.
+- `first-child`: Takes no arguments, do not invoke it; equivalent to `(nth-child 1)`.
+- `last-child`: Takes no arguments, do not invoke it; equivalent to `(nth-last-child 1)`.
+
+There are also selector combinators, which take as argument some number of other selectors, and return a new selector that combines them into one larger selector. An example of this is the `child` selector in the example above. Here's a list of some selector combinators in the package:
+
+- `and`: Takes any number of selectors, and returns a selector that only selects nodes for which all of the argument selectors are true.
+- `or`: Takes any number of selectors, and retrurns a selector that only selects nodes for which at least one of the argument selectors are true.
+- `not`: Takes a single selector as argument and returns a selector that only selects nodes that its argument selector does not.
+- `el-not`: Takes a single selector as argument and returns a selector that only selects element nodes that its argument selector does not.
+- `child`: Takes any number of selectors as arguments and returns a selector that returns true when the zipper location given as the argument is at the end of a chain of direct child relationships specified by the selectors given as arguments.
+- `descendant`: Takes any number of selectors as arguments and returns a selector that returns true when the zipper location given as the argument is at the end of a chain of descendant relationships specified by the selectors given as arguments.
+
+We can illustrate the selector combinators by continuing the Formula 1 example above. We suspect, to our dismay, that Sebastian Vettel is leading the championship for the fourth year in a row. 
+
+```clojure
+user=> (-> (s/select (s/descendant (s/class "subModule") 
+                                   (s/class "standings") 
+                                   (s/and (s/tag :tr) 
+                                          s/first-child) 
+                                   (s/and (s/tag :td) 
+                                          (s/nth-child 2)) 
+                                   (s/tag :a)) 
+                     site-htree) 
+           first :content first string/trim)
+"Sebastian Vettel"           
+```
+
+Our fears are confirmed, Sebastian Vettel is well on his way to a fourth consecutive championship. If you were to inspect the page by hand (as of around May 2013, at least), you would see that unlike the `child` selector we used in the example above, the `descendant` selector allows the argument selectors to skip stages in the tree; we've left out some elements in this descendant relationship. The first table row in the driver standings table is selected with the `and`, `tag` and `first-child` selectors, and then the second `td` element is chosen, which is the element that has the driver's name (the first table element has the driver's standing) inside an `A` element. All of this is dependent on the exact layout of the HTML in the site we are examining, of course, but it should give an idea of how you can combine selectors to reach into a specific node of an HTML document very easily.
+
+Finally, it's worth noting that the `select` function itself returns the hickory zipper nodes it finds. This is most useful for analyzing the contents of nodes. However, sometimes you may wish to examine the area around a node once you've found it. For this, you can use the `select-locs` function, which returns a sequence of hickory zipper locs, instead of the nodes themselves. This will allow you to navigate around the document tree using the zipper functions in `clojure.zip`. If you wish to go further and actually modify the document tree using zipper functions, you should not use `select-locs`. The problem is that it returns a bunch of zipper locs, but once you modify one, the others are out of date and do not see the changes (just as with any other persistent data structure in Clojure). Thus, their presence was useless and possibly confusing. Instead, you should use the `select-next-loc` function to walk through the document tree manually, moving through the locs that satisfy the selector function one by one, which will allow you to make modifications as you go. As with modifying any data structure as you traverse it, you must still be careful that your code does not add the thing it is selecting for, or it could get caught in an infinite loop. Finally, for more specialized selection needs, it should be possible to write custom selection functions that use the selectors and zipper functions without too much work. The functions discussed in this paragraph are very short and simple, you can use them as a guide.
+
+The doc strings for the functions in the `hickory.select` namespace provide more details on most of these functions.
+
 ## Hickory format
 
 Why two formats? It's very easy to see in the example above, Hiccup is
@@ -147,12 +226,14 @@ the parsed data, like doctype and comments.
 To get hickory, add
 
 ```clojure
-[hickory "0.3.0"]
+[hickory "0.4.0"]
 ```
 
 to your project.clj, or an equivalent entry for your Maven-compatible build tool.
 
 ## Changes
+
+- Released version 0.4.0. Adds the `hickory.select` namespace with many helpful functions for searching through hickory-format HTML documents for specific nodes.
 
 - Released version 0.3.0. Provides a more helpful error message when hickory-to-html has an error. Now requires Clojure 1.4.
 
