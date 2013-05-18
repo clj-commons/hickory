@@ -413,6 +413,27 @@
   (and (node-type :element)
        (not selector)))
 
+(defn ordered-adjacent
+  "Takes a zipper movement function and any number of selectors as arguments
+   and returns a selector that returns true when the zip-loc given as the
+   argument is satisfied by the first selector, and the zip-loc arrived at by
+   applying the move-fn argument is satisfied by the second selector, and so
+   on for all the selectors given as arguments."
+  [move-fn & selectors]
+  ;; We'll work backwards through the selector list with an index. First we'll
+  ;; build the selector list into an array for quicker access. We'll do it
+  ;; immediately and then closure-capture the result, so it does not get
+  ;; redone every time the selector is called.
+  (let [selectors (into-array clojure.lang.IFn selectors)]
+    (fn [hzip-loc]
+      (loop [curr-loc hzip-loc
+             idx 0]
+        (if (>= idx (count selectors))
+          hzip-loc ;; Got to end satisfying selectors, return the loc.
+          (if-let [next-loc ((nth selectors idx) curr-loc)]
+            (recur (move-fn next-loc)
+                   (inc idx))))))))
+
 (defn child
   "Takes any number of selectors as arguments and returns a selector that
    returns true when the zip-loc given as the argument is at the end of
@@ -425,19 +446,39 @@
      but not in
    <div><span class=\"foo\"><b><input disabled></input></b></span></div>"
   [& selectors]
-  ;; We'll work backwards through the selector list with an index. First we'll
-  ;; build the selector list into an array for quicker access. We'll do it
-  ;; immediately and then closure-capture the result, so it does not get
-  ;; redone every time the selector is called.
-  (let [selectors (into-array clojure.lang.IFn selectors)]
-    (fn [hzip-loc]
-      (loop [curr-loc hzip-loc
-             idx (dec (count selectors))]
-        (if (< idx 0)
-          hzip-loc ;; Got this far satisfying selectors, return the loc.
-          (if-let [next-loc ((nth selectors idx) curr-loc)]
-            (recur (zip/up next-loc)
-                   (dec idx))))))))
+  (apply ordered-adjacent zip/up (reverse selectors)))
+
+(defn follow-adjacent
+  "Takes any number of selectors as arguments and returns a selector that
+   returns true when the zip-loc given as the argument is at the end of
+   a chain of direct element sibling relationships specified by the selectors
+   given as arguments.
+
+   Example: (follow-adjacent (tag :div) (class :foo))
+     will select the span in
+   <div>...</div><span class=\"foo\">...</span>
+     but not in
+   <div>...</div><b>...</b><span class=\"foo\">...</span>"
+  [& selectors]
+  (apply ordered-adjacent
+         #(left-of-node-type % :element)
+         (reverse selectors)))
+
+(defn precede-adjacent
+  "Takes any number of selectors as arguments and returns a selector that
+   returns true when the zip-loc given as the argument is at the beginning of
+   a chain of direct element sibling relationships specified by the selectors
+   given as arguments.
+
+   Example: (precede-adjacent (tag :div) (class :foo))
+     will select the div in
+   <div>...</div><span class=\"foo\">...</span>
+     but not in
+   <div>...</div><b>...</b><span class=\"foo\">...</span>"
+  [& selectors]
+  (apply ordered-adjacent
+         #(right-of-node-type % :element)
+         selectors))
 
 (defn descendant
   "Takes any number of selectors as arguments and returns a selector that
