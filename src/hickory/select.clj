@@ -236,6 +236,18 @@
   (if (= :html (-> (zip/node hzip-loc) :tag))
     hzip-loc))
 
+(defn find-in-text
+  "Returns a function that takes a zip-loc argument and returns the zip-loc
+   passed in iff it has some text node in its contents that matches the regular
+   expression. Note that this only applies to the direct text content of a node;
+   nodes which have the given text in one of their child nodes will not be
+   selected."
+  [re]
+  (fn [hzip-loc]
+    (some #(re-find re %) (->> (zip/node hzip-loc)
+                               :content
+                               (filter string?)))))
+
 (defn n-moves-until
   "This selector returns a selector function that selects its argument if
    that argument is some \"distance\" from a \"boundary.\" This is an abstract

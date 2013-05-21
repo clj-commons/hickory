@@ -210,6 +210,20 @@
                                      htree)]
         (is (= :html (-> selection first :tag)))))))
 
+(deftest find-in-text-test
+  (testing "find-in-text selector"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/find-in-text #"Heading") htree)]
+        (is (and (= 1 (count selection))
+                 (= :h1 (-> selection first :tag)))))
+      (let [selection (select/select (select/find-in-text #"Div") htree)]
+        (is (and (= 1 (count selection))
+                 (= :div (-> selection first :tag))))))
+    (let [htree (hickory/as-hickory (hickory/parse html2))]
+      (let [selection (select/select (select/find-in-text #"Paragraph") htree)]
+        (is (and (= 8 (count selection))
+                 (every? #(= :p %) (map :tag selection))))))))
+
 (deftest n-moves-until-test
   (testing "n-moves-until selector"
     ;; This function is actually pretty well exercised by nth-child, etc.
