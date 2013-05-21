@@ -466,7 +466,7 @@
                                      htree)]
         (is (= [] selection))))))
 
-(deftest follow-adjacent
+(deftest follow-adjacent-test
   (testing "follow-adjacent selector combinator"
     (let [htree (hickory/as-hickory (hickory/parse html1))]
       (let [selection (select/select (select/follow-adjacent (select/tag :head)
@@ -488,7 +488,7 @@
                                      htree)]
         (is (= [] selection))))))
 
-(deftest precede-adjacent
+(deftest precede-adjacent-test
   (testing "precede-adjacent selector combinator"
     (let [htree (hickory/as-hickory (hickory/parse html1))]
       (let [selection (select/select (select/precede-adjacent (select/tag :head)
@@ -510,6 +510,20 @@
                                                               (select/class "foo"))
                                      htree)]
         (is (= [] selection))))))
+
+(deftest ordered-test
+  ;; Just a basic tire kick here, it gets exercised by descendant, follow, and
+  ;; precede.
+  (testing "ordered selector combinator"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select
+                       (select/ordered
+                        #(select/left-of-node-type % :element)
+                        (select/tag :body)
+                        (select/tag :head))
+                       htree)]
+        (is (and (= 1 (count selection))
+                 (= :body (-> selection first :tag))))))))
 
 (deftest descendant-test
   (testing "descendant selector combinator"
@@ -544,3 +558,48 @@
                                      htree)]
         (is (and (= 1 (count selection))
                  (= :input (-> selection first :tag))))))))
+
+(deftest follow-test
+  (testing "follow selector combinator"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/follow (select/tag :head)
+                                                    (select/tag :body))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :body (-> selection first :tag))))))
+    ;; Check the examples from the doc string.
+    (let [htree (-> "<div>...</div><span class=\"foo\">...</span>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/follow (select/tag :div)
+                                                    (select/class "foo"))
+                                     htree)]
+        (is (= :span (-> selection first :tag)))))
+    (let [htree (-> "<div>...</div><b>...</b><span class=\"foo\">...</span>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/follow (select/tag :div)
+                                                    (select/class "foo"))
+                                     htree)]
+        (is (= :span (-> selection first :tag)))))))
+
+(deftest precede-test
+  (testing "precede selector combinator"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/precede (select/tag :head)
+                                                     (select/tag :body))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :head (-> selection first :tag))))))
+    ;; Check the examples from the doc string.
+    (let [htree (-> "<div>...</div><span class=\"foo\">...</span>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/precede (select/tag :div)
+                                                     (select/class "foo"))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :div (-> selection first :tag))))))
+    (let [htree (-> "<div>...</div><b>...</b><span class=\"foo\">...</span>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/precede (select/tag :div)
+                                                     (select/class "foo"))
+                                     htree)]
+        (is (= :div (-> selection first :tag)))))))
