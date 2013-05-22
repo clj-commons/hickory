@@ -1,0 +1,5 @@
+/codox-out
+/target
+pom.xml
+.lein-failures
+.lein-repl-history
