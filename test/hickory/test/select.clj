@@ -210,6 +210,20 @@
                                      htree)]
         (is (= :html (-> selection first :tag)))))))
 
+(deftest find-in-text-test
+  (testing "find-in-text selector"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/find-in-text #"Heading") htree)]
+        (is (and (= 1 (count selection))
+                 (= :h1 (-> selection first :tag)))))
+      (let [selection (select/select (select/find-in-text #"Div") htree)]
+        (is (and (= 1 (count selection))
+                 (= :div (-> selection first :tag))))))
+    (let [htree (hickory/as-hickory (hickory/parse html2))]
+      (let [selection (select/select (select/find-in-text #"Paragraph") htree)]
+        (is (and (= 8 (count selection))
+                 (every? #(= :p %) (map :tag selection))))))))
+
 (deftest n-moves-until-test
   (testing "n-moves-until selector"
     ;; This function is actually pretty well exercised by nth-child, etc.
@@ -412,6 +426,20 @@
                                      htree)]
         (is (= 31 (count selection)))))))
 
+(deftest ordered-adjacent-test
+  (testing "ordered-adjacent selector combinator"
+    ;; This is pretty well tested by the tests for child and others.
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      ;; Select body tag that is just after a head tag.
+      (let [selection (select/select
+                       (select/ordered-adjacent
+                        #(select/left-of-node-type % :element)
+                        (select/tag :body)
+                        (select/tag :head))
+                       htree)]
+        (is (and (= 1 (count selection))
+                 (= :body (-> selection first :tag))))))))
+
 (deftest child-test
   (testing "child selector combinator"
     (let [htree (hickory/as-hickory (hickory/parse html1))]
@@ -452,6 +480,65 @@
                                      htree)]
         (is (= [] selection))))))
 
+(deftest follow-adjacent-test
+  (testing "follow-adjacent selector combinator"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/follow-adjacent (select/tag :head)
+                                                             (select/tag :body))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :body (-> selection first :tag))))))
+    ;; Check the examples from the doc string.
+    (let [htree (-> "<div>...</div><span class=\"foo\">...</span>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/follow-adjacent (select/tag :div)
+                                                             (select/class "foo"))
+                                     htree)]
+        (is (= :span (-> selection first :tag)))))
+    (let [htree (-> "<div>...</div><b>...</b><span class=\"foo\">...</span>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/follow-adjacent (select/tag :div)
+                                                             (select/class "foo"))
+                                     htree)]
+        (is (= [] selection))))))
+
+(deftest precede-adjacent-test
+  (testing "precede-adjacent selector combinator"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/precede-adjacent (select/tag :head)
+                                                              (select/tag :body))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :head (-> selection first :tag))))))
+    ;; Check the examples from the doc string.
+    (let [htree (-> "<div>...</div><span class=\"foo\">...</span>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/precede-adjacent (select/tag :div)
+                                                             (select/class "foo"))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :div (-> selection first :tag))))))
+    (let [htree (-> "<div>...</div><b>...</b><span class=\"foo\">...</span>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/precede-adjacent (select/tag :div)
+                                                              (select/class "foo"))
+                                     htree)]
+        (is (= [] selection))))))
+
+(deftest ordered-test
+  ;; Just a basic tire kick here, it gets exercised by descendant, follow, and
+  ;; precede.
+  (testing "ordered selector combinator"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select
+                       (select/ordered
+                        #(select/left-of-node-type % :element)
+                        (select/tag :body)
+                        (select/tag :head))
+                       htree)]
+        (is (and (= 1 (count selection))
+                 (= :body (-> selection first :tag))))))))
+
 (deftest descendant-test
   (testing "descendant selector combinator"
     (let [htree (hickory/as-hickory (hickory/parse html1))]
@@ -485,3 +572,48 @@
                                      htree)]
         (is (and (= 1 (count selection))
                  (= :input (-> selection first :tag))))))))
+
+(deftest follow-test
+  (testing "follow selector combinator"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/follow (select/tag :head)
+                                                    (select/tag :body))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :body (-> selection first :tag))))))
+    ;; Check the examples from the doc string.
+    (let [htree (-> "<div>...</div><span class=\"foo\">...</span>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/follow (select/tag :div)
+                                                    (select/class "foo"))
+                                     htree)]
+        (is (= :span (-> selection first :tag)))))
+    (let [htree (-> "<div>...</div><b>...</b><span class=\"foo\">...</span>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/follow (select/tag :div)
+                                                    (select/class "foo"))
+                                     htree)]
+        (is (= :span (-> selection first :tag)))))))
+
+(deftest precede-test
+  (testing "precede selector combinator"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/precede (select/tag :head)
+                                                     (select/tag :body))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :head (-> selection first :tag))))))
+    ;; Check the examples from the doc string.
+    (let [htree (-> "<div>...</div><span class=\"foo\">...</span>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/precede (select/tag :div)
+                                                     (select/class "foo"))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :div (-> selection first :tag))))))
+    (let [htree (-> "<div>...</div><b>...</b><span class=\"foo\">...</span>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/precede (select/tag :div)
+                                                     (select/class "foo"))
+                                     htree)]
+        (is (= :div (-> selection first :tag)))))))

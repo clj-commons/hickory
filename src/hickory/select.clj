@@ -236,6 +236,18 @@
   (if (= :html (-> (zip/node hzip-loc) :tag))
     hzip-loc))
 
+(defn find-in-text
+  "Returns a function that takes a zip-loc argument and returns the zip-loc
+   passed in iff it has some text node in its contents that matches the regular
+   expression. Note that this only applies to the direct text content of a node;
+   nodes which have the given text in one of their child nodes will not be
+   selected."
+  [re]
+  (fn [hzip-loc]
+    (some #(re-find re %) (->> (zip/node hzip-loc)
+                               :content
+                               (filter string?)))))
+
 (defn n-moves-until
   "This selector returns a selector function that selects its argument if
    that argument is some \"distance\" from a \"boundary.\" This is an abstract
@@ -413,6 +425,27 @@
   (and (node-type :element)
        (not selector)))
 
+(defn ordered-adjacent
+  "Takes a zipper movement function and any number of selectors as arguments
+   and returns a selector that returns true when the zip-loc given as the
+   argument is satisfied by the first selector, and the zip-loc arrived at by
+   applying the move-fn argument is satisfied by the second selector, and so
+   on for all the selectors given as arguments."
+  [move-fn & selectors]
+  ;; We'll work backwards through the selector list with an index. First we'll
+  ;; build the selector list into an array for quicker access. We'll do it
+  ;; immediately and then closure-capture the result, so it does not get
+  ;; redone every time the selector is called.
+  (let [selectors (into-array clojure.lang.IFn selectors)]
+    (fn [hzip-loc]
+      (loop [curr-loc hzip-loc
+             idx 0]
+        (if (>= idx (count selectors))
+          hzip-loc ;; Got to end satisfying selectors, return the loc.
+          (if-let [next-loc ((nth selectors idx) curr-loc)]
+            (recur (move-fn next-loc)
+                   (inc idx))))))))
+
 (defn child
   "Takes any number of selectors as arguments and returns a selector that
    returns true when the zip-loc given as the argument is at the end of
@@ -425,19 +458,72 @@
      but not in
    <div><span class=\"foo\"><b><input disabled></input></b></span></div>"
   [& selectors]
-  ;; We'll work backwards through the selector list with an index. First we'll
-  ;; build the selector list into an array for quicker access. We'll do it
-  ;; immediately and then closure-capture the result, so it does not get
-  ;; redone every time the selector is called.
+  (apply ordered-adjacent zip/up (reverse selectors)))
+
+(defn follow-adjacent
+  "Takes any number of selectors as arguments and returns a selector that
+   returns true when the zip-loc given as the argument is at the end of
+   a chain of direct element sibling relationships specified by the selectors
+   given as arguments.
+
+   Example: (follow-adjacent (tag :div) (class :foo))
+     will select the span in
+   <div>...</div><span class=\"foo\">...</span>
+     but not in
+   <div>...</div><b>...</b><span class=\"foo\">...</span>"
+  [& selectors]
+  (apply ordered-adjacent
+         #(left-of-node-type % :element)
+         (reverse selectors)))
+
+(defn precede-adjacent
+  "Takes any number of selectors as arguments and returns a selector that
+   returns true when the zip-loc given as the argument is at the beginning of
+   a chain of direct element sibling relationships specified by the selectors
+   given as arguments.
+
+   Example: (precede-adjacent (tag :div) (class :foo))
+     will select the div in
+   <div>...</div><span class=\"foo\">...</span>
+     but not in
+   <div>...</div><b>...</b><span class=\"foo\">...</span>"
+  [& selectors]
+  (apply ordered-adjacent
+         #(right-of-node-type % :element)
+         selectors))
+
+(defn ordered
+  "Takes a zipper movement function and any number of selectors as arguments
+   and returns a selector that returns true when the zip-loc given as the
+   argument is satisfied by the first selector, and some zip-loc arrived at by
+   applying the move-fn argument *one or more times* is satisfied by the second
+   selector, and so on for all the selectors given as arguments."
+  [move-fn & selectors]
+  ;; This function is a lot like ordered-adjacent, above, but:
+  ;; 1) failing to fulfill a selector does not stop us moving along the tree
+  ;; 2) therefore, we need to make sure the first selector matches the loc under
+  ;;    consideration, and not merely one that is farther along the movement
+  ;;    direction.
   (let [selectors (into-array clojure.lang.IFn selectors)]
     (fn [hzip-loc]
-      (loop [curr-loc hzip-loc
-             idx (dec (count selectors))]
-        (if (< idx 0)
-          hzip-loc ;; Got this far satisfying selectors, return the loc.
-          (if-let [next-loc ((nth selectors idx) curr-loc)]
-            (recur (zip/up next-loc)
-                   (dec idx))))))))
+      ;; First need to check that the first selector matches the current loc,
+      ;; or else we can return nil immediately.
+      (let [fst-selector (nth selectors 0)]
+        (if (fst-selector hzip-loc)
+          ;; First selector matches this node, so now check along the
+          ;; movement direction for the rest of the selectors.
+          (loop [curr-loc (move-fn hzip-loc)
+                 idx 1]
+            (cond (>= idx (count selectors))
+                  hzip-loc ;; Satisfied all selectors, so return the orig. loc.
+                  (nil? curr-loc)
+                  nil ;; Ran out of movements before selectors, return nil.
+                  :else
+                  (if ((nth selectors idx) curr-loc)
+                    (recur (move-fn curr-loc)
+                           (inc idx))
+                    ;; Failed, so move but retry the same selector
+                    (recur (move-fn curr-loc) idx)))))))))
 
 (defn descendant
   "Takes any number of selectors as arguments and returns a selector that
@@ -448,33 +534,40 @@
    the node's ancestry, provided they match in the order they are given
    as arguments, from top to bottom.
 
-   Example: (child (tag :div) (class :foo) (attr :disabled))
+   Example: (descendant (tag :div) (class :foo) (attr :disabled))
      will select the input in both
    <div><span class=\"foo\"><input disabled></input></span></div>
      and
    <div><span class=\"foo\"><b><input disabled></input></b></span></div>"
   [& selectors]
-  ;; This function is a lot like child, above, but:
-  ;; 1) we need to make sure the final selector matches the loc under
-  ;;    consideration, and not merely one of its ancestors.
-  ;; 2) failing to fulfill a selector does not stop us going up the tree.
-  (let [selectors (into-array clojure.lang.IFn selectors)]
-    (fn [hzip-loc]
-      ;; First need to check that the last selector matches the current loc,
-      ;; or else we can return nil immediately.
-      (let [last-selector-idx (dec (count selectors))
-            last-selector (nth selectors last-selector-idx)]
-        (if (last-selector hzip-loc)
-          ;; Last selector matches this node, so now check ancestry.
-          (loop [curr-loc (zip/up hzip-loc)
-                 idx (dec last-selector-idx)]
-            (cond (< idx 0)
-                  curr-loc ;; Satisfied all selectors, so return the loc.
-                  (nil? curr-loc)
-                  nil ;; Ran out of parents before selectors, return nil.
-                  :else
-                  (if ((nth selectors idx) curr-loc)
-                    (recur (zip/up curr-loc)
-                           (dec idx))
-                    ;; Failed, so go up to parent but retry the same selector
-                    (recur (zip/up curr-loc) idx)))))))))
+  (apply ordered zip/up (reverse selectors)))
+
+(defn follow
+  "Takes any number of selectors as arguments and returns a selector that
+   returns true when the zip-loc given as the argument is at the end of
+   a chain of element sibling relationships specified by the selectors
+   given as arguments; intervening elements that do not satisfy a selector
+   are simply ignored and do not prevent a match.
+
+   Example: (follow (tag :div) (class :foo))
+     will select the span in both
+   <div>...</div><span class=\"foo\">...</span>
+     and
+   <div>...</div><b>...</b><span class=\"foo\">...</span>"
+  [& selectors]
+  (apply ordered #(left-of-node-type % :element) (reverse selectors)))
+
+(defn precede
+  "Takes any number of selectors as arguments and returns a selector that
+   returns true when the zip-loc given as the argument is at the beginning of
+   a chain of element sibling relationships specified by the selectors
+   given as arguments; intervening elements that do not satisfy a selector
+   are simply ignored and do not prevent a match.
+
+   Example: (precede (tag :div) (class :foo))
+     will select the div in both
+   <div>...</div><span class=\"foo\">...</span>
+     and
+   <div>...</div><b>...</b><span class=\"foo\">...</span>"
+  [& selectors]
+  (apply ordered #(right-of-node-type % :element) selectors))
