@@ -2,6 +2,7 @@
 /lib
 /classes
 /checkouts
+/codox-out
 pom.xml
 *.jar
 *.class
