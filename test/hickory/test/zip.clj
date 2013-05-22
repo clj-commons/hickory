@@ -66,17 +66,24 @@
              zip/next zip/next zip/next zip/up zip/node))))
 
 (deftest hiccup-zipper
-  (is (= '([:html {} [:head {}] [:body {} [:a {}]]])
-         (zip/node (hiccup-zip (as-hiccup (parse "<a>"))))))
-  (is (= [:html {} [:head {}] [:body {} [:a {}]]]
-         (-> (hiccup-zip (as-hiccup (parse "<a>")))
+  (let [single-elem (hiccup-zip (first (as-hiccup (parse "<a>"))))]
+    (is (= [:html {} [:head {}] [:body {} [:a {}]]]
+           (zip/root single-elem)))
+    (is (= [:head {}]
+           (-> single-elem
              zip/next zip/node)))
-  (is (= [:head {}]
-         (-> (hiccup-zip (as-hiccup (parse "<a>")))
+    (is (nil?
+           (-> single-elem ; no children - empty collection
              zip/next zip/next zip/node)))
-  (is (= [:body {} [:a {}]]
-         (-> (hiccup-zip (as-hiccup (parse "<a>")))
+    (is (= [:body {} [:a {}]]
+           (-> single-elem
+             zip/down zip/right zip/node)))
+    (is (= [:body {} [:a {}]]
+           (-> single-elem
              zip/next zip/next zip/next zip/node)))
-  (is (= [:html {} [:head {}] [:body {} [:a {}]]]
-         (-> (hiccup-zip (as-hiccup (parse "<a>")))
-             zip/next zip/next zip/next zip/up zip/node))))
+    (is (= [:html {} [:head {}] [:body {} [:a {}]]]
+           (-> single-elem
+             zip/next zip/next zip/next zip/up zip/node)))
+    (is (= [:html {} [:head {}] [:body {:onload "alert()"} [:a {}]]]
+           (-> single-elem
+             zip/down zip/right (zip/edit #(assoc-in % [1 :onload] "alert()")) zip/root)))))
