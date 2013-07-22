@@ -8,7 +8,7 @@
 
 (def ^{:private true} unescapable-content #{:script :style})
 
-(defn- render-attribute
+(defn- render-hickory-attribute
   "Given a map entry m, representing the attribute name and value, returns a
    string representing that key/value pair as it would be rendered into HTML."
   [m]
@@ -42,17 +42,17 @@
         (cond
          (void-element (:tag dom))
          (str "<" (name (:tag dom))
-              (apply str (map render-attribute (:attrs dom)))
+              (apply str (map render-hickory-attribute (:attrs dom)))
               ">")
          (unescapable-content (:tag dom))
          (str "<" (name (:tag dom))
-              (apply str (map render-attribute (:attrs dom)))
+              (apply str (map render-hickory-attribute (:attrs dom)))
               ">"
               (apply str (:content dom)) ;; Won't get html-escaped.
               "</" (name (:tag dom)) ">")
          :else
          (str "<" (name (:tag dom))
-              (apply str (map render-attribute (:attrs dom)))
+              (apply str (map render-hickory-attribute (:attrs dom)))
               ">"
               (apply str (map hickory-to-html (:content dom)))
               "</" (name (:tag dom)) ">"))
