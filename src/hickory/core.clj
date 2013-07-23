@@ -1,5 +1,7 @@
 (ns hickory.core
-  (:require [clojure.string :as string]
+  (:require [hickory.utils :as utils]
+            [quoin.text :as qt]
+            [clojure.string :as string]
             [clojure.zip :as zip])
   (:import [org.jsoup Jsoup]
            [org.jsoup.nodes Attribute Attributes Comment DataNode Document
@@ -58,11 +60,27 @@
   DocumentType
   (as-hiccup [this] (str this))
   Element
-  (as-hiccup [this] (into [] (concat [(lower-case-keyword (.tagName this))
-                                      (as-hiccup (.attributes this))]
-                                     (map as-hiccup (.childNodes this)))))
+  (as-hiccup [this]
+    ;; There is an issue with the hiccup format, which is that it
+    ;; can't quite cover all the pieces of HTML, so anything it
+    ;; doesn't cover is thrown into a string containing the raw
+    ;; HTML. This presents a problem because it is then never the case
+    ;; that a string in a hiccup form should be html-escaped (except
+    ;; in an attribute value) when rendering; it should already have
+    ;; any escaping. Since the HTML parser quite properly un-escapes
+    ;; HTML where it should, we have to go back and un-un-escape it
+    ;; wherever text would have been un-escaped. We do this by
+    ;; html-escaping the parsed contents of text nodes, and not
+    ;; html-escaping comments, data-nodes, and the contents of
+    ;; unescapable nodes.
+    (let [tag (lower-case-keyword (.tagName this))]
+      (into [] (concat [tag
+                        (as-hiccup (.attributes this))]
+                       (if (utils/unescapable-content tag)
+                         (map str (.childNodes this))
+                         (map as-hiccup (.childNodes this)))))))
   TextNode
-  (as-hiccup [this] (.getWholeText this))
+  (as-hiccup [this] (qt/html-escape (.getWholeText this)))
   XmlDeclaration
   (as-hiccup [this] (str this)))
 

@@ -64,12 +64,17 @@
               (parse-fragment "<a href=\"foo\">foo</a> <a href=\"bar\">bar</a>")))))
 
 (deftest unencoded-text-nodes
-  (is (= [[:html {} [:head {}] [:body {} [:p {} "ABC&\n\nDEF."]]]]
+  ;; Hiccup versions - Note that hiccup representation does not html-escape any
+  ;; strings that aren't attribute values, so the hiccup representation will
+  ;; have the string contents html-escaped.
+  (is (= [[:html {} [:head {}] [:body {} [:p {} "ABC&amp;\n\nDEF."]]]]
          (as-hiccup (parse "<p>ABC&amp;\n\nDEF.</p>"))))
   ;; <pre> tag preserves whitespace.
-  (is (= [[:html {} [:head {}] [:body {} [:pre {} "ABC&\n\nDEF."]]]]
+  (is (= [[:html {} [:head {}] [:body {} [:pre {} "ABC&amp;\n\nDEF."]]]]
          (as-hiccup (parse "<pre>ABC&amp;\n\nDEF.</pre>"))))
-  ;; Hickory versions
+  ;; Hickory versions - Note that the representation is different, and Hickory
+  ;; format does not keep HTML escaped in its representation, as it can
+  ;; figure out what to escape at render time.
   (is (= "ABC&\n\nDEF."
          (get-in (as-hickory (parse "<p>ABC&amp;\n\nDEF.</p>"))
                  [:content 0 :content 1 :content 0 :content 0])))
