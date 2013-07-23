@@ -48,6 +48,7 @@
 
 (extend-protocol HiccupRepresentable
   Attribute
+  ;; Note the attribute value is not html-escaped; see comment for Element.
   (as-hiccup [this] [(lower-case-keyword (.getKey this)) (.getValue this)])
   Attributes
   (as-hiccup [this] (into {} (map as-hiccup this)))
@@ -80,6 +81,7 @@
                          (map str (.childNodes this))
                          (map as-hiccup (.childNodes this)))))))
   TextNode
+  ;; See comment for Element re: html escaping.
   (as-hiccup [this] (qt/html-escape (.getWholeText this)))
   XmlDeclaration
   (as-hiccup [this] (str this)))
