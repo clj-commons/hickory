@@ -33,12 +33,9 @@
         :document
         (apply str (map hickory-to-html (:content dom)))
         :document-type
-        (str "<!DOCTYPE " (get-in dom [:attrs :name])
-             (when-let [publicid (not-empty (get-in dom [:attrs :publicid]))]
-               (str " PUBLIC \"" publicid "\""))
-             (when-let [systemid (not-empty (get-in dom [:attrs :systemid]))]
-               (str " \"" systemid "\""))
-             ">")
+        (utils/render-doctype (get-in dom [:attrs :name])
+                              (get-in dom [:attrs :publicid])
+                              (get-in dom [:attrs :systemid]))
         :element
         (cond
          (utils/void-element (:tag dom))
