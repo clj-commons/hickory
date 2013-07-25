@@ -1,24 +1,28 @@
 (ns hickory.test.core
-  (:use clojure.test
-        hickory.core))
+  #+clj (:use clojure.test
+        hickory.core)
+  #+cljs (:require-macros [cemerick.cljs.test :refer (are is deftest with-test run-tests testing thrown-with-msg?)])
+  #+cljs (:require [cemerick.cljs.test :as t]
+                   [hickory.core :refer [as-hiccup as-hickory hickory-to-html parse parse-fragment]]))
 
 ;; This document tests: doctypes, comments, white space text nodes, attributes,
 ;; and cdata nodes.
 (deftest basic-documents
   (is (= ["<!DOCTYPE html>"
-          "<!--comment-->"
+          #+clj "<!--comment-->"
           [:html {}
            [:head {}]
            [:body {}
             [:a {:href "foo"} "foo"] " "
             [:a {:id "so", :href "bar"} "bar"]
-            [:script {:src "blah.js"} "alert(\"hi\");"]]]]
+            [:script {:src "blah.js"} "alert(\"hi\");"]]]
+          #+cljs "<!--comment-->"]
          (as-hiccup (parse "<!DOCTYPE html><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script>"))))
   (is (= {:type :document,
           :content [{:type :document-type,
                      :attrs {:name "html", :publicid "", :systemid ""}}
-                    {:type :comment
-                     :content ["comment"]}
+                    #+clj {:type :comment
+                           :content ["comment"]}
                     {:type :element,
                      :attrs nil,
                      :tag :html,
@@ -41,7 +45,9 @@
                                           {:type :element,
                                            :attrs {:src "blah.js"},
                                            :tag :script,
-                                           :content ["alert(\"hi\");"]}]}]}]}
+                                           :content ["alert(\"hi\");"]}]}]}
+                   #+cljs {:type :comment
+                           :content ["comment"]}]}
          (as-hickory (parse "<!DOCTYPE html><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script>")))))
 
 ;; Want to test a document fragment that has multiple nodes with no parent,
@@ -95,6 +101,7 @@
   (is (= "<img fake-attr=\"abc&quot;def\">"
          (hickory-to-html (as-hickory (first (parse-fragment "<img fake-attr=\"abc&quot;def\">")))))))
 
+#+clj
 (deftest doctypes
   (is (= "<!DOCTYPE html><html><head></head><body></body></html>"
          (hickory-to-html (as-hickory (parse "<!DOCTYPE html><html><head></head><body></body></html>")))))
@@ -103,10 +110,10 @@
 
 (deftest error-handling
   (let [data {:type :foo :tag :a :attrs {:foo "bar"}}]
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"^Not a valid node: nil"
+    (is (thrown-with-msg? #+clj clojure.lang.ExceptionInfo #+cljs ExceptionInfo  #"^Not a valid node: nil"
           (hickory-to-html nil)))
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"^Not a valid node: \{:type :foo, :attrs \{:foo \"bar\"\}, :tag :a\}"
+    (is (thrown-with-msg? #+clj clojure.lang.ExceptionInfo #+cljs ExceptionInfo #+clj #"^Not a valid node: \{:type :foo, :attrs \{:foo \"bar\"\}, :tag :a\}" #+cljs  #"^Not a valid node: \{:type :foo, :tag :a\, :attrs \{:foo \"bar\"\}}"
           (hickory-to-html data)))
     (is (= data 
            (try (hickory-to-html data)
-                (catch Exception e (:dom (ex-data e))))))))
+                (catch #+clj Exception #+cljs js/Error e (:dom (ex-data e))))))))
