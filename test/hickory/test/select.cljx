@@ -1,9 +1,12 @@
 (ns hickory.test.select
-  (:use clojure.test)
+  #+clj (:use clojure.test)
+  #+cljs (:require-macros [cemerick.cljs.test :refer (are is deftest with-test run-tests testing)])
   (:require [hickory.core :as hickory]
             [hickory.select :as select]
             [hickory.zip :as hzip]
-            [clojure.zip :as zip]))
+            [clojure.zip :as zip]
+            #+cljs [cemerick.cljs.test :as t]
+            #+cljs [goog.string :as string]))
 
 (def html1
   "<!DOCTYPE html>
@@ -132,13 +135,15 @@
                  (= "attrspan" (-> selection first :attrs :id)))))
       ;; Case-insensitivity of names and non-equality predicate test
       (let [selection (select/select (select/attr "CAPITALIZED"
-                                                  #(.startsWith % "UPPER"))
+                                                  #+clj #(.startsWith % "UPPER")
+                                                  #+cljs #(goog.string.startsWith % "UPPER"))
                                      htree)]
         (is (and (= 1 (count selection))
                  (= "attrspan" (-> selection first :attrs :id)))))
       ;; Graceful failure to find anything
       (let [selection (select/select (select/attr "notpresent"
-                                                  #(.startsWith % "never"))
+                                                  #+clj #(.startsWith % "never")
+                                                  #+cljs #(goog.string.startsWith % "never"))
                                      htree)]
         (is (= 0 (count selection)))))))
 
@@ -424,7 +429,7 @@
                                     selection)))))
       (let [selection (select/select (select/not (select/class :cool))
                                      htree)]
-        (is (= 31 (count selection)))))))
+        (is (= #+clj 31 #+cljs 30 (count selection))))))) ;;Account for a difference in parsing text node conatining '\n\n'
 
 (deftest ordered-adjacent-test
   (testing "ordered-adjacent selector combinator"
