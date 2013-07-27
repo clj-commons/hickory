@@ -5,10 +5,8 @@
   (:require [clojure.zip :as zip]
             [clojure.string :as string]
             [hickory.zip :as hzip])
-  (:refer-clojure :exclude [class]
-                  :rename {and core-and
-                           or core-or
-                           not core-not}))
+  #+clj (:import clojure.lang.IFn)
+  (:refer-clojure :exclude [and or not class]))
 
 ;;
 ;; Utilities
@@ -40,7 +38,7 @@
    true when the function in the pred argument is called on them, or reaches
    the end."
   [hzip-loc pred]
-  (until zip/next hzip-loc #(core-or (zip/end? %)
+  (until zip/next hzip-loc #(clojure.core/or (zip/end? %)
                                      (pred %))))
 
 (defn prev-pred
@@ -48,7 +46,7 @@
    true when the function in the pred argument is called on them, or reaches
    the beginning."
   [hzip-loc pred]
-  (until zip/prev hzip-loc #(core-or (nil? %)
+  (until zip/prev hzip-loc #(clojure.core/or (nil? %)
                                      (pred %))))
 
 (defn left-pred
@@ -56,7 +54,7 @@
    true when the function in the pred argument is called on them, or reaches
    the left boundary of the current group of siblings."
   [hzip-loc pred]
-  (until zip/left hzip-loc #(core-or (nil? %)
+  (until zip/left hzip-loc #(clojure.core/or (nil? %)
                                      (pred %))))
 
 (defn right-pred
@@ -64,7 +62,7 @@
    true when the function in the pred argument is called on them, or reaches
    the right boundary of the current group of siblings."
   [hzip-loc pred]
-  (until zip/right hzip-loc #(core-or (nil? %)
+  (until zip/right hzip-loc #(clojure.core/or (nil? %)
                                       (pred %))))
 
 (defn next-of-node-type
@@ -146,7 +144,7 @@
   (fn [hzip-loc]
     (let [node (zip/node hzip-loc)
           node-type (-> node :type)]
-      (if (core-and node-type
+      (if (clojure.core/and node-type
                     (= (string/lower-case (name node-type))
                        (string/lower-case (name type))))
         hzip-loc))))
@@ -160,7 +158,7 @@
   (fn [hzip-loc]
     (let [node (zip/node hzip-loc)
           node-tag (-> node :tag)]
-      (if (core-and node-tag
+      (if (clojure.core/and node-tag
                     (= (string/lower-case (name node-tag))
                        (string/lower-case (name tag))))
         hzip-loc))))
@@ -192,7 +190,7 @@
              attr-key (keyword (string/lower-case (name attr-name)))]
          ;; If the attribute does not exist, we'll definitely return null.
          ;; Otherwise, we'll ask the predicate if we should return hzip-loc.
-         (if (core-and (contains? (:attrs node) attr-key)
+         (if (clojure.core/and (contains? (:attrs node) attr-key)
                   (predicate (get-in node [:attrs attr-key])))
            hzip-loc)))))
 
@@ -295,7 +293,7 @@
      (fn [hzip-loc]
        ;; We're only interested in elements whose parents are also elements,
        ;; so check this up front and maybe save some work.
-       (if (core-and (element hzip-loc)
+       (if (clojure.core/and (element hzip-loc)
                      (element (zip/up hzip-loc))
                      (= typ (:tag (zip/node hzip-loc))))
          (let [sel (n-moves-until n c
@@ -320,7 +318,7 @@
      (fn [hzip-loc]
        ;; We're only interested in elements whose parents are also elements,
        ;; so check this up front and maybe save some work.
-       (if (core-and (element hzip-loc)
+       (if (clojure.core/and (element hzip-loc)
                      (element (zip/up hzip-loc))
                      (= typ (:tag (zip/node hzip-loc))))
          (let [sel (n-moves-until n c
@@ -344,7 +342,7 @@
      (fn [hzip-loc]
        ;; We're only interested in elements whose parents are also elements,
        ;; so check this up front and maybe save some work.
-       (if (core-and (element hzip-loc)
+       (if (clojure.core/and (element hzip-loc)
                      (element (zip/up hzip-loc)))
          (let [sel (n-moves-until n c #(left-of-node-type % :element) nil?)]
            (sel hzip-loc))))))
@@ -364,7 +362,7 @@
      (fn [hzip-loc]
        ;; We're only interested in elements whose parents are also elements,
        ;; so check this up front and maybe save some work.
-       (if (core-and (element hzip-loc)
+       (if (clojure.core/and (element hzip-loc)
                      (element (zip/up hzip-loc)))
          (let [sel (n-moves-until n c #(right-of-node-type % :element) nil?)]
            (sel hzip-loc))))))
@@ -374,7 +372,7 @@
    true if the node is the first child of its parent (and it has a
    parent)."
   [hzip-loc]
-  (core-and (element hzip-loc)
+  (clojure.core/and (element hzip-loc)
             (element (zip/up hzip-loc))
             ((nth-child 1) hzip-loc)))
 
@@ -383,7 +381,7 @@
    true if the node is the last child of its parent (and it has a
    parent."
   [hzip-loc]
-  (core-and (element hzip-loc)
+  (clojure.core/and (element hzip-loc)
             (element (zip/up hzip-loc))
             ((nth-last-child 1) hzip-loc)))
 
@@ -412,7 +410,7 @@
    the underlying selector is false on its argument, and vice versa."
   [selector]
   (fn [hzip-loc]
-    (if (core-not (selector hzip-loc))
+    (if (clojure.core/not (selector hzip-loc))
       hzip-loc)))
 
 (defn el-not
@@ -436,7 +434,7 @@
   ;; build the selector list into an array for quicker access. We'll do it
   ;; immediately and then closure-capture the result, so it does not get
   ;; redone every time the selector is called.
-  (let [selectors (into-array clojure.lang.IFn selectors)]
+  (let [selectors (into-array IFn selectors)]
     (fn [hzip-loc]
       (loop [curr-loc hzip-loc
              idx 0]
@@ -504,7 +502,7 @@
   ;; 2) therefore, we need to make sure the first selector matches the loc under
   ;;    consideration, and not merely one that is farther along the movement
   ;;    direction.
-  (let [selectors (into-array clojure.lang.IFn selectors)]
+  (let [selectors (into-array IFn selectors)]
     (fn [hzip-loc]
       ;; First need to check that the first selector matches the current loc,
       ;; or else we can return nil immediately.

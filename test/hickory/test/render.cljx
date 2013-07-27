@@ -1,8 +1,10 @@
 (ns hickory.test.render
-  (:use clojure.test
-        hickory.core
-        hickory.render))
-
+  #+clj (:use clojure.test)
+  (:require [hickory.core :refer [as-hiccup as-hickory parse parse-fragment]]
+            [hickory.render :refer [hiccup-to-html hickory-to-html]]
+            #+cljs [cemerick.cljs.test :as t])
+  #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest thrown-with-msg?)])
+  #+clj (:import clojure.lang.ExceptionInfo))
 ;;
 ;; Hickory to HTML
 ;;
@@ -32,13 +34,13 @@
 
 (deftest error-handling-test
   (let [data {:type :foo :tag :a :attrs {:foo "bar"}}]
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"^Not a valid node: nil"
+    (is (thrown-with-msg? ExceptionInfo #"^Not a valid node: nil"
           (hickory-to-html nil)))
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"^Not a valid node: \{:type :foo, :attrs \{:foo \"bar\"\}, :tag :a\}"
+    (is (thrown-with-msg? ExceptionInfo #+clj #"^Not a valid node: \{:type :foo, :attrs \{:foo \"bar\"\}, :tag :a\}" #+cljs #"^Not a valid node: \{:type :foo, :tag :a\, :attrs \{:foo \"bar\"\}}"
           (hickory-to-html data)))
     (is (= data 
            (try (hickory-to-html data)
-                (catch Exception e (:dom (ex-data e))))))))
+                (catch #+clj Exception #+cljs js/Error e (:dom (ex-data e))))))))
 
 ;;
 ;; Hiccup to HTML

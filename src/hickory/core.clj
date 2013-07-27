@@ -1,6 +1,5 @@
 (ns hickory.core
   (:require [hickory.utils :as utils]
-            [quoin.text :as qt]
             [clojure.string :as string]
             [clojure.zip :as zip])
   (:import [org.jsoup Jsoup]
@@ -82,7 +81,7 @@
                          (map as-hiccup (.childNodes this)))))))
   TextNode
   ;; See comment for Element re: html escaping.
-  (as-hiccup [this] (qt/html-escape (.getWholeText this)))
+  (as-hiccup [this] (utils/html-escape (.getWholeText this)))
   XmlDeclaration
   (as-hiccup [this] (str this)))
 
