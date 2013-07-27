@@ -18,6 +18,10 @@
       a
       (min a b))))
 
+(defn- index-of
+  ([s c] #+clj (.indexOf s (int c)) #+cljs (.indexOf s c))
+  ([s c idx] #+clj (.indexOf s (int c) idx) #+cljs (.indexOf s c idx)))
+
 (defn tag-well-formed?
   "Given a hiccup tag element, returns true iff the tag is in 'valid' hiccup
    format. Which in this function means:
@@ -26,14 +30,14 @@
       3. If there is an id, it comes before any classes."
   [tag-elem]
   (let [tag-elem (name tag-elem)
-        hash-idx (int (.indexOf tag-elem (int \#)))
-        dot-idx (int (.indexOf tag-elem (int \.)))
+        hash-idx (int (index-of tag-elem \#))
+        dot-idx (int (index-of tag-elem \.))
         tag-cutoff (first-idx hash-idx dot-idx)]
     (and (< 0 (count tag-elem)) ;; 1.
          (if (== tag-cutoff -1) true (> tag-cutoff 0)) ;; 1.
          (if (== hash-idx -1) ;; 2.
            true
-           (== -1 (.indexOf tag-elem (int \#) (inc hash-idx))))
+           (== -1 (index-of tag-elem \# (inc hash-idx))))
          (if (and (not= hash-idx -1) (not= dot-idx -1)) ;; 3.
            (< hash-idx dot-idx)
            true))))
@@ -43,8 +47,8 @@
   a string."
   [tag-elem]
   (let [tag-elem (name tag-elem)
-        hash-idx (int (.indexOf tag-elem (int \#)))
-        dot-idx (int (.indexOf tag-elem (int \.)))
+        hash-idx (int (index-of tag-elem \#))
+        dot-idx (int (index-of tag-elem \.))
         cutoff (first-idx hash-idx dot-idx)]
     (if (== cutoff -1)
       ;; No classes or ids, so the entire tag-element is the name.
@@ -60,14 +64,14 @@
    first. Example: :div.foo.bar => [\"foo\" \"bar\"]."
   [tag-elem]
   (let [tag-elem (name tag-elem)]
-    (loop [curr-dot (.indexOf tag-elem (int \.))
+    (loop [curr-dot (index-of tag-elem \.)
            classes (transient [])]
       (if (== curr-dot -1)
         ;; Didn't find another dot, so no more classes.
         (persistent! classes)
         ;; There's another dot, so there's another class.
-        (let [next-dot (.indexOf tag-elem (int \.) (inc curr-dot))
-              next-hash (.indexOf tag-elem (int \#) (inc curr-dot))
+        (let [next-dot (index-of tag-elem \. (inc curr-dot))
+              next-hash (index-of tag-elem \# (inc curr-dot))
               cutoff (first-idx next-dot next-hash)]
           (if (== cutoff -1)
             ;; Rest of the tag element is the last class.
@@ -83,8 +87,8 @@
    the id, or nil if there isn't one."
   [tag-elem]
   (let [tag-elem (name tag-elem)
-        hash-idx (int (.indexOf tag-elem (int \#)))
-        next-dot-idx (int (.indexOf tag-elem (int \.) hash-idx))]
+        hash-idx (int (index-of tag-elem \#))
+        next-dot-idx (int (index-of tag-elem \. hash-idx))]
     (if (== hash-idx -1)
       nil
       (if (== next-dot-idx -1)

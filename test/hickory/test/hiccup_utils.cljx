@@ -1,7 +1,10 @@
 (ns hickory.test.hiccup-utils
-  (:use hickory.hiccup-utils
-        clojure.test))
+  #+clj (:use clojure.test)
+  (:require [hickory.hiccup-utils :refer [class-names id normalize-form tag-name tag-well-formed?]]
+            #+cljs [cemerick.cljs.test :as t])
+  #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest)]))
 
+#+clj
 (deftest first-idx-test
   (let [first-idx #'hickory.hiccup-utils/first-idx]
     (is (= -1 (first-idx -1 -1)))
@@ -43,6 +46,7 @@
   (is (= "foo" (id :a#foo)))
   (is (= "foo" (id :a#foo.bar))))
 
+#+clj
 (deftest expand-content-seqs-test
   (let [expand-content-seqs #'hickory.hiccup-utils/expand-content-seqs]
     (is (= [1 2 3] (expand-content-seqs [1 2 3])))
@@ -51,6 +55,7 @@
     (is (= [1 2 3 2 4 6 [5]]
            (expand-content-seqs [1 '(2 3) (for [x [1 2 3]] (* x 2)) [5]])))))
 
+#+clj
 (deftest normalize-element-test
   (let [normalize-element #'hickory.hiccup-utils/normalize-element]
     (is (= [:a {:id nil :class nil} "Hi"] (normalize-element [:a "Hi"])))

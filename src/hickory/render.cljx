@@ -1,7 +1,6 @@
 (ns hickory.render
   (:require [hickory.hiccup-utils :as hu]
             [hickory.utils :as utils]
-            [quoin.text :as qt]
             [clojure.string :as str]))
 
 ;;
@@ -12,7 +11,7 @@
   "Given a map entry m, representing the attribute name and value, returns a
    string representing that key/value pair as it would be rendered into HTML."
   [m]
-  (str " " (name (key m)) "=\"" (qt/html-escape (val m)) "\""))
+  (str " " (name (key m)) "=\"" (utils/html-escape (val m)) "\""))
 
 (defn hickory-to-html
   "Given a hickory HTML DOM map structure (as returned by as-hickory), returns a
@@ -27,7 +26,7 @@
    \"tag-soupy\" elements, attribute quote characters used, etc."
   [dom]
   (if (string? dom)
-    (qt/html-escape dom)
+    (utils/html-escape dom)
     (try
       (case (:type dom)
         :document
@@ -56,9 +55,9 @@
               "</" (name (:tag dom)) ">"))
         :comment
         (str "<!--" (apply str (:content dom)) "-->"))
-      (catch IllegalArgumentException e
+      (catch #+clj IllegalArgumentException #+cljs js/Error e
         (throw
-         (if (.startsWith (.getMessage e) "No matching clause: ")
+         (if (utils/starts-with #+clj (.getMessage e) #+cljs (aget e "message") "No matching clause: ")
            (ex-info (str "Not a valid node: " (pr-str dom)) {:dom dom})
            e))))))
 
@@ -79,7 +78,7 @@
                                (nil? v)
                                ""
                                :else
-                               (str (name k) "=" "\"" (qt/html-escape v) "\"")))
+                               (str (name k) "=" "\"" (utils/html-escape v) "\"")))
                        (filter #(not (empty? %)))
                        sort
                        (str/join " "))]
@@ -89,7 +88,7 @@
       (str " " attrs-str)
       attrs-str)))
 
-(def hiccup-to-html)
+(declare hiccup-to-html)
 (defn- render-hiccup-element
   "Given a normalized hiccup element (such as the output of
    hickory.hiccup-utils/normalize-form; see this function's docstring

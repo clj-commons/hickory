@@ -1,9 +1,12 @@
 (ns hickory.test.select
-  (:use clojure.test)
+  #+clj (:use clojure.test)
   (:require [hickory.core :as hickory]
             [hickory.select :as select]
+            [hickory.utils :as utils]
             [hickory.zip :as hzip]
-            [clojure.zip :as zip]))
+            [clojure.zip :as zip]
+            #+cljs [cemerick.cljs.test :as t])
+  #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest testing)]))
 
 (def html1
   "<!DOCTYPE html>
@@ -132,13 +135,13 @@
                  (= "attrspan" (-> selection first :attrs :id)))))
       ;; Case-insensitivity of names and non-equality predicate test
       (let [selection (select/select (select/attr "CAPITALIZED"
-                                                  #(.startsWith % "UPPER"))
+                                                  #(utils/starts-with % "UPPER"))
                                      htree)]
         (is (and (= 1 (count selection))
                  (= "attrspan" (-> selection first :attrs :id)))))
       ;; Graceful failure to find anything
       (let [selection (select/select (select/attr "notpresent"
-                                                  #(.startsWith % "never"))
+                                                  #(utils/starts-with % "never"))
                                      htree)]
         (is (= 0 (count selection)))))))
 

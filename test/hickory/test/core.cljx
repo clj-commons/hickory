@@ -1,24 +1,23 @@
 (ns hickory.test.core
-  (:use clojure.test
-        hickory.core))
+  #+clj (:use clojure.test)
+  (:require [hickory.core :refer [as-hickory as-hiccup parse parse-fragment]]
+            #+cljs [cemerick.cljs.test :as t])
+  #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest)]))
 
-;; This document tests: doctypes, comments, white space text nodes, attributes,
+;; This document tests: doctypes, white space text nodes, attributes,
 ;; and cdata nodes.
 (deftest basic-documents
   (is (= ["<!DOCTYPE html>"
-          "<!--comment-->"
           [:html {}
            [:head {}]
            [:body {}
             [:a {:href "foo"} "foo"] " "
             [:a {:id "so", :href "bar"} "bar"]
             [:script {:src "blah.js"} "alert(\"hi\");"]]]]
-         (as-hiccup (parse "<!DOCTYPE html><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script>"))))
+         (as-hiccup (parse "<!DOCTYPE html><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script>"))))
   (is (= {:type :document,
           :content [{:type :document-type,
                      :attrs {:name "html", :publicid "", :systemid ""}}
-                    {:type :comment
-                     :content ["comment"]}
                     {:type :element,
                      :attrs nil,
                      :tag :html,
@@ -42,7 +41,49 @@
                                            :attrs {:src "blah.js"},
                                            :tag :script,
                                            :content ["alert(\"hi\");"]}]}]}]}
-         (as-hickory (parse "<!DOCTYPE html><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script>")))))
+         (as-hickory (parse "<!DOCTYPE html><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script>")))))
+
+;; This document tests: doctypes, comments, white space text nodes, attributes,
+;; and cdata nodes.
+(deftest basic-documents2
+  (is (= ["<!DOCTYPE html>"
+          [:html {}
+           [:head {}]
+           [:body {}
+            "<!--comment-->"
+            [:a {:href "foo"} "foo"] " "
+            [:a {:id "so", :href "bar"} "bar"]
+            [:script {:src "blah.js"} "alert(\"hi\");"]]]]
+         (as-hiccup (parse "<!DOCTYPE html><body><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script></body>"))))
+  (is (= {:type :document,
+          :content [{:type :document-type,
+                     :attrs {:name "html", :publicid "", :systemid ""}}
+                    {:type :element,
+                     :attrs nil,
+                     :tag :html,
+                     :content [{:type :element,
+                                :attrs nil,
+                                :tag :head,
+                                :content nil}
+                               {:type :element,
+                                :attrs nil,
+                                :tag :body,
+                                :content [{:type :comment
+                                           :content ["comment"]}
+                                          {:type :element,
+                                           :attrs {:href "foo"},
+                                           :tag :a,
+                                           :content ["foo"]}
+                                          " "
+                                          {:type :element,
+                                           :attrs {:id "so", :href "bar"},
+                                           :tag :a,
+                                           :content ["bar"]}
+                                          {:type :element,
+                                           :attrs {:src "blah.js"},
+                                           :tag :script,
+                                           :content ["alert(\"hi\");"]}]}]}]}
+         (as-hickory (parse "<!DOCTYPE html><body><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script></body>")))))
 
 ;; Want to test a document fragment that has multiple nodes with no parent,
 ;; as well as a text node between nodes.

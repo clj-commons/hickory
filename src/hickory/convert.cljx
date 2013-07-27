@@ -2,8 +2,7 @@
   "Functions to convert from one representation to another."
   (:require [hickory.render :as render]
             [hickory.core :as core]
-            [hickory.utils :as utils]
-            [quoin.text :as qt]))
+            [hickory.utils :as utils]))
 
 (defn hiccup-to-hickory
   "Given a sequence of hiccup forms representing a full document,
@@ -32,7 +31,7 @@
    you will not be able to go back from the hiccup."
   [dom]
   (if (string? dom)
-    (qt/html-escape dom)
+    (utils/html-escape dom)
     (try
       (case (:type dom)
         :document
