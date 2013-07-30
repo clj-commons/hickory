@@ -1,15 +1,6 @@
 (ns hickory.core
   (:require [hickory.utils :as utils]
-            [clojure.string :as string]
             [clojure.zip :as zip]))
-
-;;
-;; Utilities
-;;
-(defn- lower-case-keyword
-  "Converts its string argument into a lowercase keyword."
-  [s]
-  (-> s string/lower-case keyword))
 
 ;;
 ;; Protocols
@@ -77,7 +68,8 @@
 (extend-protocol HiccupRepresentable
   object
   (as-hiccup [this] (condp = (aget this "nodeType")
-                      Attribute [(lower-case-keyword (aget this "name")) (aget this "value")]
+                      Attribute [(utils/lower-case-keyword (aget this "name"))
+                                 (aget this "value")]
                       Comment (str "<!--" (aget this "data") "-->")
                       Document (map as-hiccup (aget this "childNodes"))
                       DocumentType (format-doctype this)
@@ -93,7 +85,7 @@
                       ;; html-escaping the parsed contents of text nodes, and not
                       ;; html-escaping comments, data-nodes, and the contents of
                       ;; unescapable nodes.
-                      Element (let [tag (lower-case-keyword (aget this "tagName"))]
+                      Element (let [tag (utils/lower-case-keyword (aget this "tagName"))]
                                 (into [] (concat [tag
                                                   (into {} (map as-hiccup (aget this "attributes")))]
                                                  (if (utils/unescapable-content tag)
@@ -104,7 +96,7 @@
 (extend-protocol HickoryRepresentable
   object
   (as-hickory [this] (condp = (aget this "nodeType")
-                       Attribute [(lower-case-keyword (aget this "name")) (aget this "value")]
+                       Attribute [(utils/lower-case-keyword (aget this "name")) (aget this "value")]
                        Comment {:type :comment
                                 :content [(aget this "data")]}
                        Document {:type :document
@@ -117,7 +109,7 @@
                                              :systemid (aget this "systemId")}}
                        Element {:type :element
                                 :attrs (not-empty (into {} (map as-hickory (aget this "attributes"))))
-                                :tag (lower-case-keyword (aget this "tagName"))
+                                :tag (utils/lower-case-keyword (aget this "tagName"))
                                 :content (not-empty
                                            (into [] (map as-hickory
                                                          (aget this "childNodes"))))}

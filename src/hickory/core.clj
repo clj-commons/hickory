@@ -1,19 +1,10 @@
 (ns hickory.core
   (:require [hickory.utils :as utils]
-            [clojure.string :as string]
             [clojure.zip :as zip])
   (:import [org.jsoup Jsoup]
            [org.jsoup.nodes Attribute Attributes Comment DataNode Document
             DocumentType Element Node TextNode XmlDeclaration]
            [org.jsoup.parser Tag Parser]))
-
-;;
-;; Utilities
-;;
-(defn- lower-case-keyword
-  "Converts its string argument into a lowercase keyword."
-  [s]
-  (-> s string/lower-case keyword))
 
 ;;
 ;; Protocols
@@ -48,7 +39,8 @@
 (extend-protocol HiccupRepresentable
   Attribute
   ;; Note the attribute value is not html-escaped; see comment for Element.
-  (as-hiccup [this] [(lower-case-keyword (.getKey this)) (.getValue this)])
+  (as-hiccup [this] [(utils/lower-case-keyword (.getKey this))
+                     (.getValue this)])
   Attributes
   (as-hiccup [this] (into {} (map as-hiccup this)))
   Comment
@@ -73,7 +65,7 @@
     ;; html-escaping the parsed contents of text nodes, and not
     ;; html-escaping comments, data-nodes, and the contents of
     ;; unescapable nodes.
-    (let [tag (lower-case-keyword (.tagName this))]
+    (let [tag (utils/lower-case-keyword (.tagName this))]
       (into [] (concat [tag
                         (as-hiccup (.attributes this))]
                        (if (utils/unescapable-content tag)
@@ -87,7 +79,8 @@
 
 (extend-protocol HickoryRepresentable
   Attribute
-  (as-hickory [this] [(lower-case-keyword (.getKey this)) (.getValue this)])
+  (as-hickory [this] [(utils/lower-case-keyword (.getKey this))
+                      (.getValue this)])
   Attributes
   (as-hickory [this] (not-empty (into {} (map as-hickory this))))
   Comment
@@ -106,7 +99,7 @@
   Element
   (as-hickory [this] {:type :element
                       :attrs (as-hickory (.attributes this))
-                      :tag (lower-case-keyword (.tagName this))
+                      :tag (utils/lower-case-keyword (.tagName this))
                       :content (not-empty
                                 (into [] (map as-hickory
                                               (.childNodes this))))})
