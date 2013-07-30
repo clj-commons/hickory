@@ -27,10 +27,23 @@
          (hickory-to-html (as-hickory (first (parse-fragment "<img fake-attr=\"abc&quot;def\">")))))))
 
 (deftest hickory-doctypes-test
+  (is (= "<!DOCTYPE html>"
+         (hickory-to-html {:type :document-type
+                           :attrs {:name "html",
+                                   :publicid nil
+                                   :systemid nil}})))
+  (is (= "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">"
+         (hickory-to-html {:type :document-type
+                           :attrs {:name "html",
+                                   :publicid "-//W3C//DTD HTML 4.01//EN",
+                                   :systemid "http://www.w3.org/TR/html4/strict.dtd"}})))
   (is (= "<!DOCTYPE html><html><head></head><body></body></html>"
          (hickory-to-html (as-hickory (parse "<!DOCTYPE html><html><head></head><body></body></html>")))))
-  (is (= "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body></html>"
+  ;; Apparently Chrome will parse this doctype as plain html5, so we can't
+  ;; do a roundtrip test in cljs.
+  #+clj (is (= "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body></html>"
          (hickory-to-html (as-hickory (parse "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body</html>"))))))
+  
 
 (deftest error-handling-test
   (let [data {:type :foo :tag :a :attrs {:foo "bar"}}]
@@ -66,5 +79,5 @@
 (deftest hiccup-doctypes-test
   (is (= "<!DOCTYPE html><html><head></head><body></body></html>"
          (hiccup-to-html (as-hiccup (parse "<!DOCTYPE html><html><head></head><body></body></html>")))))
-  (is (= "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body></html>"
-         (hiccup-to-html (as-hiccup (parse "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body</html>"))))))
+  #+clj (is (= "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body></html>"
+               (hiccup-to-html (as-hiccup (parse "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body</html>"))))))

@@ -424,10 +424,7 @@
                                           (or (not (-> % :attrs :class))
                                               (not (re-find #"cool"
                                                             (-> % :attrs :class)))))
-                                    selection)))))
-      (let [selection (select/select (select/not (select/class :cool))
-                                     htree)]
-        (is (= 31 (count selection)))))))
+                                    selection))))))))
 
 (deftest ordered-adjacent-test
   (testing "ordered-adjacent selector combinator"
