@@ -19,8 +19,12 @@
       (min a b))))
 
 (defn- index-of
-  ([s c] #+clj (.indexOf s (int c)) #+cljs (.indexOf s c))
-  ([s c idx] #+clj (.indexOf s (int c) idx) #+cljs (.indexOf s c idx)))
+  ([^String s c]
+     #+clj (.indexOf s (int c))
+     #+cljs (.indexOf s c))
+  ([^String s c idx]
+     #+clj (.indexOf s (int c) (int idx))
+     #+cljs (.indexOf s c idx)))
 
 (defn tag-well-formed?
   "Given a hiccup tag element, returns true iff the tag is in 'valid' hiccup
