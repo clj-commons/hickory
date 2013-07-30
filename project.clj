@@ -11,10 +11,11 @@
                  [org.jsoup/jsoup "1.7.1"]
                  [com.cemerick/clojurescript.test "0.0.4"]]
   :plugins [[codox "0.6.4"]
-            [lein-cljsbuild "0.3.3-SNAPSHOT"]
+            [lein-cljsbuild "0.3.2"]
             [com.keminglabs/cljx "0.3.0"]]
   :hooks [cljx.hooks]
-  :codox {:output-dir "codox-out"
+  :codox {:sources ["src" "target/generated-src"]
+          :output-dir "codox-out"
           :src-dir-uri "http://github.com/davidsantiago/hickory/blob/master"
           :src-linenum-anchor-prefix "L"}
 
