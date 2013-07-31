@@ -145,8 +145,8 @@
     (let [node (zip/node hzip-loc)
           node-type (-> node :type)]
       (if (clojure.core/and node-type
-                    (= (string/lower-case (name node-type))
-                       (string/lower-case (name type))))
+                            (= (string/lower-case (name node-type))
+                               (string/lower-case (name type))))
         hzip-loc))))
 
 (defn tag
@@ -159,8 +159,8 @@
     (let [node (zip/node hzip-loc)
           node-tag (-> node :tag)]
       (if (clojure.core/and node-tag
-                    (= (string/lower-case (name node-tag))
-                       (string/lower-case (name tag))))
+                            (= (string/lower-case (name node-tag))
+                               (string/lower-case (name tag))))
         hzip-loc))))
 
 (defn attr
@@ -191,7 +191,7 @@
          ;; If the attribute does not exist, we'll definitely return null.
          ;; Otherwise, we'll ask the predicate if we should return hzip-loc.
          (if (clojure.core/and (contains? (:attrs node) attr-key)
-                  (predicate (get-in node [:attrs attr-key])))
+                               (predicate (get-in node [:attrs attr-key])))
            hzip-loc)))))
 
 (defn id
@@ -305,7 +305,7 @@
        ;; We're only interested in elements whose parents are also elements,
        ;; so check this up front and maybe save some work.
        (if (clojure.core/and (element-child hzip-loc)
-                     (= typ (:tag (zip/node hzip-loc))))
+                             (= typ (:tag (zip/node hzip-loc))))
          (let [sel (n-moves-until n c
                                   #(left-pred % (fn [x] (-> (zip/node x)
                                                             :tag
@@ -329,7 +329,7 @@
        ;; We're only interested in elements whose parents are also elements,
        ;; so check this up front and maybe save some work.
        (if (clojure.core/and (element-child hzip-loc)
-                     (= typ (:tag (zip/node hzip-loc))))
+                             (= typ (:tag (zip/node hzip-loc))))
          (let [sel (n-moves-until n c
                                   #(right-pred % (fn [x] (-> (zip/node x)
                                                              :tag
