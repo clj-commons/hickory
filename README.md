@@ -3,7 +3,8 @@
 Hickory parses HTML into Clojure data structures, so you can analyze,
 transform, and output back to HTML. HTML can be parsed into
 [hiccup](http://github.com/weavejester/hiccup) vectors, or into a
-map-based DOM-like format very similar to that used by clojure.xml.
+map-based DOM-like format very similar to that used by clojure.xml. It
+can be used from both Clojure and Clojurescript.
 
 There is [API documentation](http://davidsantiago.github.com/hickory) available.
 
@@ -21,7 +22,8 @@ and Nodes, but I do not consider this to be an aspect worth preserving
 if a change in parser should become necessary). 
 
 The first function, `parse` expects an entire HTML document, and
-parses using an HTML5 parser, [Jsoup](http://jsoup.org), which will
+parses it using an HTML5 parser ([Jsoup](http://jsoup.org) on Clojure and
+the browser's DOM parser in Clojurescript), which will
 fix up the HTML as much as it can into a well-formed document. The
 second function, `parse-fragment`, expects some smaller fragment of
 HTML that does not make up a full document, and thus returns a list of
@@ -108,9 +110,22 @@ modified Hickory version is printed back to HTML using the
 
 ### Selectors
 
-Hickory also comes with a set of CSS-style selectors that operate on hickory-format data in the `hickory.select` namespace. These selectors do not exactly mirror the selectors in CSS, and are often more powerful. There is no version of these selectors for hiccup-format data, at this point.
+Hickory also comes with a set of CSS-style selectors that operate on
+hickory-format data in the `hickory.select` namespace. These selectors
+do not exactly mirror the selectors in CSS, and are often more
+powerful. There is no version of these selectors for hiccup-format
+data, at this point.
 
-A selector is simply a function that takes a zipper loc from a hickory html tree data structure as its only argument. The selector will return its argument if the selector applies to it, and nil otherwise. Writing useful selectors can often be involved, so most of the `hickory.select` package is actually made up of selector combinators; functions that return useful selector functions by specializing them to the data given as arguments, or by combining together multiple selectors. For example, if we wanted to figure out the dates of the next Formula 1 race weekend, we could do something like this:
+A selector is simply a function that takes a zipper loc from a hickory
+html tree data structure as its only argument. The selector will
+return its argument if the selector applies to it, and nil
+otherwise. Writing useful selectors can often be involved, so most of
+the `hickory.select` package is actually made up of selector
+combinators; functions that return useful selector functions by
+specializing them to the data given as arguments, or by combining
+together multiple selectors. For example, if we wanted to figure out
+the dates of the next Formula 1 race weekend, we could do something
+like this:
 
 ```clojure
 user=> (use 'hickory.core)
@@ -123,7 +138,7 @@ user=> (require '[clojure.string :as string])
 nil
 user=> (def site-htree (-> (client/get "http://formula1.com/default.html") :body parse as-hickory))
 #'user/site-htree
-user=> (-> (s/select (s/child (s/class "subCalender") 
+user=> (-> (s/select (s/child (s/class "subCalender") ; sic
                               (s/tag :div) 
                               (s/id :raceDates) 
                               s/first-child
@@ -133,7 +148,12 @@ user=> (-> (s/select (s/child (s/class "subCalender")
 "10, 11, 12 May 2013"
 ```
 
-In this example, we get the contents of the homepage and use `select` to give us any nodes that satisfy the criteria laid out by the selectors. The selector in this example is overly precise in order to illustrate more selectors than we need; we could have gotten by just selecting the contents of the P and then B tags inside the element with id "raceDates". 
+In this example, we get the contents of the homepage and use `select`
+to give us any nodes that satisfy the criteria laid out by the
+selectors. The selector in this example is overly precise in order to
+illustrate more selectors than we need; we could have gotten by just
+selecting the contents of the P and then B tags inside the element
+with id "raceDates".
 
 Using the selectors allows you to search large HTML documents for nodes of interest with a relatively small amount of code. There are many selectors available in the [`hickory.select`](http://davidsantiago.github.io/hickory/hickory.select.html) namespace, including:
 
@@ -230,12 +250,19 @@ the parsed data, like doctype and comments.
 To get hickory, add
 
 ```clojure
-[hickory "0.4.1"]
+[hickory "0.5.0"]
 ```
 
 to your project.clj, or an equivalent entry for your Maven-compatible build tool.
 
 ## Changes
+
+- Released version 0.5.0.
+    * Now works in Clojurescript as well, huge thanks to [Julien Eluard](https://github.com/jeluard) for doing the heavy lifting on this.
+    * Reorganized parts of the API into more granular namespaces for better organization.
+    * Added functions to convert between Hiccup and Hickory format; note that this conversion is not always exact or roundtripable, and can cause a full HTML reparse.
+    * Added new selector, `element-child`, which selects element nodes that are the child of another element node.
+    * Numerous bug fixes and improvements.
 
 - Released version 0.4.1, which adds a number of new selectors and selector combinators, including `find-in-text`, `precede-adjacent`, `follow-adjacent`, `precede` and `follow`.
 
