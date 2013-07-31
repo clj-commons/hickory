@@ -1,9 +1,12 @@
 (ns hickory.test.select
-  (:use clojure.test)
+  #+clj (:use clojure.test)
   (:require [hickory.core :as hickory]
             [hickory.select :as select]
+            [hickory.utils :as utils]
             [hickory.zip :as hzip]
-            [clojure.zip :as zip]))
+            [clojure.zip :as zip]
+            #+cljs [cemerick.cljs.test :as t])
+  #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest testing)]))
 
 (def html1
   "<!DOCTYPE html>
@@ -132,13 +135,13 @@
                  (= "attrspan" (-> selection first :attrs :id)))))
       ;; Case-insensitivity of names and non-equality predicate test
       (let [selection (select/select (select/attr "CAPITALIZED"
-                                                  #(.startsWith % "UPPER"))
+                                                  #(utils/starts-with % "UPPER"))
                                      htree)]
         (is (and (= 1 (count selection))
                  (= "attrspan" (-> selection first :attrs :id)))))
       ;; Graceful failure to find anything
       (let [selection (select/select (select/attr "notpresent"
-                                                  #(.startsWith % "never"))
+                                                  #(utils/starts-with % "never"))
                                      htree)]
         (is (= 0 (count selection)))))))
 
@@ -202,6 +205,12 @@
       (let [selection (select/select select/any
                                      htree)]
         (is (= 10 (count selection)))))))
+
+(deftest element-child-test
+  (testing "element-child selector"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select select/element-child htree)]
+        (is (= 9 (count selection)))))))
 
 (deftest root-test
   (testing "root selector"
@@ -421,10 +430,7 @@
                                           (or (not (-> % :attrs :class))
                                               (not (re-find #"cool"
                                                             (-> % :attrs :class)))))
-                                    selection)))))
-      (let [selection (select/select (select/not (select/class :cool))
-                                     htree)]
-        (is (= 31 (count selection)))))))
+                                    selection))))))))
 
 (deftest ordered-adjacent-test
   (testing "ordered-adjacent selector combinator"
@@ -617,3 +623,30 @@
                                                      (select/class "foo"))
                                      htree)]
         (is (= :div (-> selection first :tag)))))))
+
+(deftest graceful-boundaries-test
+  ;; Testing some problematic expressions to make sure they gracefully
+  ;; return empty results.
+  (let [hick (-> (hickory/parse-fragment "<a><img href=\"\"/></a>")
+                 first
+                 hickory/as-hickory)]
+    (is (= []
+           (select/select (select/child
+                           (select/follow-adjacent (select/tag :a)
+                                                   (select/tag :img)))
+                          hick)))
+    (is (= []
+           (select/select (select/child
+                           (select/follow-adjacent (select/tag :nonexistent)
+                                                   (select/tag :img)))
+                          hick)))
+    (is (= []
+           (select/select (select/child
+                           (select/follow-adjacent (select/tag :a)
+                                                   (select/tag :nonexistent)))
+                          hick)))
+    (is (= [{:type :element, :attrs {:href ""}, :tag :img, :content nil}]
+           (select/select (select/child select/first-child) hick)))
+    (is (= [{:type :element, :attrs {:href ""}, :tag :img, :content nil}]
+           (select/select (select/child select/last-child) hick)))))
+

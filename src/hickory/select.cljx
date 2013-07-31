@@ -5,10 +5,8 @@
   (:require [clojure.zip :as zip]
             [clojure.string :as string]
             [hickory.zip :as hzip])
-  (:refer-clojure :exclude [class]
-                  :rename {and core-and
-                           or core-or
-                           not core-not}))
+  #+clj (:import clojure.lang.IFn)
+  (:refer-clojure :exclude [and or not class]))
 
 ;;
 ;; Utilities
@@ -40,7 +38,7 @@
    true when the function in the pred argument is called on them, or reaches
    the end."
   [hzip-loc pred]
-  (until zip/next hzip-loc #(core-or (zip/end? %)
+  (until zip/next hzip-loc #(clojure.core/or (zip/end? %)
                                      (pred %))))
 
 (defn prev-pred
@@ -48,7 +46,7 @@
    true when the function in the pred argument is called on them, or reaches
    the beginning."
   [hzip-loc pred]
-  (until zip/prev hzip-loc #(core-or (nil? %)
+  (until zip/prev hzip-loc #(clojure.core/or (nil? %)
                                      (pred %))))
 
 (defn left-pred
@@ -56,7 +54,7 @@
    true when the function in the pred argument is called on them, or reaches
    the left boundary of the current group of siblings."
   [hzip-loc pred]
-  (until zip/left hzip-loc #(core-or (nil? %)
+  (until zip/left hzip-loc #(clojure.core/or (nil? %)
                                      (pred %))))
 
 (defn right-pred
@@ -64,7 +62,7 @@
    true when the function in the pred argument is called on them, or reaches
    the right boundary of the current group of siblings."
   [hzip-loc pred]
-  (until zip/right hzip-loc #(core-or (nil? %)
+  (until zip/right hzip-loc #(clojure.core/or (nil? %)
                                       (pred %))))
 
 (defn next-of-node-type
@@ -146,9 +144,9 @@
   (fn [hzip-loc]
     (let [node (zip/node hzip-loc)
           node-type (-> node :type)]
-      (if (core-and node-type
-                    (= (string/lower-case (name node-type))
-                       (string/lower-case (name type))))
+      (if (clojure.core/and node-type
+                            (= (string/lower-case (name node-type))
+                               (string/lower-case (name type))))
         hzip-loc))))
 
 (defn tag
@@ -160,9 +158,9 @@
   (fn [hzip-loc]
     (let [node (zip/node hzip-loc)
           node-tag (-> node :tag)]
-      (if (core-and node-tag
-                    (= (string/lower-case (name node-tag))
-                       (string/lower-case (name tag))))
+      (if (clojure.core/and node-tag
+                            (= (string/lower-case (name node-tag))
+                               (string/lower-case (name tag))))
         hzip-loc))))
 
 (defn attr
@@ -192,8 +190,8 @@
              attr-key (keyword (string/lower-case (name attr-name)))]
          ;; If the attribute does not exist, we'll definitely return null.
          ;; Otherwise, we'll ask the predicate if we should return hzip-loc.
-         (if (core-and (contains? (:attrs node) attr-key)
-                  (predicate (get-in node [:attrs attr-key])))
+         (if (clojure.core/and (contains? (:attrs node) attr-key)
+                               (predicate (get-in node [:attrs attr-key])))
            hzip-loc)))))
 
 (defn id
@@ -228,6 +226,17 @@
   "Another name for the any selector, to express that it can be used to only
    select elements."
   any)
+
+(defn element-child
+  "This selector takes no args, it simply is the selector function. It returns
+   the zip-loc passed in iff that loc is an element, and it has a parent
+   that is also an element."
+  [hzip-loc]
+  (let [possible-parent (zip/up hzip-loc)]
+    (clojure.core/and (element hzip-loc)
+                      ;; Check that we are not at the top already first.
+                      possible-parent
+                      (element possible-parent))))
 
 (defn root
   "This selector takes no args, it simply is the selector function. It returns
@@ -295,9 +304,8 @@
      (fn [hzip-loc]
        ;; We're only interested in elements whose parents are also elements,
        ;; so check this up front and maybe save some work.
-       (if (core-and (element hzip-loc)
-                     (element (zip/up hzip-loc))
-                     (= typ (:tag (zip/node hzip-loc))))
+       (if (clojure.core/and (element-child hzip-loc)
+                             (= typ (:tag (zip/node hzip-loc))))
          (let [sel (n-moves-until n c
                                   #(left-pred % (fn [x] (-> (zip/node x)
                                                             :tag
@@ -320,9 +328,8 @@
      (fn [hzip-loc]
        ;; We're only interested in elements whose parents are also elements,
        ;; so check this up front and maybe save some work.
-       (if (core-and (element hzip-loc)
-                     (element (zip/up hzip-loc))
-                     (= typ (:tag (zip/node hzip-loc))))
+       (if (clojure.core/and (element-child hzip-loc)
+                             (= typ (:tag (zip/node hzip-loc))))
          (let [sel (n-moves-until n c
                                   #(right-pred % (fn [x] (-> (zip/node x)
                                                              :tag
@@ -344,8 +351,7 @@
      (fn [hzip-loc]
        ;; We're only interested in elements whose parents are also elements,
        ;; so check this up front and maybe save some work.
-       (if (core-and (element hzip-loc)
-                     (element (zip/up hzip-loc)))
+       (if (element-child hzip-loc)
          (let [sel (n-moves-until n c #(left-of-node-type % :element) nil?)]
            (sel hzip-loc))))))
 
@@ -364,8 +370,7 @@
      (fn [hzip-loc]
        ;; We're only interested in elements whose parents are also elements,
        ;; so check this up front and maybe save some work.
-       (if (core-and (element hzip-loc)
-                     (element (zip/up hzip-loc)))
+       (if (element-child hzip-loc)
          (let [sel (n-moves-until n c #(right-of-node-type % :element) nil?)]
            (sel hzip-loc))))))
 
@@ -374,18 +379,16 @@
    true if the node is the first child of its parent (and it has a
    parent)."
   [hzip-loc]
-  (core-and (element hzip-loc)
-            (element (zip/up hzip-loc))
-            ((nth-child 1) hzip-loc)))
+  (clojure.core/and (element-child hzip-loc)
+                    ((nth-child 1) hzip-loc)))
 
 (defn last-child
   "This selector takes no args, it is simply the selector. Returns
    true if the node is the last child of its parent (and it has a
    parent."
   [hzip-loc]
-  (core-and (element hzip-loc)
-            (element (zip/up hzip-loc))
-            ((nth-last-child 1) hzip-loc)))
+  (clojure.core/and (element-child hzip-loc)
+                    ((nth-last-child 1) hzip-loc)))
 
 ;;
 ;; Selector combinators
@@ -412,7 +415,7 @@
    the underlying selector is false on its argument, and vice versa."
   [selector]
   (fn [hzip-loc]
-    (if (core-not (selector hzip-loc))
+    (if (clojure.core/not (selector hzip-loc))
       hzip-loc)))
 
 (defn el-not
@@ -430,21 +433,28 @@
    and returns a selector that returns true when the zip-loc given as the
    argument is satisfied by the first selector, and the zip-loc arrived at by
    applying the move-fn argument is satisfied by the second selector, and so
-   on for all the selectors given as arguments."
+   on for all the selectors given as arguments. If the move-fn
+   moves to nil before the full selector list is satisfied, the entire
+   selector fails, but note that success is checked before a move to nil is
+   checked, so satisfying the last selector with the last node you can move
+   to succeeds."
   [move-fn & selectors]
   ;; We'll work backwards through the selector list with an index. First we'll
   ;; build the selector list into an array for quicker access. We'll do it
   ;; immediately and then closure-capture the result, so it does not get
   ;; redone every time the selector is called.
-  (let [selectors (into-array clojure.lang.IFn selectors)]
+  (let [selectors (into-array IFn selectors)]
     (fn [hzip-loc]
       (loop [curr-loc hzip-loc
              idx 0]
-        (if (>= idx (count selectors))
-          hzip-loc ;; Got to end satisfying selectors, return the loc.
-          (if-let [next-loc ((nth selectors idx) curr-loc)]
-            (recur (move-fn next-loc)
-                   (inc idx))))))))
+        (cond (>= idx (count selectors))
+              hzip-loc ;; Got to end satisfying selectors, return the loc.
+              (nil? curr-loc)
+              nil ;; Ran off a boundary before satisfying selectors, return nil.
+              :else
+              (if-let [next-loc ((nth selectors idx) curr-loc)]
+                (recur (move-fn next-loc)
+                       (inc idx))))))))
 
 (defn child
   "Takes any number of selectors as arguments and returns a selector that
@@ -497,14 +507,18 @@
    and returns a selector that returns true when the zip-loc given as the
    argument is satisfied by the first selector, and some zip-loc arrived at by
    applying the move-fn argument *one or more times* is satisfied by the second
-   selector, and so on for all the selectors given as arguments."
+   selector, and so on for all the selectors given as arguments. If the move-fn
+   moves to nil before a the full selector list is satisfied, the entire
+   selector fails, but note that success is checked before a move to nil is
+   checked, so satisfying the last selector with the last node you can move
+   to succeeds."
   [move-fn & selectors]
   ;; This function is a lot like ordered-adjacent, above, but:
   ;; 1) failing to fulfill a selector does not stop us moving along the tree
   ;; 2) therefore, we need to make sure the first selector matches the loc under
   ;;    consideration, and not merely one that is farther along the movement
   ;;    direction.
-  (let [selectors (into-array clojure.lang.IFn selectors)]
+  (let [selectors (into-array IFn selectors)]
     (fn [hzip-loc]
       ;; First need to check that the first selector matches the current loc,
       ;; or else we can return nil immediately.

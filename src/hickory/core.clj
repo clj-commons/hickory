@@ -1,19 +1,10 @@
 (ns hickory.core
-  (:require [clojure.string :as string]
-            [clojure.zip :as zip]
-            [quoin.text :as qt])
+  (:require [hickory.utils :as utils]
+            [clojure.zip :as zip])
   (:import [org.jsoup Jsoup]
            [org.jsoup.nodes Attribute Attributes Comment DataNode Document
             DocumentType Element Node TextNode XmlDeclaration]
            [org.jsoup.parser Tag Parser]))
-
-;;
-;; Utilities
-;;
-(defn- lower-case-keyword
-  "Converts its string argument into a lowercase keyword."
-  [s]
-  (-> s string/lower-case keyword))
 
 ;;
 ;; Protocols
@@ -47,7 +38,9 @@
 
 (extend-protocol HiccupRepresentable
   Attribute
-  (as-hiccup [this] [(lower-case-keyword (.getKey this)) (.getValue this)])
+  ;; Note the attribute value is not html-escaped; see comment for Element.
+  (as-hiccup [this] [(utils/lower-case-keyword (.getKey this))
+                     (.getValue this)])
   Attributes
   (as-hiccup [this] (into {} (map as-hiccup this)))
   Comment
@@ -59,17 +52,35 @@
   DocumentType
   (as-hiccup [this] (str this))
   Element
-  (as-hiccup [this] (into [] (concat [(lower-case-keyword (.tagName this))
-                                      (as-hiccup (.attributes this))]
-                                     (map as-hiccup (.childNodes this)))))
+  (as-hiccup [this]
+    ;; There is an issue with the hiccup format, which is that it
+    ;; can't quite cover all the pieces of HTML, so anything it
+    ;; doesn't cover is thrown into a string containing the raw
+    ;; HTML. This presents a problem because it is then never the case
+    ;; that a string in a hiccup form should be html-escaped (except
+    ;; in an attribute value) when rendering; it should already have
+    ;; any escaping. Since the HTML parser quite properly un-escapes
+    ;; HTML where it should, we have to go back and un-un-escape it
+    ;; wherever text would have been un-escaped. We do this by
+    ;; html-escaping the parsed contents of text nodes, and not
+    ;; html-escaping comments, data-nodes, and the contents of
+    ;; unescapable nodes.
+    (let [tag (utils/lower-case-keyword (.tagName this))]
+      (into [] (concat [tag
+                        (as-hiccup (.attributes this))]
+                       (if (utils/unescapable-content tag)
+                         (map str (.childNodes this))
+                         (map as-hiccup (.childNodes this)))))))
   TextNode
-  (as-hiccup [this] (.getWholeText this))
+  ;; See comment for Element re: html escaping.
+  (as-hiccup [this] (utils/html-escape (.getWholeText this)))
   XmlDeclaration
   (as-hiccup [this] (str this)))
 
 (extend-protocol HickoryRepresentable
   Attribute
-  (as-hickory [this] [(lower-case-keyword (.getKey this)) (.getValue this)])
+  (as-hickory [this] [(utils/lower-case-keyword (.getKey this))
+                      (.getValue this)])
   Attributes
   (as-hickory [this] (not-empty (into {} (map as-hickory this))))
   Comment
@@ -88,7 +99,7 @@
   Element
   (as-hickory [this] {:type :element
                       :attrs (as-hickory (.attributes this))
-                      :tag (lower-case-keyword (.tagName this))
+                      :tag (utils/lower-case-keyword (.tagName this))
                       :content (not-empty
                                 (into [] (map as-hickory
                                               (.childNodes this))))})
@@ -107,65 +118,3 @@
    each be passed as input to as-hiccup or as-hickory."
   [s]
   (into [] (Parser/parseFragment s (Element. (Tag/valueOf "body") "") "")))
-
-(def ^{:private true} void-element
-  #{:area :base :br :col :command :embed :hr :img :input :keygen :link :meta
-    :param :source :track :wbr})
-
-(def ^{:private true} unescapable-content #{:script :style})
-
-(defn- render-attribute
-  "Given a map entry m, representing the attribute name and value, returns a
-   string representing that key/value pair as it would be rendered into HTML."
-  [m]
-  (str " " (name (key m)) "=\"" (qt/html-escape (val m)) "\""))
-
-(defn hickory-to-html
-  "Given a hickory HTML DOM map structure (as returned by as-hickory), returns a
-   string containing HTML it represents.
-
-   Note that it will NOT in general be the case that
-
-     (= my-html-src (hickory-to-html (as-hickory (parse my-html-src))))
-
-   as we do not keep any letter case or whitespace information, any
-   \"tag-soupy\" elements, attribute quote characters used, etc."
-  [dom]
-  (if (string? dom)
-    (qt/html-escape dom)
-    (try
-      (case (:type dom)
-        :document
-        (apply str (map hickory-to-html (:content dom)))
-        :document-type
-        (str "<!DOCTYPE " (get-in dom [:attrs :name])
-             (when-let [publicid (not-empty (get-in dom [:attrs :publicid]))]
-               (str " PUBLIC \"" publicid "\""))
-             (when-let [systemid (not-empty (get-in dom [:attrs :systemid]))]
-               (str " \"" systemid "\""))
-             ">")
-        :element
-        (cond
-         (void-element (:tag dom))
-         (str "<" (name (:tag dom))
-              (apply str (map render-attribute (:attrs dom)))
-              ">")
-         (unescapable-content (:tag dom))
-         (str "<" (name (:tag dom))
-              (apply str (map render-attribute (:attrs dom)))
-              ">"
-              (apply str (:content dom)) ;; Won't get html-escaped.
-              "</" (name (:tag dom)) ">")
-         :else
-         (str "<" (name (:tag dom))
-              (apply str (map render-attribute (:attrs dom)))
-              ">"
-              (apply str (map hickory-to-html (:content dom)))
-              "</" (name (:tag dom)) ">"))
-        :comment
-        (str "<!--" (apply str (:content dom)) "-->"))
-      (catch IllegalArgumentException e
-        (throw
-         (if (.startsWith (.getMessage e) "No matching clause: ")
-           (ex-info (str "Not a valid node: " (pr-str dom)) {:dom dom})
-           e))))))
