@@ -26,12 +26,22 @@
      #+clj (.indexOf s (int c) (int idx))
      #+cljs (.indexOf s c idx)))
 
+(defn- split-keep-trailing-empty
+  "clojure.string/split is a wrapper on java.lang.String/split with the limit
+   parameter equal to 0, which keeps leading empty strings, but discards
+   trailing empty strings. This makes no sense, so we have to write our own
+   to keep the trailing empty strings."
+  [s re]
+  (str/split s re -1))
+
 (defn tag-well-formed?
   "Given a hiccup tag element, returns true iff the tag is in 'valid' hiccup
    format. Which in this function means:
       1. Tag name is non-empty.
       2. If there is an id, there is only one.
-      3. If there is an id, it comes before any classes."
+      3. If there is an id, it is nonempty.
+      4. If there is an id, it comes before any classes.
+      5. Any class name is nonempty."
   [tag-elem]
   (let [tag-elem (name tag-elem)
         hash-idx (int (index-of tag-elem \#))
@@ -39,12 +49,20 @@
         tag-cutoff (first-idx hash-idx dot-idx)]
     (and (< 0 (count tag-elem)) ;; 1.
          (if (== tag-cutoff -1) true (> tag-cutoff 0)) ;; 1.
-         (if (== hash-idx -1) ;; 2.
+         (if (== hash-idx -1)
            true
-           (== -1 (index-of tag-elem \# (inc hash-idx))))
-         (if (and (not= hash-idx -1) (not= dot-idx -1)) ;; 3.
+           (and (== -1 (index-of tag-elem \# (inc hash-idx))) ;; 2.
+                (< (inc hash-idx) (first-idx (index-of tag-elem \. ;; 3.
+                                                       (inc hash-idx))
+                                             (count tag-elem)))))
+         (if (and (not= hash-idx -1) (not= dot-idx -1)) ;; 4.
            (< hash-idx dot-idx)
-           true))))
+           true)
+         (if (== dot-idx -1) ;; 5.
+           true
+           (let [classes (.substring tag-elem (inc dot-idx))]
+             (every? #(< 0 (count %))
+                     (split-keep-trailing-empty classes #"\.")))))))
 
 (defn tag-name
   "Given a well-formed hiccup tag element, return just the tag name as

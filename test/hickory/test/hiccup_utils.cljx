@@ -1,6 +1,7 @@
 (ns hickory.test.hiccup-utils
   #+clj (:use clojure.test)
-  (:require [hickory.hiccup-utils :refer [class-names id normalize-form tag-name tag-well-formed?]]
+  (:require [hickory.hiccup-utils :refer [class-names id normalize-form
+                                          tag-name tag-well-formed?]]
             #+cljs [cemerick.cljs.test :as t])
   #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest)]))
 
@@ -20,6 +21,10 @@
   (is (= true (tag-well-formed? :a.class.class2)))
   (is (= false (tag-well-formed? "")))
   (is (= false (tag-well-formed? ".class")))
+  (is (= false (tag-well-formed? "a#")))
+  (is (= false (tag-well-formed? "a#foo.")))
+  (is (= false (tag-well-formed? "a.")))
+  (is (= false (tag-well-formed? "a.foo.")))
   (is (= false (tag-well-formed? "#id.class")))
   (is (= false (tag-well-formed? :a.class#id)))
   (is (= false (tag-well-formed? :a#id#id2))))
