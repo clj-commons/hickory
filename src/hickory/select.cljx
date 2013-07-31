@@ -363,7 +363,7 @@
        ;; We're only interested in elements whose parents are also elements,
        ;; so check this up front and maybe save some work.
        (if (clojure.core/and (element hzip-loc)
-                     (element (zip/up hzip-loc)))
+                             (element (zip/up hzip-loc)))
          (let [sel (n-moves-until n c #(right-of-node-type % :element) nil?)]
            (sel hzip-loc))))))
 
@@ -373,8 +373,8 @@
    parent)."
   [hzip-loc]
   (clojure.core/and (element hzip-loc)
-            (element (zip/up hzip-loc))
-            ((nth-child 1) hzip-loc)))
+                    (element (zip/up hzip-loc))
+                    ((nth-child 1) hzip-loc)))
 
 (defn last-child
   "This selector takes no args, it is simply the selector. Returns
@@ -438,11 +438,14 @@
     (fn [hzip-loc]
       (loop [curr-loc hzip-loc
              idx 0]
-        (if (>= idx (count selectors))
-          hzip-loc ;; Got to end satisfying selectors, return the loc.
-          (if-let [next-loc ((nth selectors idx) curr-loc)]
-            (recur (move-fn next-loc)
-                   (inc idx))))))))
+        (cond (>= idx (count selectors))
+              hzip-loc ;; Got to end satisfying selectors, return the loc.
+              (nil? curr-loc)
+              nil ;; Ran off a boundary before satisfying selectors, return nil.
+              :else
+              (if-let [next-loc ((nth selectors idx) curr-loc)]
+                (recur (move-fn next-loc)
+                       (inc idx))))))))
 
 (defn child
   "Takes any number of selectors as arguments and returns a selector that

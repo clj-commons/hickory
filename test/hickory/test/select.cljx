@@ -617,3 +617,28 @@
                                                      (select/class "foo"))
                                      htree)]
         (is (= :div (-> selection first :tag)))))))
+
+(deftest graceful-boundaries-test
+  ;; Testing some problematic expressions to make sure they gracefully
+  ;; return empty results.
+  (let [hick (-> (hickory/parse-fragment "<a><img href=\"\"/></a>")
+                 first
+                 hickory/as-hickory)]
+    (is (= []
+           (select/select (select/child
+                           (select/follow-adjacent (select/tag :a)
+                                                   (select/tag :img)))
+                          hick)))
+    (is (= []
+           (select/select (select/child
+                           (select/follow-adjacent (select/tag :nonexistent)
+                                                   (select/tag :img)))
+                          hick)))
+    (is (= []
+           (select/select (select/child
+                           (select/follow-adjacent (select/tag :a)
+                                                   (select/tag :nonexistent)))
+                          hick))
+        )
+)
+)
