@@ -433,7 +433,11 @@
    and returns a selector that returns true when the zip-loc given as the
    argument is satisfied by the first selector, and the zip-loc arrived at by
    applying the move-fn argument is satisfied by the second selector, and so
-   on for all the selectors given as arguments."
+   on for all the selectors given as arguments. If the move-fn
+   moves to nil before the full selector list is satisfied, the entire
+   selector fails, but note that success is checked before a move to nil is
+   checked, so satisfying the last selector with the last node you can move
+   to succeeds."
   [move-fn & selectors]
   ;; We'll work backwards through the selector list with an index. First we'll
   ;; build the selector list into an array for quicker access. We'll do it
@@ -503,7 +507,11 @@
    and returns a selector that returns true when the zip-loc given as the
    argument is satisfied by the first selector, and some zip-loc arrived at by
    applying the move-fn argument *one or more times* is satisfied by the second
-   selector, and so on for all the selectors given as arguments."
+   selector, and so on for all the selectors given as arguments. If the move-fn
+   moves to nil before a the full selector list is satisfied, the entire
+   selector fails, but note that success is checked before a move to nil is
+   checked, so satisfying the last selector with the last node you can move
+   to succeeds."
   [move-fn & selectors]
   ;; This function is a lot like ordered-adjacent, above, but:
   ;; 1) failing to fulfill a selector does not stop us moving along the tree
