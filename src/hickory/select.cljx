@@ -227,6 +227,17 @@
    select elements."
   any)
 
+(defn element-child
+  "This selector takes no args, it simply is the selector function. It returns
+   the zip-loc passed in iff that loc is an element, and it has a parent
+   that is also an element."
+  [hzip-loc]
+  (let [possible-parent (zip/up hzip-loc)]
+    (clojure.core/and (element hzip-loc)
+                      ;; Check that we are not at the top already first.
+                      possible-parent
+                      (element possible-parent))))
+
 (defn root
   "This selector takes no args, it simply is the selector function. It returns
    the zip-loc of the root node (the HTML element)."
@@ -293,8 +304,7 @@
      (fn [hzip-loc]
        ;; We're only interested in elements whose parents are also elements,
        ;; so check this up front and maybe save some work.
-       (if (clojure.core/and (element hzip-loc)
-                     (element (zip/up hzip-loc))
+       (if (clojure.core/and (element-child hzip-loc)
                      (= typ (:tag (zip/node hzip-loc))))
          (let [sel (n-moves-until n c
                                   #(left-pred % (fn [x] (-> (zip/node x)
@@ -318,8 +328,7 @@
      (fn [hzip-loc]
        ;; We're only interested in elements whose parents are also elements,
        ;; so check this up front and maybe save some work.
-       (if (clojure.core/and (element hzip-loc)
-                     (element (zip/up hzip-loc))
+       (if (clojure.core/and (element-child hzip-loc)
                      (= typ (:tag (zip/node hzip-loc))))
          (let [sel (n-moves-until n c
                                   #(right-pred % (fn [x] (-> (zip/node x)
@@ -342,8 +351,7 @@
      (fn [hzip-loc]
        ;; We're only interested in elements whose parents are also elements,
        ;; so check this up front and maybe save some work.
-       (if (clojure.core/and (element hzip-loc)
-                     (element (zip/up hzip-loc)))
+       (if (element-child hzip-loc)
          (let [sel (n-moves-until n c #(left-of-node-type % :element) nil?)]
            (sel hzip-loc))))))
 
@@ -362,8 +370,7 @@
      (fn [hzip-loc]
        ;; We're only interested in elements whose parents are also elements,
        ;; so check this up front and maybe save some work.
-       (if (clojure.core/and (element hzip-loc)
-                             (element (zip/up hzip-loc)))
+       (if (element-child hzip-loc)
          (let [sel (n-moves-until n c #(right-of-node-type % :element) nil?)]
            (sel hzip-loc))))))
 
@@ -372,8 +379,7 @@
    true if the node is the first child of its parent (and it has a
    parent)."
   [hzip-loc]
-  (clojure.core/and (element hzip-loc)
-                    (element (zip/up hzip-loc))
+  (clojure.core/and (element-child hzip-loc)
                     ((nth-child 1) hzip-loc)))
 
 (defn last-child
@@ -381,9 +387,8 @@
    true if the node is the last child of its parent (and it has a
    parent."
   [hzip-loc]
-  (clojure.core/and (element hzip-loc)
-            (element (zip/up hzip-loc))
-            ((nth-last-child 1) hzip-loc)))
+  (clojure.core/and (element-child hzip-loc)
+                    ((nth-last-child 1) hzip-loc)))
 
 ;;
 ;; Selector combinators

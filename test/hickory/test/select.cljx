@@ -206,6 +206,12 @@
                                      htree)]
         (is (= 10 (count selection)))))))
 
+(deftest element-child-test
+  (testing "element-child selector"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select select/element-child htree)]
+        (is (= 9 (count selection)))))))
+
 (deftest root-test
   (testing "root selector"
     (let [htree (hickory/as-hickory (hickory/parse html1))]
@@ -638,7 +644,9 @@
            (select/select (select/child
                            (select/follow-adjacent (select/tag :a)
                                                    (select/tag :nonexistent)))
-                          hick))
-        )
-)
-)
+                          hick)))
+    (is (= [{:type :element, :attrs {:href ""}, :tag :img, :content nil}]
+           (select/select (select/child select/first-child) hick)))
+    (is (= [{:type :element, :attrs {:href ""}, :tag :img, :content nil}]
+           (select/select (select/child select/last-child) hick)))))
+
