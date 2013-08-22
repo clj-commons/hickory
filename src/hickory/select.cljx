@@ -39,7 +39,7 @@
    the end."
   [hzip-loc pred]
   (until zip/next hzip-loc #(clojure.core/or (zip/end? %)
-                                     (pred %))))
+                                             (pred %))))
 
 (defn prev-pred
   "Like clojure.zip/prev, but moves until it reaches a node that returns
@@ -47,7 +47,7 @@
    the beginning."
   [hzip-loc pred]
   (until zip/prev hzip-loc #(clojure.core/or (nil? %)
-                                     (pred %))))
+                                             (pred %))))
 
 (defn left-pred
   "Like clojure.zip/left, but moves until it reaches a node that returns
@@ -55,7 +55,7 @@
    the left boundary of the current group of siblings."
   [hzip-loc pred]
   (until zip/left hzip-loc #(clojure.core/or (nil? %)
-                                     (pred %))))
+                                             (pred %))))
 
 (defn right-pred
   "Like clojure.zip/right, but moves until it reaches a node that returns
@@ -63,7 +63,7 @@
    the right boundary of the current group of siblings."
   [hzip-loc pred]
   (until zip/right hzip-loc #(clojure.core/or (nil? %)
-                                      (pred %))))
+                                              (pred %))))
 
 (defn next-of-node-type
   "Like clojure.zip/next, but only counts moves to nodes that have
