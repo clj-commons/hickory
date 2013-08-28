@@ -624,6 +624,58 @@
                                      htree)]
         (is (= :div (-> selection first :tag)))))))
 
+(deftest has-descendant-test
+  (testing "has-descendant selector combinator"
+    (let [docs ["<div id=\"outermost\"><div><span id=\"innermost\"></span></div></div>"
+                "<div id=\"outermost\"><div><span id=\"innermost\"></span></div><span id=\"sib\"></span></div>"
+                "<div id=\"outermost\"><span id=\"sib\"></span><div><span id=\"innermost\"></span></div></div>"]]
+      (doseq [doc docs]
+        (let [htree (-> doc
+                     hickory/parse hickory/as-hickory)]
+          (let [selection (select/select (select/and (select/tag :div)
+                                                     (select/has-descendant
+                                                      (select/id :innermost)))
+                                         htree)]
+            (is (and (= 2 (count selection))
+                     (every? true? (map #(= :div (-> % :tag)) selection)))))
+          ;; Check that a descendant selector can peer up past the
+          ;; node having its descendants examined.
+          (let [selection (select/select (select/and (select/tag :div)
+                                                     (select/has-descendant
+                                                      (select/descendant (select/id :outermost)
+                                                                         (select/tag :span))))
+                                         htree)]
+            (is (and (= 2 (count selection))
+                     (every? true? (map #(= :div (-> % :tag)) selection)))))
+          (let [selection (select/select (select/has-descendant (select/tag :a))
+                                         htree)]
+            (is (= [] selection))))))))
+
+(deftest has-child-test
+  (testing "has-child selector combinator"
+    (let [docs ["<div id=\"outermost\"><div><span id=\"innermost\"></span></div></div>"
+                "<div id=\"outermost\"><div><span id=\"innermost\"></span></div><span id=\"sib\"></span></div>"
+                "<div id=\"outermost\"><span id=\"sib\"></span><div><span id=\"innermost\"></span></div></div>"]]
+      (doseq [doc docs]
+        (let [htree (-> doc
+                     hickory/parse hickory/as-hickory)]
+          (let [selection (select/select (select/has-child
+                                          (select/id :innermost))
+                                         htree)]
+            (is (and (= 1 (count selection))
+                     (every? true? (map #(= :div (-> % :tag)) selection)))))
+          ;; Check that a descendant selector can peer up past the
+          ;; node having its descendants examined.
+          (let [selection (select/select (select/has-child
+                                          (select/descendant (select/id :outermost)
+                                                             (select/id :innermost)))
+                                         htree)]
+            (is (and (= 1 (count selection))
+                     (every? true? (map #(= :div (-> % :tag)) selection)))))
+          (let [selection (select/select (select/has-child (select/tag :a))
+                                         htree)]
+            (is (= [] selection))))))))
+
 (deftest graceful-boundaries-test
   ;; Testing some problematic expressions to make sure they gracefully
   ;; return empty results.
@@ -649,4 +701,3 @@
            (select/select (select/child select/first-child) hick)))
     (is (= [{:type :element, :attrs {:href ""}, :tag :img, :content nil}]
            (select/select (select/child select/last-child) hick)))))
-

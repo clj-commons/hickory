@@ -39,7 +39,7 @@
    the end."
   [hzip-loc pred]
   (until zip/next hzip-loc #(clojure.core/or (zip/end? %)
-                                     (pred %))))
+                                             (pred %))))
 
 (defn prev-pred
   "Like clojure.zip/prev, but moves until it reaches a node that returns
@@ -47,7 +47,7 @@
    the beginning."
   [hzip-loc pred]
   (until zip/prev hzip-loc #(clojure.core/or (nil? %)
-                                     (pred %))))
+                                             (pred %))))
 
 (defn left-pred
   "Like clojure.zip/left, but moves until it reaches a node that returns
@@ -55,7 +55,7 @@
    the left boundary of the current group of siblings."
   [hzip-loc pred]
   (until zip/left hzip-loc #(clojure.core/or (nil? %)
-                                     (pred %))))
+                                             (pred %))))
 
 (defn right-pred
   "Like clojure.zip/right, but moves until it reaches a node that returns
@@ -63,7 +63,7 @@
    the right boundary of the current group of siblings."
   [hzip-loc pred]
   (until zip/right hzip-loc #(clojure.core/or (nil? %)
-                                      (pred %))))
+                                              (pred %))))
 
 (defn next-of-node-type
   "Like clojure.zip/next, but only counts moves to nodes that have
@@ -89,6 +89,19 @@
   [hzip-loc node-type]
   (right-pred hzip-loc #(= node-type (:type (zip/node %)))))
 
+(defn after-subtree
+  "Given a zipper loc, returns the zipper loc that is the first one after
+   the arg's subtree, if there is a subtree. If there is no loc after this
+   loc's subtree, returns the end node."
+  [zip-loc]
+  (if (zip/end? zip-loc)
+    zip-loc
+    (clojure.core/or (zip/right zip-loc)
+                     (loop [curr-loc zip-loc]
+                       (if (zip/up curr-loc)
+                         (clojure.core/or (zip/right (zip/up curr-loc))
+                                          (recur (zip/up curr-loc)))
+                         [(zip/node curr-loc) :end])))))
 
 ;;
 ;; Select
@@ -100,14 +113,27 @@
    be the loc that is passed in, so be sure to move to the next loc if you
    want to use this function to exhaustively search through a tree manually.
    Note that if there is no next node that satisfies the selection function, nil
-   is returned."
-  [selector-fn hzip-loc]
-  (loop [loc hzip-loc]
-    (if (zip/end? loc)
-      nil
-      (if (selector-fn loc)
-        loc
-        (recur (zip/next loc))))))
+   is returned.
+
+   The third argument, if present, must be a function of one argument that is
+   called on a zipper loc to return the next loc to consider in the search. By
+   default, this argument is zip/next. The fourth argument, if present, must be
+   a function of one argument that is called on a zipper loc to determine if
+   the end of the search has been reached (true return value). When the fourth
+   argument returns true on a loc, that loc is not considered in the search and
+   the search finishes with a nil return. By default, the fourth argument is
+   zip/end?."
+  ([selector-fn hzip-loc]
+     (select-next-loc selector-fn hzip-loc zip/next))
+  ([selector-fn hzip-loc next-fn]
+     (select-next-loc selector-fn hzip-loc next-fn zip/end?))
+  ([selector-fn hzip-loc next-fn end?-fn]
+     (loop [loc hzip-loc]
+       (if (end?-fn loc)
+         nil
+         (if (selector-fn loc)
+           loc
+           (recur (next-fn loc)))))))
 
 (defn select-locs
   "Given a selector function and a hickory data structure, returns a vector
@@ -585,3 +611,53 @@
    <div>...</div><b>...</b><span class=\"foo\">...</span>"
   [& selectors]
   (apply ordered #(right-of-node-type % :element) selectors))
+
+(defn has-descendant
+  "Takes a selector as argument and returns a selector that returns true
+   when some descendant node of the zip-loc given as the argument satisfies
+   the selector.
+
+   Be aware that because this selector must do a full sub-tree search on
+   each node examined, it can have terrible performance. It's helpful if this is
+   a late clause in an `and`, to prevent it from even attempting to match
+   unless other criteria have been met first.
+
+   Example: (has-descendant (tag :div))
+     will select the span and the outer div, but not the inner div, in
+   <span><div><div></div></div></span>"
+  [selector]
+  (fn [hzip-loc]
+    ;; Want to not count the current node, and stop after the last node
+    ;; in the subtree of it has been checked, which is the next node
+    ;; after the rightmost child.
+    (let [subtree-start-loc (-> hzip-loc zip/down)
+          has-children? (not= nil subtree-start-loc)]
+      ;; has-children? is needed to guard against zip/* receiving a nil arg in
+      ;; a selector.
+      (if has-children?
+        (let [subtree-end-loc (after-subtree hzip-loc)]
+          (if (select-next-loc selector subtree-start-loc
+                               zip/next
+                               #(= % subtree-end-loc))
+            hzip-loc))))))
+
+(defn has-child
+  "Takes a selector as argument and returns a selector that returns true
+   when some direct child node of the zip-loc given as the argument satisfies
+   the selector.
+
+   Example: (has-child (tag :div))
+     will select only the inner span in
+   <div><span><div></div></span></div>"
+  [selector]
+  (fn [hzip-loc]
+    (let [subtree-start-loc (-> hzip-loc zip/down)
+          has-children? (not= nil subtree-start-loc)]
+      ;; has-children? is needed to guard against zip/* receiving a nil arg in
+      ;; a selector.
+      (if has-children?
+        (if (select-next-loc selector subtree-start-loc
+                             zip/right
+                             #(nil? %))
+          hzip-loc)))))
+
