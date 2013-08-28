@@ -258,7 +258,7 @@ to your project.clj, or an equivalent entry for your Maven-compatible build tool
 ## Changes
 
 - Released version 0.5.1.
-    * Added `has-child?` and `has-descendant?` selectors. Be careful with `has-descendant?`, as it must do a full subtree search on each node, which is not fast.
+    * Added `has-child` and `has-descendant` selectors. Be careful with `has-descendant`, as it must do a full subtree search on each node, which is not fast.
 
 - Released version 0.5.0.
     * Now works in Clojurescript as well, huge thanks to [Julien Eluard](https://github.com/jeluard) for doing the heavy lifting on this.
