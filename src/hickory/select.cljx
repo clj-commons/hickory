@@ -632,11 +632,32 @@
     ;; after the rightmost child.
     (let [subtree-start-loc (-> hzip-loc zip/down)
           has-children? (not= nil subtree-start-loc)]
-      ;; has-children? is needed to guard against zip/node receiving a nil arg.
+      ;; has-children? is needed to guard against zip/* receiving a nil arg in
+      ;; a selector.
       (if has-children?
         (let [subtree-end-loc (after-subtree hzip-loc)]
           (if (select-next-loc selector subtree-start-loc
                                zip/next
                                #(= % subtree-end-loc))
             hzip-loc))))))
+
+(defn has-child
+  "Takes a selector as argument and returns a selector that returns true
+   when some direct child node of the zip-loc given as the argument satisfies
+   the selector.
+
+   Example: (has-child (tag :div))
+     will select only the inner span in
+   <div><span><div></div></span></div>"
+  [selector]
+  (fn [hzip-loc]
+    (let [subtree-start-loc (-> hzip-loc zip/down)
+          has-children? (not= nil subtree-start-loc)]
+      ;; has-children? is needed to guard against zip/* receiving a nil arg in
+      ;; a selector.
+      (if has-children?
+        (if (select-next-loc selector subtree-start-loc
+                             zip/right
+                             #(nil? %))
+          hzip-loc)))))
 
