@@ -62,7 +62,7 @@
         publicId (aget dt "publicId")
         systemId (aget dt "systemId")]
     (if (not (empty? publicId))
-      (format "<!DOCTYPE %s PUBLIC \"%s\" \"%s\">" name publicId systemId)
+      (utils/format "<!DOCTYPE %s PUBLIC \"%s\" \"%s\">" name publicId systemId)
       (str "<!DOCTYPE " name ">"))))
 
 (extend-protocol HiccupRepresentable
