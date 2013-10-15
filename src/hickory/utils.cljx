@@ -2,7 +2,8 @@
   "Miscellaneous utilities used internally."
   #+clj (:require [quoin.text :as qt])
   (:require [clojure.string :as string]
-            #+cljs [goog.string :as gstring]))
+            #+cljs [goog.string :as gstring]
+            #+cljs [goog.string.format]))
 
 ;;
 ;; Data
@@ -20,6 +21,12 @@
 ;;
 ;; String utils
 ;;
+
+#+cljs
+(defn format
+  "Formats a string using goog.string.format."
+  [fmt & args]
+  (apply gstring/format fmt args))
 
 (defn html-escape
   [s]

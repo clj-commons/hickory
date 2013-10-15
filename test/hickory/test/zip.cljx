@@ -4,7 +4,7 @@
             [hickory.core :refer [as-hiccup as-hickory parse]]
             [hickory.zip :refer [hickory-zip hiccup-zip]]
             #+cljs [cemerick.cljs.test :as t])
-  #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest tthrown-with-msg?)]))
+  #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest)]))
 
 (deftest hickory-zipper
   (is (= {:type :document,
