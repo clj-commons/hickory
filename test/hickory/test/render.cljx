@@ -3,7 +3,7 @@
   (:require [hickory.core :refer [as-hiccup as-hickory parse parse-fragment]]
             [hickory.render :refer [hiccup-to-html hickory-to-html]]
             #+cljs [cemerick.cljs.test :as t])
-  #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest thrown-with-msg?)])
+  #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest)])
   #+clj (:import clojure.lang.ExceptionInfo))
 ;;
 ;; Hickory to HTML

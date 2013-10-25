@@ -257,6 +257,9 @@ to your project.clj, or an equivalent entry for your Maven-compatible build tool
 
 ## Changes
 
+- Released version 0.5.2.
+    * Updates the Clojurescript version to use the latest version of Clojurescript (0.0-1934).
+
 - Released version 0.5.1.
     * Added `has-child` and `has-descendant` selectors. Be careful with `has-descendant`, as it must do a full subtree search on each node, which is not fast.
 

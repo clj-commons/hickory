@@ -1,6 +1,7 @@
 (ns hickory.core
   (:require [hickory.utils :as utils]
-            [clojure.zip :as zip]))
+            [clojure.zip :as zip]
+            [goog.string :as gstring]))
 
 ;;
 ;; Protocols
@@ -62,7 +63,7 @@
         publicId (aget dt "publicId")
         systemId (aget dt "systemId")]
     (if (not (empty? publicId))
-      (format "<!DOCTYPE %s PUBLIC \"%s\" \"%s\">" name publicId systemId)
+      (gstring/format "<!DOCTYPE %s PUBLIC \"%s\" \"%s\">" name publicId systemId)
       (str "<!DOCTYPE " name ">"))))
 
 (extend-protocol HiccupRepresentable
