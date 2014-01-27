@@ -11,7 +11,8 @@
              (first-idx -1 2) => 2
              (first-idx 5 -1) => 5
              (first-idx 5 3) => 3"
-  [^long a ^long b]
+  [#+clj ^long a #+clj ^long b
+   #+cljs a #+cljs b]
   (if (== a -1)
     b
     (if (== b -1)
