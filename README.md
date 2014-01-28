@@ -250,12 +250,15 @@ the parsed data, like doctype and comments.
 To get hickory, add
 
 ```clojure
-[hickory "0.5.1"]
+[hickory "0.5.3"]
 ```
 
 to your project.clj, or an equivalent entry for your Maven-compatible build tool.
 
 ## Changes
+
+- Released version 0.5.3.
+    * Minor bug fix to accommodate ClojureScript's new type hinting support.
 
 - Released version 0.5.2.
     * Updates the Clojurescript version to use the latest version of Clojurescript (0.0-1934).
