@@ -1,4 +1,4 @@
-(defproject hickory "0.5.3"
+(defproject hickory "0.5.4"
   :description "HTML as Data"
   :url "http://github.com/davidsantiago/hickory"
   :license {:name "Eclipse Public License"
@@ -6,13 +6,14 @@
   :source-paths ["src"  "target/generated-src"]
   :test-paths ["target/generated-test"]
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [org.clojure/clojurescript "0.0-1934"]
                  [quoin "0.1.0"]
                  [org.jsoup/jsoup "1.7.1"]]
-  :plugins [[codox "0.6.4"]
-            [lein-cljsbuild "0.3.4"]
-            [com.keminglabs/cljx "0.3.0"]
-            [com.cemerick/clojurescript.test "0.1.0"]]
+  :plugins [[codox "0.6.4"]]
+  :profiles {:dev
+             {:dependencies [[org.clojure/clojurescript "0.0-2227"]]
+              :plugins [[lein-cljsbuild "1.0.3"]
+                        [com.keminglabs/cljx "0.4.0"]
+                        [com.cemerick/clojurescript.test "0.3.1"]]}}
   :hooks [cljx.hooks]
   :codox {:sources ["src" "target/generated-src"]
           :output-dir "codox-out"
