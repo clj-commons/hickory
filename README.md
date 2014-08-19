@@ -250,12 +250,15 @@ the parsed data, like doctype and comments.
 To get hickory, add
 
 ```clojure
-[hickory "0.5.3"]
+[hickory "0.5.4"]
 ```
 
 to your project.clj, or an equivalent entry for your Maven-compatible build tool.
 
 ## Changes
+
+- Released version 0.5.4.
+    * Fixed project dependencies so ClojureScript is moved to a dev-dependency.
 
 - Released version 0.5.3.
     * Minor bug fix to accommodate ClojureScript's new type hinting support.
