@@ -117,7 +117,7 @@
 (extend-protocol HickoryRepresentable
   object
   (as-hickory [this] (condp = (aget this "nodeType")
-                       Attribute [(utils/lower-case-keyword (aget this "name")) (aget this "nodeValue")]
+                       Attribute [(utils/lower-case-keyword (aget this "name")) (aget this "value")]
                        Comment {:type :comment
                                 :content [(aget this "data")]}
                        Document {:type :document
