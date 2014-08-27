@@ -32,9 +32,43 @@
      node must have an implementation of the HickoryRepresentable protocol;
      nodes created by parse or parse-fragment already do."))
 
+(defn extend-type-with-seqable
+  [t]
+  (extend-type t
+    ISeqable
+    (-seq [array] (array-seq array))))
+
+(if (exists? js/process)
+  (do
+    (def jsdom (.-jsdom (js/require "jsdom")))
+    (def jsdom-L1 (js/require "jsdom/lib/jsdom/level1/core"))
+    (def jsdom-L1-core (aget jsdom-L1 "dom" "level1" "core"))
+    (def Node (.-Node jsdom-L1-core))
+    (let [NodeList (.-NodeList jsdom-L1-core)
+          NamedNodeMap (.-NamedNodeMap jsdom-L1-core)
+          AttributeList (.-AttributeList jsdom-L1-core)]
+      (extend-type-with-seqable NodeList)
+      (extend-type-with-seqable NamedNodeMap)
+      (extend-type-with-seqable AttributeList)
+      (defn DOMParser-fromString
+        [s]
+        (jsdom s))))
+  (do
+    (extend-type-with-seqable js/NodeList)
+    (when (exists? js/NamedNodeMap)
+      (extend-type-with-seqable js/NamedNodeMap))
+    (when (exists? js/MozNamedAttrMap)
+      (extend-type-with-seqable js/MozNamedAttrMap))
+    (def Node js/Node)
+    (if (exists? js/DOMParser)
+      (defn DOMParser-fromString
+        [s]
+        (.parseFromString (js/DOMParser.) s "text/html"))
+      (def DOMParser-fromString nil))))
+
 (defn node-type
   [type]
-  (aget js/Node (str type "_NODE")))
+  (aget Node (str type "_NODE")))
 
 (def Attribute (node-type "ATTRIBUTE"))
 (def Comment (node-type "COMMENT"))
@@ -42,20 +76,6 @@
 (def DocumentType (node-type "DOCUMENT_TYPE"))
 (def Element (node-type "ELEMENT"))
 (def Text (node-type "TEXT"))
-
-(defn extend-type-with-seqable
-  [t]
-  (extend-type t
-    ISeqable
-    (-seq [array] (array-seq array))))
-
-(extend-type-with-seqable js/NodeList)
-
-(when (exists? js/NamedNodeMap)
-  (extend-type-with-seqable js/NamedNodeMap))
-
-(when (exists? js/MozNamedAttrMap) ;;NamedNodeMap has been renamed on modern gecko implementations (see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap)
-  (extend-type-with-seqable js/MozNamedAttrMap))
 
 (defn format-doctype
   [dt]
@@ -92,12 +112,12 @@
                                                  (if (utils/unescapable-content tag)
                                                    (map #(aget % "wholeText") (aget this "childNodes"))
                                                    (map as-hiccup (aget this "childNodes"))))))
-                      Text (utils/html-escape (aget this "wholeText")))))
+                      Text (utils/html-escape (aget this "nodeValue")))))
 
 (extend-protocol HickoryRepresentable
   object
   (as-hickory [this] (condp = (aget this "nodeType")
-                       Attribute [(utils/lower-case-keyword (aget this "name")) (aget this "value")]
+                       Attribute [(utils/lower-case-keyword (aget this "name")) (aget this "nodeValue")]
                        Comment {:type :comment
                                 :content [(aget this "data")]}
                        Document {:type :document
@@ -114,7 +134,7 @@
                                 :content (not-empty
                                            (into [] (map as-hickory
                                                          (aget this "childNodes"))))}
-                       Text (aget this "wholeText"))))
+                       Text (aget this "nodeValue"))))
 
 (defn extract-doctype
   [s]
@@ -129,8 +149,8 @@
 
 (defn parse-dom-with-domparser
   [s]
-  (if (exists? js/DOMParser)
-    (.parseFromString (js/DOMParser.) s "text/html")))
+  (if DOMParser-fromString
+    (DOMParser-fromString s)))
 
 (defn parse-dom-with-write
   "Parse an HTML document (or fragment) as a DOM using document.implementation.createHTMLDocument and document.write."
