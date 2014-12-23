@@ -71,23 +71,15 @@
           (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                (apply str (map hickory-to-xml (:content dom))))
           :element
-          (cond
-           (utils/void-element (:tag dom))
-           (str "<" (name (:tag dom))
-                (apply str (map render-hickory-attribute (:attrs dom)))
-                ">")
-           (utils/unescapable-content (:tag dom))
-           (str "<" (name (:tag dom))
-                (apply str (map render-hickory-attribute (:attrs dom)))
-                ">"
-                (apply str (:content dom)) ;; Won't get html-escaped.
-                "</" (name (:tag dom)) ">")
-           :else
+          (if-not (empty? (:content dom))
            (str "<" (name (:tag dom))
                 (apply str (map render-hickory-attribute (:attrs dom)))
                 ">"
                 (apply str (map hickory-to-xml (:content dom)))
-                "</" (name (:tag dom)) ">"))
+                "</" (name (:tag dom)) ">")
+           (str "<" (name (:tag dom))
+                (apply str (map render-hickory-attribute (:attrs dom)))
+                "/>"))
           :comment
           (str "<!--" (apply str (:content dom)) "-->"))
       (catch #+clj IllegalArgumentException #+cljs js/Error e
