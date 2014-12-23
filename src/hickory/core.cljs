@@ -1,7 +1,8 @@
 (ns hickory.core
   (:require [hickory.utils :as utils]
             [clojure.zip :as zip]
-            [goog.string :as gstring]))
+            [goog.string :as gstring]
+            [goog.dom.xml :as gxml]))
 
 ;;
 ;; Protocols
@@ -183,5 +184,4 @@
 
 (defn parse-xml
   [s]
-  (if (exists? js/DOMParser)
-    (.parseFromString (js/DOMParser.) s "application/xml")))
+  (gxml/loadXml s))
