@@ -213,10 +213,11 @@
      ;; http://www.whatwg.org/specs/web-apps/current-work/#attribute-name-state
      (fn [hzip-loc]
        (let [node (zip/node hzip-loc)
-             attr-key (keyword (string/lower-case (name attr-name)))]
+             attr-str (string/lower-case (name attr-name))
+             keys-set (->> node :attrs keys (map string/lower-case) set)]
          ;; If the attribute does not exist, we'll definitely return null.
          ;; Otherwise, we'll ask the predicate if we should return hzip-loc.
-         (if (clojure.core/and (contains? (:attrs node) attr-key)
+         (if (clojure.core/and (contains? keys-set attr-str)
                                (predicate (get-in node [:attrs attr-key])))
            hzip-loc)))))
 
