@@ -255,6 +255,10 @@ To get hickory, add
 
 to your project.clj, or an equivalent entry for your Maven-compatible build tool.
 
+## ClojureScript support
+
+Hickory expects a DOM implementation and thus won't work out of the box on node. On browsers it works for IE9+ (you can find a workaround for IE9 [here](http://stackoverflow.com/questions/9250545/javascript-domparser-access-innerhtml-and-other-properties)).
+
 ## Changes
 
 - Released version 0.5.4.
