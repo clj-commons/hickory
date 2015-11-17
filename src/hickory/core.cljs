@@ -10,7 +10,7 @@
 (defprotocol HiccupRepresentable
   "Objects that can be represented as Hiccup nodes implement this protocol in
    order to make the conversion."
-  (as-hiccup [this]
+  (as-hiccup [this escape]
     "Converts the node given into a hiccup-format data structure. The
      node must have an implementation of the HiccupRepresentable
      protocol; nodes created by parse or parse-fragment already do."))
@@ -68,31 +68,35 @@
 
 (extend-protocol HiccupRepresentable
   object
-  (as-hiccup [this] (condp = (aget this "nodeType")
-                      Attribute [(utils/lower-case-keyword (aget this "name"))
-                                 (aget this "value")]
-                      Comment (str "<!--" (aget this "data") "-->")
-                      Document (map as-hiccup (aget this "childNodes"))
-                      DocumentType (format-doctype this)
-                      ;; There is an issue with the hiccup format, which is that it
-                      ;; can't quite cover all the pieces of HTML, so anything it
-                      ;; doesn't cover is thrown into a string containing the raw
-                      ;; HTML. This presents a problem because it is then never the case
-                      ;; that a string in a hiccup form should be html-escaped (except
-                      ;; in an attribute value) when rendering; it should already have
-                      ;; any escaping. Since the HTML parser quite properly un-escapes
-                      ;; HTML where it should, we have to go back and un-un-escape it
-                      ;; wherever text would have been un-escaped. We do this by
-                      ;; html-escaping the parsed contents of text nodes, and not
-                      ;; html-escaping comments, data-nodes, and the contents of
-                      ;; unescapable nodes.
-                      Element (let [tag (utils/lower-case-keyword (aget this "tagName"))]
-                                (into [] (concat [tag
-                                                  (into {} (map as-hiccup (aget this "attributes")))]
-                                                 (if (utils/unescapable-content tag)
-                                                   (map #(aget % "wholeText") (aget this "childNodes"))
-                                                   (map as-hiccup (aget this "childNodes"))))))
-                      Text (utils/html-escape (aget this "wholeText")))))
+  (as-hiccup [this escape]
+    (condp = (aget this "nodeType")
+      Attribute [(utils/lower-case-keyword (aget this "name"))
+                 (aget this "value")]
+      Comment (str "<!--" (aget this "data") "-->")
+      Document (map #(as-hiccup % escape) (aget this "childNodes"))
+      DocumentType (format-doctype this)
+      ;; There is an issue with the hiccup format, which is that it
+      ;; can't quite cover all the pieces of HTML, so anything it
+      ;; doesn't cover is thrown into a string containing the raw
+      ;; HTML. This presents a problem because it is then never the case
+      ;; that a string in a hiccup form should be html-escaped (except
+      ;; in an attribute value) when rendering; it should already have
+      ;; any escaping. Since the HTML parser quite properly un-escapes
+      ;; HTML where it should, we have to go back and un-un-escape it
+      ;; wherever text would have been un-escaped. We do this by
+      ;; html-escaping the parsed contents of text nodes, and not
+      ;; html-escaping comments, data-nodes, and the contents of
+      ;; unescapable nodes.
+      Element (let [tag (utils/lower-case-keyword (aget this "tagName"))]
+                (into [] (concat [tag
+                                  (into {} (map #(as-hiccup % escape) (aget this "attributes")))]
+                                 (if (utils/unescapable-content tag)
+                                   (map #(aget % "wholeText") (aget this "childNodes"))
+                                   (map #(as-hiccup % escape) (aget this "childNodes"))))))
+      Text (let [unescaped (aget this "wholeText")]
+             (if escape
+               (utils/html-escape unescaped)
+               unescaped)))))
 
 (extend-protocol HickoryRepresentable
   object

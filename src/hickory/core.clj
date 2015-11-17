@@ -13,7 +13,7 @@
 (defprotocol HiccupRepresentable
   "Objects that can be represented as Hiccup nodes implement this protocol in
    order to make the conversion."
-  (as-hiccup [this]
+  (as-hiccup [this escape]
     "Converts the node given into a hiccup-format data structure. The
      node must have an implementation of the HiccupRepresentable
      protocol; nodes created by parse or parse-fragment already do."))
@@ -39,20 +39,20 @@
 (extend-protocol HiccupRepresentable
   Attribute
   ;; Note the attribute value is not html-escaped; see comment for Element.
-  (as-hiccup [this] [(utils/lower-case-keyword (.getKey this))
+  (as-hiccup [this escape] [(utils/lower-case-keyword (.getKey this))
                      (.getValue this)])
   Attributes
-  (as-hiccup [this] (into {} (map as-hiccup this)))
+  (as-hiccup [this escape] (into {} (map #(as-hiccup % escape) this)))
   Comment
-  (as-hiccup [this] (str "<!--" (.getData this) "-->"))
+  (as-hiccup [this escape] (str "<!--" (.getData this) "-->"))
   DataNode
-  (as-hiccup [this] (str this))
+  (as-hiccup [this escape] (str this))
   Document
-  (as-hiccup [this] (map as-hiccup (.childNodes this)))
+  (as-hiccup [this escape] (map #(as-hiccup % escape) (.childNodes this)))
   DocumentType
-  (as-hiccup [this] (str this))
+  (as-hiccup [this escape] (str this))
   Element
-  (as-hiccup [this]
+  (as-hiccup [this escape]
     ;; There is an issue with the hiccup format, which is that it
     ;; can't quite cover all the pieces of HTML, so anything it
     ;; doesn't cover is thrown into a string containing the raw
@@ -67,15 +67,19 @@
     ;; unescapable nodes.
     (let [tag (utils/lower-case-keyword (.tagName this))]
       (into [] (concat [tag
-                        (as-hiccup (.attributes this))]
+                        (as-hiccup (.attributes this) escape)]
                        (if (utils/unescapable-content tag)
                          (map str (.childNodes this))
-                         (map as-hiccup (.childNodes this)))))))
+                         (map #(as-hiccup % escape) (.childNodes this)))))))
   TextNode
   ;; See comment for Element re: html escaping.
-  (as-hiccup [this] (utils/html-escape (.getWholeText this)))
+  (as-hiccup [this escape]
+    (let [unescaped (.getWholeText this)]
+      (if escape
+        (utils/html-escape unescaped)
+        unescaped)))
   XmlDeclaration
-  (as-hiccup [this] (str this)))
+  (as-hiccup [this escape] (str this)))
 
 (extend-protocol HickoryRepresentable
   Attribute
