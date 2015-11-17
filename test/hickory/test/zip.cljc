@@ -1,10 +1,10 @@
 (ns hickory.test.zip
-  #+clj (:use clojure.test)
+  #?(:clj (:use clojure.test))
   (:require [clojure.zip :as zip]
             [hickory.core :refer [as-hiccup as-hickory parse]]
             [hickory.zip :refer [hickory-zip hiccup-zip]]
-            #+cljs [cemerick.cljs.test :as t])
-  #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest)]))
+            #?(:cljs [cemerick.cljs.test :as t]))
+  #?(:cljs (:require-macros [cemerick.cljs.test :refer (is deftest)])))
 
 (deftest hickory-zipper
   (is (= {:type :document,
@@ -70,16 +70,16 @@
 
 (deftest hiccup-zipper
   (is (= '([:html {} [:head {}] [:body {} [:a {}]]])
-         (zip/node (hiccup-zip (as-hiccup (parse "<a>"))))))
+         (zip/node (hiccup-zip (as-hiccup (parse "<a>") true)))))
   (is (= [:html {} [:head {}] [:body {} [:a {}]]]
-         (-> (hiccup-zip (as-hiccup (parse "<a>")))
+         (-> (hiccup-zip (as-hiccup (parse "<a>") true))
              zip/next zip/node)))
   (is (= [:head {}]
-         (-> (hiccup-zip (as-hiccup (parse "<a>")))
+         (-> (hiccup-zip (as-hiccup (parse "<a>") true))
              zip/next zip/next zip/node)))
   (is (= [:body {} [:a {}]]
-         (-> (hiccup-zip (as-hiccup (parse "<a>")))
+         (-> (hiccup-zip (as-hiccup (parse "<a>") true))
              zip/next zip/next zip/next zip/node)))
   (is (= [:html {} [:head {}] [:body {} [:a {}]]]
-         (-> (hiccup-zip (as-hiccup (parse "<a>")))
+         (-> (hiccup-zip (as-hiccup (parse "<a>") true))
              zip/next zip/next zip/next zip/up zip/node))))

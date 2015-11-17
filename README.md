@@ -19,7 +19,7 @@ parsing functions, `parse` and `parse-fragment`. Both take a string
 containing HTML and return the parser objects representing the
 document. (It happens that these parser objects are Jsoup Documents
 and Nodes, but I do not consider this to be an aspect worth preserving
-if a change in parser should become necessary). 
+if a change in parser should become necessary).
 
 The first function, `parse` expects an entire HTML document, and
 parses it using an HTML5 parser ([Jsoup](http://jsoup.org) on Clojure and
@@ -35,7 +35,7 @@ simply give you the list of nodes that it parsed.
 These parsed objects can be turned into either Hiccup vector trees or
 Hickory DOM maps using the functions `as-hiccup` or `as-hickory`.
 
-Here's a usage example. 
+Here's a usage example.
 
 ```clojure
 user=> (use 'hickory.core)
@@ -48,10 +48,10 @@ user=> (as-hickory parsed-doc)
 {:type :document, :content [{:type :element, :attrs nil, :tag :html, :content [{:type :element, :attrs nil, :tag :head, :content nil} {:type :element, :attrs nil, :tag :body, :content [{:type :element, :attrs {:href "foo"}, :tag :a, :content ["foo"]}]}]}]}
 user=> (def parsed-frag (parse-fragment "<a href=\"foo\">foo</a> <a href=\"bar\">bar</a>"))
 #'user/parsed-frag
-user=> (as-hiccup parsed-frag)
+user=> (as-hiccup parsed-frag false)
 IllegalArgumentException No implementation of method: :as-hiccup of protocol: #'hickory.core/HiccupRepresentable found for class: clojure.lang.PersistentVector  clojure.core/-cache-protocol-fn (core_deftype.clj:495)
 
-user=> (map as-hiccup parsed-frag)
+user=> (map #(as-hiccup % false) parsed-frag)
 ([:a {:href "foo"} "foo"] " " [:a {:href "bar"} "bar"])
 user=> (map as-hickory parsed-frag)
 ({:type :element, :attrs {:href "foo"}, :tag :a, :content ["foo"]} " " {:type :element, :attrs {:href "bar"}, :tag :a, :content ["bar"]})
@@ -75,25 +75,25 @@ user=> (use 'hickory.zip)
 nil
 user=> (require '[clojure.zip :as zip])
 nil
-user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>"))) zip/node)
+user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>") false)) zip/node)
 ([:html {} [:head {}] [:body {} [:a {:href "foo"} "bar" [:br {}]]]])
-user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>"))) zip/next zip/node)
+user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>") false)) zip/next zip/node)
 [:html {} [:head {}] [:body {} [:a {:href "foo"} "bar" [:br {}]]]]
-user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>"))) zip/next zip/next zip/node)
+user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>") false)) zip/next zip/next zip/node)
 [:head {}]
-user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>"))) 
-           zip/next zip/next 
-           (zip/replace [:head {:id "a"}]) 
+user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>") false))
+           zip/next zip/next
+           (zip/replace [:head {:id "a"}])
            zip/node)
 [:head {:id "a"}]
-user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>"))) 
-           zip/next zip/next 
-           (zip/replace [:head {:id "a"}]) 
+user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>") false))
+           zip/next zip/next
+           (zip/replace [:head {:id "a"}])
            zip/root)
 ([:html {} [:head {:id "a"}] [:body {} [:a {:href "foo"} "bar" [:br {}]]]])
-user=> (-> (hickory-zip (as-hickory (parse "<a href=foo>bar<br></a>"))) 
-           zip/next zip/next 
-           (zip/replace {:type :element :tag :head :attrs {:id "a"} :content nil}) 
+user=> (-> (hickory-zip (as-hickory (parse "<a href=foo>bar<br></a>")))
+           zip/next zip/next
+           (zip/replace {:type :element :tag :head :attrs {:id "a"} :content nil})
            zip/root)
 {:type :document, :content [{:type :element, :attrs nil, :tag :html, :content [{:content nil, :type :element, :attrs {:id "a"}, :tag :head} {:type :element, :attrs nil, :tag :body, :content [{:type :element, :attrs {:href "foo"}, :tag :a, :content ["bar" {:type :element, :attrs nil, :tag :br, :content nil}]}]}]}]}
 user=> (hickory-to-html *1)
@@ -139,11 +139,11 @@ nil
 user=> (def site-htree (-> (client/get "http://formula1.com/default.html") :body parse as-hickory))
 #'user/site-htree
 user=> (-> (s/select (s/child (s/class "subCalender") ; sic
-                              (s/tag :div) 
-                              (s/id :raceDates) 
+                              (s/tag :div)
+                              (s/id :raceDates)
                               s/first-child
-                              (s/tag :b)) 
-                     site-htree) 
+                              (s/tag :b))
+                     site-htree)
            first :content first string/trim)
 "10, 11, 12 May 2013"
 ```
@@ -182,19 +182,19 @@ There are also selector combinators, which take as argument some number of other
 - `child`: Takes any number of selectors as arguments and returns a selector that returns true when the zipper location given as the argument is at the end of a chain of direct child relationships specified by the selectors given as arguments.
 - `descendant`: Takes any number of selectors as arguments and returns a selector that returns true when the zipper location given as the argument is at the end of a chain of descendant relationships specified by the selectors given as arguments.
 
-We can illustrate the selector combinators by continuing the Formula 1 example above. We suspect, to our dismay, that Sebastian Vettel is leading the championship for the fourth year in a row. 
+We can illustrate the selector combinators by continuing the Formula 1 example above. We suspect, to our dismay, that Sebastian Vettel is leading the championship for the fourth year in a row.
 
 ```clojure
-user=> (-> (s/select (s/descendant (s/class "subModule") 
-                                   (s/class "standings") 
-                                   (s/and (s/tag :tr) 
-                                          s/first-child) 
-                                   (s/and (s/tag :td) 
-                                          (s/nth-child 2)) 
-                                   (s/tag :a)) 
-                     site-htree) 
+user=> (-> (s/select (s/descendant (s/class "subModule")
+                                   (s/class "standings")
+                                   (s/and (s/tag :tr)
+                                          s/first-child)
+                                   (s/and (s/tag :td)
+                                          (s/nth-child 2))
+                                   (s/tag :a))
+                     site-htree)
            first :content first string/trim)
-"Sebastian Vettel"           
+"Sebastian Vettel"
 ```
 
 Our fears are confirmed, Sebastian Vettel is well on his way to a fourth consecutive championship. If you were to inspect the page by hand (as of around May 2013, at least), you would see that unlike the `child` selector we used in the example above, the `descendant` selector allows the argument selectors to skip stages in the tree; we've left out some elements in this descendant relationship. The first table row in the driver standings table is selected with the `and`, `tag` and `first-child` selectors, and then the second `td` element is chosen, which is the element that has the driver's name (the first table element has the driver's standing) inside an `A` element. All of this is dependent on the exact layout of the HTML in the site we are examining, of course, but it should give an idea of how you can combine selectors to reach into a specific node of an HTML document very easily.

@@ -10,3 +10,6 @@ pom.xml
 .lein-failures
 .lein-plugins
 .lein-repl-history
+/.nrepl-port
+/.cljs_rhino_repl/
+/out/
