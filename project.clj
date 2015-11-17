@@ -10,7 +10,7 @@
                  [org.jsoup/jsoup "1.7.1"]]
   :plugins [[codox "0.6.4"]]
   :profiles {:dev
-             {:dependencies [[org.clojure/clojurescript "1.7.170"]]
+             {:dependencies [[org.clojure/clojurescript "1.7.145"]]
               :plugins [[lein-cljsbuild "1.1.1"]
                         [com.cemerick/clojurescript.test "0.3.3"]]}}
   :codox {:sources ["src" "target/generated-src"]

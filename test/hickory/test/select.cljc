@@ -1,12 +1,12 @@
 (ns hickory.test.select
-  #+clj (:use clojure.test)
+  #?(:clj (:use clojure.test))
   (:require [hickory.core :as hickory]
             [hickory.select :as select]
             [hickory.utils :as utils]
             [hickory.zip :as hzip]
             [clojure.zip :as zip]
-            #+cljs [cemerick.cljs.test :as t])
-  #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest testing)]))
+            #?(:cljs [cemerick.cljs.test :as t]))
+  #?(:cljs (:require-macros [cemerick.cljs.test :refer (is deftest testing)])))
 
 (def html1
   "<!DOCTYPE html>

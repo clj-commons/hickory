@@ -1,8 +1,8 @@
 (ns hickory.test.core
-  #+clj (:use clojure.test)
+  #?(:clj (:use clojure.test))
   (:require [hickory.core :refer [as-hickory as-hiccup parse parse-fragment]]
-            #+cljs [cemerick.cljs.test :as t])
-  #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest)]))
+            #?(:cljs [cemerick.cljs.test :as t]))
+  #?(:cljs (:require-macros [cemerick.cljs.test :refer (is deftest)])))
 
 ;; This document tests: doctypes, white space text nodes, attributes,
 ;; and cdata nodes.
@@ -14,7 +14,7 @@
             [:a {:href "foo"} "foo"] " "
             [:a {:id "so", :href "bar"} "bar"]
             [:script {:src "blah.js"} "alert(\"hi\");"]]]]
-         (as-hiccup (parse "<!DOCTYPE html><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script>"))))
+         (as-hiccup (parse "<!DOCTYPE html><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script>") true)))
   (is (= {:type :document,
           :content [{:type :document-type,
                      :attrs {:name "html", :publicid "", :systemid ""}}
@@ -54,7 +54,7 @@
             [:a {:href "foo"} "foo"] " "
             [:a {:id "so", :href "bar"} "bar"]
             [:script {:src "blah.js"} "alert(\"hi\");"]]]]
-         (as-hiccup (parse "<!DOCTYPE html><body><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script></body>"))))
+         (as-hiccup (parse "<!DOCTYPE html><body><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script></body>") true)))
   (is (= {:type :document,
           :content [{:type :document-type,
                      :attrs {:name "html", :publicid "", :systemid ""}}
@@ -90,7 +90,7 @@
 (deftest basic-document-fragment
   (is (= [[:a {:href "foo"} "foo"] " "
           [:a {:href "bar"} "bar"]]
-         (map as-hiccup
+         (map #(as-hiccup % true)
               (parse-fragment "<a href=\"foo\">foo</a> <a href=\"bar\">bar</a>"))))
   (is (= [{:type :element,
            :attrs {:href "foo"},
@@ -109,10 +109,10 @@
   ;; strings that aren't attribute values, so the hiccup representation will
   ;; have the string contents html-escaped.
   (is (= [[:html {} [:head {}] [:body {} [:p {} "ABC&amp;\n\nDEF."]]]]
-         (as-hiccup (parse "<p>ABC&amp;\n\nDEF.</p>"))))
+         (as-hiccup (parse "<p>ABC&amp;\n\nDEF.</p>") true)))
   ;; <pre> tag preserves whitespace.
   (is (= [[:html {} [:head {}] [:body {} [:pre {} "ABC&amp;\n\nDEF."]]]]
-         (as-hiccup (parse "<pre>ABC&amp;\n\nDEF.</pre>"))))
+         (as-hiccup (parse "<pre>ABC&amp;\n\nDEF.</pre>") true)))
   ;; Hickory versions - Note that the representation is different, and Hickory
   ;; format does not keep HTML escaped in its representation, as it can
   ;; figure out what to escape at render time.
