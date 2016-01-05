@@ -1,4 +1,4 @@
-(defproject hickory "0.5.5-SNAPSHOT"
+(defproject hickory "0.6.0"
   :description "HTML as Data"
   :url "http://github.com/davidsantiago/hickory"
   :license {:name "Eclipse Public License"
@@ -37,4 +37,3 @@
                         :optimizations :whitespace
                         :pretty-print true}]
               :test-commands {"unit-tests" ["phantomjs" :runner "target/cljs/testable.js"]}})
-
