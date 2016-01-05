@@ -19,7 +19,7 @@ parsing functions, `parse` and `parse-fragment`. Both take a string
 containing HTML and return the parser objects representing the
 document. (It happens that these parser objects are Jsoup Documents
 and Nodes, but I do not consider this to be an aspect worth preserving
-if a change in parser should become necessary). 
+if a change in parser should become necessary).
 
 The first function, `parse` expects an entire HTML document, and
 parses it using an HTML5 parser ([Jsoup](http://jsoup.org) on Clojure and
@@ -35,7 +35,7 @@ simply give you the list of nodes that it parsed.
 These parsed objects can be turned into either Hiccup vector trees or
 Hickory DOM maps using the functions `as-hiccup` or `as-hickory`.
 
-Here's a usage example. 
+Here's a usage example.
 
 ```clojure
 user=> (use 'hickory.core)
@@ -81,19 +81,19 @@ user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>"))) zip/next z
 [:html {} [:head {}] [:body {} [:a {:href "foo"} "bar" [:br {}]]]]
 user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>"))) zip/next zip/next zip/node)
 [:head {}]
-user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>"))) 
-           zip/next zip/next 
-           (zip/replace [:head {:id "a"}]) 
+user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>")))
+           zip/next zip/next
+           (zip/replace [:head {:id "a"}])
            zip/node)
 [:head {:id "a"}]
-user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>"))) 
-           zip/next zip/next 
-           (zip/replace [:head {:id "a"}]) 
+user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>")))
+           zip/next zip/next
+           (zip/replace [:head {:id "a"}])
            zip/root)
 ([:html {} [:head {:id "a"}] [:body {} [:a {:href "foo"} "bar" [:br {}]]]])
-user=> (-> (hickory-zip (as-hickory (parse "<a href=foo>bar<br></a>"))) 
-           zip/next zip/next 
-           (zip/replace {:type :element :tag :head :attrs {:id "a"} :content nil}) 
+user=> (-> (hickory-zip (as-hickory (parse "<a href=foo>bar<br></a>")))
+           zip/next zip/next
+           (zip/replace {:type :element :tag :head :attrs {:id "a"} :content nil})
            zip/root)
 {:type :document, :content [{:type :element, :attrs nil, :tag :html, :content [{:content nil, :type :element, :attrs {:id "a"}, :tag :head} {:type :element, :attrs nil, :tag :body, :content [{:type :element, :attrs {:href "foo"}, :tag :a, :content ["bar" {:type :element, :attrs nil, :tag :br, :content nil}]}]}]}]}
 user=> (hickory-to-html *1)
@@ -139,11 +139,11 @@ nil
 user=> (def site-htree (-> (client/get "http://formula1.com/default.html") :body parse as-hickory))
 #'user/site-htree
 user=> (-> (s/select (s/child (s/class "subCalender") ; sic
-                              (s/tag :div) 
-                              (s/id :raceDates) 
+                              (s/tag :div)
+                              (s/id :raceDates)
                               s/first-child
-                              (s/tag :b)) 
-                     site-htree) 
+                              (s/tag :b))
+                     site-htree)
            first :content first string/trim)
 "10, 11, 12 May 2013"
 ```
@@ -182,17 +182,17 @@ There are also selector combinators, which take as argument some number of other
 - `child`: Takes any number of selectors as arguments and returns a selector that returns true when the zipper location given as the argument is at the end of a chain of direct child relationships specified by the selectors given as arguments.
 - `descendant`: Takes any number of selectors as arguments and returns a selector that returns true when the zipper location given as the argument is at the end of a chain of descendant relationships specified by the selectors given as arguments.
 
-We can illustrate the selector combinators by continuing the Formula 1 example above. We suspect, to our dismay, that Sebastian Vettel is leading the championship for the fourth year in a row. 
+We can illustrate the selector combinators by continuing the Formula 1 example above. We suspect, to our dismay, that Sebastian Vettel is leading the championship for the fourth year in a row.
 
 ```clojure
-user=> (-> (s/select (s/descendant (s/class "subModule") 
-                                   (s/class "standings") 
-                                   (s/and (s/tag :tr) 
-                                          s/first-child) 
-                                   (s/and (s/tag :td) 
-                                          (s/nth-child 2)) 
-                                   (s/tag :a)) 
-                     site-htree) 
+user=> (-> (s/select (s/descendant (s/class "subModule")
+                                   (s/class "standings")
+                                   (s/and (s/tag :tr)
+                                          s/first-child)
+                                   (s/and (s/tag :td)
+                                          (s/nth-child 2))
+                                   (s/tag :a))
+                     site-htree)
            first :content first string/trim)
 "Sebastian Vettel"           
 ```
@@ -250,7 +250,7 @@ the parsed data, like doctype and comments.
 To get hickory, add
 
 ```clojure
-[hickory "0.5.4"]
+[hickory "0.6.0"]
 ```
 
 to your project.clj, or an equivalent entry for your Maven-compatible build tool.
@@ -260,6 +260,11 @@ to your project.clj, or an equivalent entry for your Maven-compatible build tool
 Hickory expects a DOM implementation and thus won't work out of the box on node. On browsers it works for IE9+ (you can find a workaround for IE9 [here](http://stackoverflow.com/questions/9250545/javascript-domparser-access-innerhtml-and-other-properties)).
 
 ## Changes
+
+- Released version 0.6.0.
+    * Updated JSoup to version 1.8.3. This version of JSoup contains bug fixes, but slightly changes the way it
+    handles HTML: some parses and output might have different case than before. HTML is still case-insensitive,
+    of course, but Hickory minor version has been increased just in case. API and semantics are otherwise unchanged.
 
 - Released version 0.5.4.
     * Fixed project dependencies so ClojureScript is moved to a dev-dependency.
