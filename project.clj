@@ -7,7 +7,7 @@
   :test-paths ["target/generated-test"]
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [quoin "0.1.0"]
-                 [org.jsoup/jsoup "1.7.1"]]
+                 [org.jsoup/jsoup "1.8.3"]]
   :plugins [[codox "0.6.4"]]
   :profiles {:dev
              {:dependencies [[org.clojure/clojurescript "0.0-2227"]]
@@ -37,4 +37,3 @@
                         :optimizations :whitespace
                         :pretty-print true}]
               :test-commands {"unit-tests" ["phantomjs" :runner "target/cljs/testable.js"]}})
-

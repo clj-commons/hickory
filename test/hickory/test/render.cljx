@@ -43,7 +43,7 @@
   ;; do a roundtrip test in cljs.
   #+clj (is (= "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body></html>"
          (hickory-to-html (as-hickory (parse "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body</html>"))))))
-  
+
 
 (deftest error-handling-test
   (let [data {:type :foo :tag :a :attrs {:foo "bar"}}]
@@ -51,7 +51,7 @@
           (hickory-to-html nil)))
     (is (thrown-with-msg? ExceptionInfo #+clj #"^Not a valid node: \{:type :foo, :attrs \{:foo \"bar\"\}, :tag :a\}" #+cljs #"^Not a valid node: \{:type :foo, :tag :a\, :attrs \{:foo \"bar\"\}}"
           (hickory-to-html data)))
-    (is (= data 
+    (is (= data
            (try (hickory-to-html data)
                 (catch #+clj Exception #+cljs js/Error e (:dom (ex-data e))))))))
 
@@ -60,8 +60,10 @@
 ;;
 
 (deftest hiccup-to-html-test
-  (is (= "<!DOCTYPE html><html><head></head><body><p><!--hi--><a href=\"foo\" id=\"bar\">hi</a></p></body></html>"
-         (hiccup-to-html (as-hiccup (parse "<!DOCTYPE html><P><!--hi--><a href=foo id=\"bar\">hi")))))
+  #+clj (is (= "<!doctype html><html><head></head><body><p><!--hi--><a href=\"foo\" id=\"bar\">hi</a></p></body></html>"
+            (hiccup-to-html (as-hiccup (parse "<!doctype html><P><!--hi--><a href=foo id=\"bar\">hi")))))
+  #+cljs (is (= "<!DOCTYPE html><html><head></head><body><p><!--hi--><a href=\"foo\" id=\"bar\">hi</a></p></body></html>"
+             (hiccup-to-html (as-hiccup (parse "<!DOCTYPE html><P><!--hi--><a href=foo id=\"bar\">hi")))))
   ;; Make sure void elements don't have closing tags.
   (is (= "<html><head></head><body>Hi<br>There</body></html>"
          (hiccup-to-html (as-hiccup (parse "<html><head></head><body>Hi<br>There</body></html>")))))
@@ -77,7 +79,9 @@
          (hiccup-to-html [(as-hiccup (first (parse-fragment "<img fake-attr=\"abc&quot;def\">")))]))))
 
 (deftest hiccup-doctypes-test
-  (is (= "<!DOCTYPE html><html><head></head><body></body></html>"
-         (hiccup-to-html (as-hiccup (parse "<!DOCTYPE html><html><head></head><body></body></html>")))))
+  #+clj (is (= "<!doctype html><html><head></head><body></body></html>"
+            (hiccup-to-html (as-hiccup (parse "<!DOCTYPE html><html><head></head><body></body></html>")))))
+  #+cljs (is (= "<!DOCTYPE html><html><head></head><body></body></html>"
+             (hiccup-to-html (as-hiccup (parse "<!DOCTYPE html><html><head></head><body></body></html>")))))
   #+clj (is (= "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body></html>"
-               (hiccup-to-html (as-hiccup (parse "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body</html>"))))))
+               (hiccup-to-html (as-hiccup (parse "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body</html>"))))))
