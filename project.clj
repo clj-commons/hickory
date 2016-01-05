@@ -1,4 +1,4 @@
-(defproject hickory "0.6.0"
+(defproject hickory "0.6.1-SNAPSHOT"
   :description "HTML as Data"
   :url "http://github.com/davidsantiago/hickory"
   :license {:name "Eclipse Public License"
