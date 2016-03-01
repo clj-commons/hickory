@@ -1,7 +1,8 @@
 (ns hickory.core
   (:require [hickory.utils :as utils]
             [clojure.zip :as zip]
-            [goog.string :as gstring]))
+            [goog.string :as gstring]
+            [goog.dom :as dom]))
 
 ;;
 ;; Protocols
@@ -34,7 +35,7 @@
 
 (defn node-type
   [type]
-  (aget js/Node (str type "_NODE")))
+  (aget dom/NodeType type))
 
 (def Attribute (node-type "ATTRIBUTE"))
 (def Comment (node-type "COMMENT"))
@@ -49,7 +50,8 @@
     ISeqable
     (-seq [array] (array-seq array))))
 
-(extend-type-with-seqable js/NodeList)
+(when (exists? js/NodeList)
+  (extend-type-with-seqable js/NodeList))
 
 (when (exists? js/NamedNodeMap)
   (extend-type-with-seqable js/NamedNodeMap))
