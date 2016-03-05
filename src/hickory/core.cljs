@@ -44,6 +44,9 @@
 (def Element (node-type "ELEMENT"))
 (def Text (node-type "TEXT"))
 
+(defn- as-seq [nodelist]
+  (if (seq? nodelist) nodelist (array-seq nodelist)))
+
 (defn extend-type-with-seqable
   [t]
   (extend-type t
@@ -74,7 +77,7 @@
                       Attribute [(utils/lower-case-keyword (aget this "name"))
                                  (aget this "value")]
                       Comment (str "<!--" (aget this "data") "-->")
-                      Document (map as-hiccup (aget this "childNodes"))
+                      Document (map as-hiccup (as-seq (aget this "childNodes")))
                       DocumentType (format-doctype this)
                       ;; There is an issue with the hiccup format, which is that it
                       ;; can't quite cover all the pieces of HTML, so anything it
@@ -90,10 +93,10 @@
                       ;; unescapable nodes.
                       Element (let [tag (utils/lower-case-keyword (aget this "tagName"))]
                                 (into [] (concat [tag
-                                                  (into {} (map as-hiccup (aget this "attributes")))]
+                                                  (into {} (map as-hiccup (as-seq (aget this "attributes"))))]
                                                  (if (utils/unescapable-content tag)
-                                                   (map dom/getRawTextContent (aget this "childNodes"))
-                                                   (map as-hiccup (aget this "childNodes"))))))
+                                                   (map dom/getRawTextContent (as-seq (aget this "childNodes")))
+                                                   (map as-hiccup (as-seq (aget this "childNodes")))))))
                       Text (utils/html-escape (dom/getRawTextContent this)))))
 
 (extend-protocol HickoryRepresentable
@@ -105,17 +108,17 @@
                        Document {:type :document
                                  :content (not-empty
                                             (into [] (map as-hickory
-                                                          (aget this "childNodes"))))}
+                                                          (as-seq (aget this "childNodes")))))}
                        DocumentType {:type :document-type
                                      :attrs {:name (aget this "name")
                                              :publicid (aget this "publicId")
                                              :systemid (aget this "systemId")}}
                        Element {:type :element
-                                :attrs (not-empty (into {} (map as-hickory (aget this "attributes"))))
+                                :attrs (not-empty (into {} (map as-hickory (as-seq (aget this "attributes")))))
                                 :tag (utils/lower-case-keyword (aget this "tagName"))
                                 :content (not-empty
                                            (into [] (map as-hickory
-                                                         (aget this "childNodes"))))}
+                                                         (as-seq (aget this "childNodes")))))}
                        Text (dom/getRawTextContent this))))
 
 (defn extract-doctype
@@ -159,4 +162,4 @@
    in the tag hierarchy under <body>) into a list of DOM elements that can
    each be passed as input to as-hiccup or as-hickory."
   [s]
-  (aget (parse s) "body" "childNodes"))
+  (as-seq (aget (parse s) "body" "childNodes")))
