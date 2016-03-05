@@ -1,7 +1,8 @@
 (ns hickory.core
   (:require [hickory.utils :as utils]
             [clojure.zip :as zip]
-            [goog.string :as gstring]))
+            [goog.string :as gstring]
+            [goog.dom :as dom]))
 
 ;;
 ;; Protocols
@@ -90,9 +91,9 @@
                                 (into [] (concat [tag
                                                   (into {} (map as-hiccup (aget this "attributes")))]
                                                  (if (utils/unescapable-content tag)
-                                                   (map #(aget % "wholeText") (aget this "childNodes"))
+                                                   (map dom/getRawTextContent (aget this "childNodes"))
                                                    (map as-hiccup (aget this "childNodes"))))))
-                      Text (utils/html-escape (aget this "wholeText")))))
+                      Text (utils/html-escape (dom/getRawTextContent this)))))
 
 (extend-protocol HickoryRepresentable
   object
@@ -114,7 +115,7 @@
                                 :content (not-empty
                                            (into [] (map as-hickory
                                                          (aget this "childNodes"))))}
-                       Text (aget this "wholeText"))))
+                       Text (dom/getRawTextContent this))))
 
 (defn extract-doctype
   [s]
