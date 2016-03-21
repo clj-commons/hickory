@@ -47,21 +47,6 @@
 (defn- as-seq [nodelist]
   (if (seq? nodelist) nodelist (array-seq nodelist)))
 
-(defn extend-type-with-seqable
-  [t]
-  (extend-type t
-    ISeqable
-    (-seq [array] (array-seq array))))
-
-(when (exists? js/NodeList)
-  (extend-type-with-seqable js/NodeList))
-
-(when (exists? js/NamedNodeMap)
-  (extend-type-with-seqable js/NamedNodeMap))
-
-(when (exists? js/MozNamedAttrMap) ;;NamedNodeMap has been renamed on modern gecko implementations (see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap)
-  (extend-type-with-seqable js/MozNamedAttrMap))
-
 (defn format-doctype
   [dt]
   (let [name (aget dt "name")
@@ -145,7 +130,7 @@
         doctype-el (aget doc "doctype")]
     (when-not (extract-doctype s);; Remove default doctype if parsed string does not define it.
       (remove-el doctype-el))
-    (when-let [title-el (first (aget doc "head" "childNodes"))];; Remove default title if parsed string does not define it.
+    (when-let [title-el (aget doc "head" "firstChild")];; Remove default title if parsed string does not define it.
       (when (empty? (aget title-el "text"))
           (remove-el title-el)))
     (.write doc s)
