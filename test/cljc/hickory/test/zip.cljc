@@ -1,10 +1,9 @@
 (ns hickory.test.zip
-  #+clj (:use clojure.test)
   (:require [clojure.zip :as zip]
             [hickory.core :refer [as-hiccup as-hickory parse]]
             [hickory.zip :refer [hickory-zip hiccup-zip]]
-            #+cljs [cemerick.cljs.test :as t])
-  #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest)]))
+    #?(:clj[clojure.test :refer :all]
+       :cljs [cljs.test :refer-macros [is are deftest testing use-fixtures]])))
 
 (deftest hickory-zipper
   (is (= {:type :document,

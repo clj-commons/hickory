@@ -10,3 +10,4 @@ pom.xml
 .lein-failures
 .lein-plugins
 .lein-repl-history
+out/

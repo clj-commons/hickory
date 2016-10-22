@@ -1,13 +1,14 @@
 (ns hickory.test.core
-  #+clj (:use clojure.test)
   (:require [hickory.core :refer [as-hickory as-hiccup parse parse-fragment]]
-            #+cljs [cemerick.cljs.test :as t])
-  #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest)]))
+    #?(:clj
+            [clojure.test :refer :all]
+       :cljs [cljs.test :refer-macros [is are deftest testing use-fixtures]])))
 
 ;; This document tests: doctypes, white space text nodes, attributes,
 ;; and cdata nodes.
 (deftest basic-documents
-  (is (= ["<!DOCTYPE html>"
+  (is (= [#?(:clj  "<!doctype html>"
+             :cljs "<!DOCTYPE html>")
           [:html {}
            [:head {}]
            [:body {}
@@ -46,7 +47,8 @@
 ;; This document tests: doctypes, comments, white space text nodes, attributes,
 ;; and cdata nodes.
 (deftest basic-documents2
-  (is (= ["<!DOCTYPE html>"
+  (is (= [#?(:clj  "<!doctype html>"
+             :cljs "<!DOCTYPE html>")
           [:html {}
            [:head {}]
            [:body {}

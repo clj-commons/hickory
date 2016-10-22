@@ -1,39 +1,42 @@
-(defproject hickory "0.6.1-SNAPSHOT"
+(defproject hickory "0.7.0-SNAPSHOT"
   :description "HTML as Data"
   :url "http://github.com/davidsantiago/hickory"
   :license {:name "Eclipse Public License"
-            :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :source-paths ["src"  "target/generated-src"]
-  :test-paths ["target/generated-test"]
-  :dependencies [[org.clojure/clojure "1.5.1"]
-                 [quoin "0.1.0"]
-                 [org.jsoup/jsoup "1.7.1"]]
+            :url  "http://www.eclipse.org/legal/epl-v10.html"}
+
+
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [org.clojure/clojurescript "1.9.293"]
+                 [org.jsoup/jsoup "1.9.2"]
+                 [quoin "0.1.2" :exclusions [org.clojure/clojure]]]
+
+  :hooks [leiningen.cljsbuild]
+
   :plugins [[codox "0.6.4"]]
-  :profiles {:dev
-             {:dependencies [[org.clojure/clojurescript "0.0-2227"]]
-              :plugins [[lein-cljsbuild "1.0.3"]
-                        [com.keminglabs/cljx "0.4.0"]
-                        [com.cemerick/clojurescript.test "0.3.1"]]}}
-  :hooks [cljx.hooks]
-  :codox {:sources ["src" "target/generated-src"]
-          :output-dir "codox-out"
-          :src-dir-uri "http://github.com/davidsantiago/hickory/blob/master"
+  :doo {:build "test"}
+
+  :source-paths ["src/clj" "src/cljc" "src/cljs"]
+
+  :cljsbuild {:builds        {}
+              :test-commands {"unit-tests" ["lein" "with-profile" "test" "doo" "phantom" "once"]}}
+
+  :profiles
+  {:dev  {:source-paths ["src/clj" "src/cljc"]
+          :dependencies [[lein-doo "0.1.7"]]
+          :plugins      [[lein-cljsbuild "1.1.4"]
+                         [lein-doo "0.1.7" :exclusions [org.clojure/clojure]]]}
+   :test {:source-paths ["src/cljs" "src/cljc" "test/cljc" "test/cljs"]
+          :plugins      [[lein-doo "0.1.7" :exclusions [org.clojure/clojure]]]
+          :cljsbuild    {:builds {:test {:source-paths  ["src/cljs" "src/cljc" "test/cljc" "test/cljs"]
+                                         :compiler      {:output-to "target/cljs/testable.js"
+                                                         :main      "hickory.doo-runner"}
+                                         :optimizations :whitespace
+                                         :pretty-print  true}}}
+          }}
+
+  :codox {:sources                   ["src" "target/generated-src"]
+          :output-dir                "codox-out"
+          :src-dir-uri               "http://github.com/davidsantiago/hickory/blob/master"
           :src-linenum-anchor-prefix "L"}
 
-  :cljx {:builds [{:source-paths ["src"]
-                   :output-path "target/generated-src"
-                   :rules :clj}
-                  {:source-paths ["src"]
-                   :output-path "target/generated-src"
-                   :rules :cljs}
-                  {:source-paths ["test"]
-                   :output-path "target/generated-test"
-                   :rules :clj}
-                  {:source-paths ["test"]
-                   :output-path "target/generated-test"
-                   :rules :cljs}]}
-  :cljsbuild {:builds [{:source-paths ["target/generated-src" "target/generated-test"]
-                        :compiler {:output-to "target/cljs/testable.js"}
-                        :optimizations :whitespace
-                        :pretty-print true}]
-              :test-commands {"unit-tests" ["phantomjs" :runner "target/cljs/testable.js"]}})
+  )
