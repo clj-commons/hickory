@@ -60,11 +60,8 @@
 ;;
 
 (deftest hiccup-to-html-test
-  #?(:clj  (is (= "<!doctype html><html><head></head><body><p><!--hi--><a href=\"foo\" id=\"bar\">hi</a></p></body></html>"
+  (is (= "<!DOCTYPE html><html><head></head><body><p><!--hi--><a href=\"foo\" id=\"bar\">hi</a></p></body></html>"
                   (hiccup-to-html (as-hiccup (parse "<!DOCTYPE html><P><!--hi--><a href=foo id=\"bar\">hi")))))
-     :cljs (is (= "<!DOCTYPE html><html><head></head><body><p><!--hi--><a href=\"foo\" id=\"bar\">hi</a></p></body></html>"
-                  (hiccup-to-html (as-hiccup (parse "<!DOCTYPE html><P><!--hi--><a href=foo id=\"bar\">hi")))))
-     )
   ;; Make sure void elements don't have closing tags.
   (is (= "<html><head></head><body>Hi<br>There</body></html>"
          (hiccup-to-html (as-hiccup (parse "<html><head></head><body>Hi<br>There</body></html>")))))
@@ -80,9 +77,7 @@
          (hiccup-to-html [(as-hiccup (first (parse-fragment "<img fake-attr=\"abc&quot;def\">")))]))))
 
 (deftest hiccup-doctypes-test
-  #?(:clj  (is (= "<!doctype html><html><head></head><body></body></html>"
-                  (hiccup-to-html (as-hiccup (parse "<!DOCTYPE html><html><head></head><body></body></html>")))))
-     :cljs (is (= "<!DOCTYPE html><html><head></head><body></body></html>"
-                  (hiccup-to-html (as-hiccup (parse "<!DOCTYPE html><html><head></head><body></body></html>"))))))
+  (is (= "<!DOCTYPE html><html><head></head><body></body></html>"
+           (hiccup-to-html (as-hiccup (parse "<!DOCTYPE html><html><head></head><body></body></html>")))))
   #?(:clj (is (= "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body></html>"
                  (hiccup-to-html (as-hiccup (parse "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head></head><body></body</html>")))))))

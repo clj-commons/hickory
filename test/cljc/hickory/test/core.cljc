@@ -7,8 +7,7 @@
 ;; This document tests: doctypes, white space text nodes, attributes,
 ;; and cdata nodes.
 (deftest basic-documents
-  (is (= [#?(:clj  "<!doctype html>"
-             :cljs "<!DOCTYPE html>")
+  (is (= ["<!DOCTYPE html>"
           [:html {}
            [:head {}]
            [:body {}
@@ -47,8 +46,7 @@
 ;; This document tests: doctypes, comments, white space text nodes, attributes,
 ;; and cdata nodes.
 (deftest basic-documents2
-  (is (= [#?(:clj  "<!doctype html>"
-             :cljs "<!DOCTYPE html>")
+  (is (= ["<!DOCTYPE html>"
           [:html {}
            [:head {}]
            [:body {}
