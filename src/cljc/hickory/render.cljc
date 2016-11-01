@@ -119,6 +119,10 @@
    fast or heavy-duty, and definitely not a replacement for dedicated hiccup
    renderers, like hiccup itself, which *is* fast and heavy-duty.
 
+```klipse
+  (hiccup-to-html '([:html {} [:head {}] [:body {} [:a {} \"foo\"]]]))
+```
+
    Note that it will NOT in general be the case that
 
      (= my-html-src (hiccup-to-html (as-hiccup (parse my-html-src))))
@@ -126,7 +130,13 @@
    as we do not keep any letter case or whitespace information, any
    \"tag-soupy\" elements, attribute quote characters used, etc. It will also
    not generally be the case that this function's output will exactly match
-   hiccup's."
+   hiccup's.
+   For instance:
+
+```klipse
+(hiccup-to-html (as-hiccup (parse \"<A href=\\\"foo\\\">foo</A>\")))
+```
+  "
   [hiccup-forms]
   (apply str (map #(render-hiccup-form (hu/normalize-form %)) hiccup-forms)))
 
