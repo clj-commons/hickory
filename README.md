@@ -266,13 +266,17 @@ Several are available from [npm](https://www.npmjs.com).
 Install the npm package or use [lein-npm](https://github.com/RyanMcG/lein-npm).
 Here are some alternatives:
 
-- [jsdom](https://www.npmjs.com/package/jsdom)
+- [jsdom](https://www.npmjs.com/package/jsdom) - **Caution:** this will not work if you're using figwheel
 
-    (set! js/document (.jsdom (cljs.nodejs/require "jsdom")))
+    ```clojure
+	(set! js/document (.jsdom (cljs.nodejs/require "jsdom")))
+	```
 
 - [xmldom](https://www.npmjs.com/package/xmldom)
 
-    (set! js/DOMParser (.-DOMParser (cljs.nodejs/require "xmldom")))
+    ```clojure
+	(set! js/DOMParser (.-DOMParser (cljs.nodejs/require "xmldom")))
+	```
 
 ## Changes
 
