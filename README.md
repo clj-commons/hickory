@@ -250,7 +250,7 @@ the parsed data, like doctype and comments.
 To get hickory, add
 
 ```clojure
-[hickory "0.6.0"]
+[hickory "0.7.0"]
 ```
 
 to your project.clj, or an equivalent entry for your Maven-compatible build tool.
@@ -275,6 +275,13 @@ Here are some alternatives:
     (set! js/DOMParser (.-DOMParser (cljs.nodejs/require "xmldom")))
 
 ## Changes
+
+- Version 0.7.0. Thanks to [Ricardo J. Méndez](https://github.com/ricardojmendez) for the following updates.
+    * Removed dependency on cljx, since it was deprecated in June 2015.
+    * Converted all files and conditionals to cljc.
+    * Moved tests to cljs.test with doo, since cemerick.test was deprecated over a year ago.
+    * Updated Clojure and ClojureScript dependencies to avoid conflicts.
+    * Updated JSoup to 1.9.2, which should bring improved parsing performance.
 
 - Released version 0.6.0.
     * Updated JSoup to version 1.8.3. This version of JSoup contains bug fixes, but slightly changes the way it

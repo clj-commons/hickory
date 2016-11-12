@@ -1,9 +1,10 @@
 (ns hickory.test.convert
-  #+clj (:use clojure.test)
   (:require [hickory.convert :refer [hiccup-fragment-to-hickory hiccup-to-hickory hickory-to-hiccup]]
             [hickory.core :refer [as-hickory as-hiccup parse parse-fragment]]
-            #+cljs [cemerick.cljs.test :as t])
-  #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest)]))
+    #?(:clj
+            [clojure.test :refer :all]
+       :cljs [cljs.test :refer-macros [is are deftest testing use-fixtures]]))
+  )
 
 (deftest hiccup-to-hickory-test
   (is (= (as-hickory (parse "<i>Hi.</i>"))

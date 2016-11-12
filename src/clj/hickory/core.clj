@@ -50,7 +50,9 @@
   Document
   (as-hiccup [this] (map as-hiccup (.childNodes this)))
   DocumentType
-  (as-hiccup [this] (str this))
+  (as-hiccup [this] (utils/render-doctype (.attr this "name")
+                                          (.attr this "publicid")
+                                          (.attr this "systemid")))
   Element
   (as-hiccup [this]
     ;; There is an issue with the hiccup format, which is that it
