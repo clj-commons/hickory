@@ -5,7 +5,8 @@
   (:require [clojure.zip :as zip]
             [clojure.string :as string]
             [hickory.zip :as hzip])
-  #+clj (:import clojure.lang.IFn)
+  #?(:clj
+     (:import clojure.lang.IFn))
   (:refer-clojure :exclude [and or not class]))
 
 ;;

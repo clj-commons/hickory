@@ -1,28 +1,21 @@
 (ns hickory.test.core
-  #+clj (:use clojure.test)
   (:require [hickory.core :refer [as-hickory as-hiccup parse parse-fragment]]
-            #+cljs [cemerick.cljs.test :as t])
-  #+cljs (:require-macros [cemerick.cljs.test :refer (is deftest)]))
+    #?(:clj
+            [clojure.test :refer :all]
+       :cljs [cljs.test :refer-macros [is are deftest testing use-fixtures]])))
 
 ;; This document tests: doctypes, white space text nodes, attributes,
 ;; and cdata nodes.
 (deftest basic-documents
-  #+clj (is (= ["<!doctype html>"
-                [:html {}
-                  [:head {}]
-                  [:body {}
-                    [:a {:href "foo"} "foo"] " "
-                    [:a {:id "so", :href "bar"} "bar"]
-                    [:script {:src "blah.js"} "alert(\"hi\");"]]]]
-               (as-hiccup (parse "<!DOCTYPE html><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script>"))))
-  #+cljs (is (= ["<!DOCTYPE html>"
-                  [:html {}
-                    [:head {}]
-                    [:body {}
-                     [:a {:href "foo"} "foo"] " "
-                     [:a {:id "so", :href "bar"} "bar"]
-                     [:script {:src "blah.js"} "alert(\"hi\");"]]]]
-                (as-hiccup (parse "<!DOCTYPE html><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script>"))))
+  (is (= ["<!DOCTYPE html>"
+          [:html {}
+           [:head {}]
+           [:body {}
+            [:a {:href "foo"} "foo"] " "
+            [:a {:id "so", :href "bar"} "bar"]
+            [:script {:src "blah.js"} "alert(\"hi\");"]]]]
+         (as-hiccup (parse "<!DOCTYPE html><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script>"))))
+
   (is (= {:type :document,
           :content [{:type :document-type,
                      :attrs {:name "html", :publicid "", :systemid ""}}
@@ -54,24 +47,16 @@
 ;; This document tests: doctypes, comments, white space text nodes, attributes,
 ;; and cdata nodes.
 (deftest basic-documents2
-  #+clj (is (= ["<!doctype html>"
-                [:html {}
-                  [:head {}]
-                  [:body {}
-                    "<!--comment-->"
-                    [:a {:href "foo"} "foo"] " "
-                    [:a {:id "so", :href "bar"} "bar"]
-                    [:script {:src "blah.js"} "alert(\"hi\");"]]]]
-               (as-hiccup (parse "<!DOCTYPE html><body><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script></body>"))))
-  #+cljs (is (= ["<!DOCTYPE html>"
-                  [:html {}
-                   [:head {}]
-                   [:body {}
-                     "<!--comment-->"
-                     [:a {:href "foo"} "foo"] " "
-                     [:a {:id "so", :href "bar"} "bar"]
-                     [:script {:src "blah.js"} "alert(\"hi\");"]]]]
-                (as-hiccup (parse "<!DOCTYPE html><body><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script></body>"))))
+  (is (= ["<!DOCTYPE html>"
+           [:html {}
+            [:head {}]
+            [:body {}
+             "<!--comment-->"
+             [:a {:href "foo"} "foo"] " "
+             [:a {:id "so", :href "bar"} "bar"]
+             [:script {:src "blah.js"} "alert(\"hi\");"]]]]
+          (as-hiccup (parse "<!DOCTYPE html><body><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script></body>"))))
+
   (is (= {:type :document,
           :content [{:type :document-type,
                      :attrs {:name "html", :publicid "", :systemid ""}}

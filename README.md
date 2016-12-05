@@ -250,7 +250,7 @@ the parsed data, like doctype and comments.
 To get hickory, add
 
 ```clojure
-[hickory "0.6.0"]
+[hickory "0.7.0"]
 ```
 
 to your project.clj, or an equivalent entry for your Maven-compatible build tool.
@@ -266,15 +266,26 @@ Several are available from [npm](https://www.npmjs.com).
 Install the npm package or use [lein-npm](https://github.com/RyanMcG/lein-npm).
 Here are some alternatives:
 
-- [jsdom](https://www.npmjs.com/package/jsdom)
+- [jsdom](https://www.npmjs.com/package/jsdom) - **Caution:** this will not work if you're using figwheel
 
-    (set! js/document (.jsdom (cljs.nodejs/require "jsdom")))
+    ```clojure
+	(set! js/document (.jsdom (cljs.nodejs/require "jsdom")))
+	```
 
 - [xmldom](https://www.npmjs.com/package/xmldom)
 
-    (set! js/DOMParser (.-DOMParser (cljs.nodejs/require "xmldom")))
+    ```clojure
+	(set! js/DOMParser (.-DOMParser (cljs.nodejs/require "xmldom")))
+	```
 
 ## Changes
+
+- Version 0.7.0. Thanks to [Ricardo J. Méndez](https://github.com/ricardojmendez) for the following updates.
+    * Removed dependency on cljx, since it was deprecated in June 2015.
+    * Converted all files and conditionals to cljc.
+    * Moved tests to cljs.test with doo, since cemerick.test was deprecated over a year ago.
+    * Updated Clojure and ClojureScript dependencies to avoid conflicts.
+    * Updated JSoup to 1.9.2, which should bring improved parsing performance.
 
 - Released version 0.6.0.
     * Updated JSoup to version 1.8.3. This version of JSoup contains bug fixes, but slightly changes the way it
