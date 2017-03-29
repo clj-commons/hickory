@@ -79,8 +79,8 @@
    true when the function in the pred argument is called on them, or reaches
    the end."
   [hzip-loc pred]
-  (until zip/up hzip-loc #(clojure.core/or (nil? %)
-                                           (pred %))))
+  (until zip/down hzip-loc #(clojure.core/or (nil? %)
+                                             (pred %))))
 
 (defn next-of-node-type
   "Like clojure.zip/next, but only counts moves to nodes that have
