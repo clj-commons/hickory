@@ -148,7 +148,20 @@
 
 (defn parse
   "Parse an entire HTML document into a DOM structure that can be
-   used as input to as-hiccup or as-hickory."
+   used as input to as-hiccup or as-hickory.
+
+```klipse
+  (-> (parse \"<a style=\\\"visibility:hidden\\\">foo</a><div style=\\\"color:green\\\"><p>Hello</p></div>\")
+    as-hiccup)
+```
+
+```klipse
+  (-> (parse \"<a style=\\\"visibility:hidden\\\">foo</a><div style=\\\"color:green\\\"><p>Hello</p></div>\")
+    as-hickory)
+```
+
+
+  "
   [s]
   (or (parse-dom-with-domparser s) (parse-dom-with-write s)))
 

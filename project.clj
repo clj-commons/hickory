@@ -1,4 +1,4 @@
-(defproject hickory "0.7.1-SNAPSHOT"
+(defproject hickory "0.7.1"
   :description "HTML as Data"
   :url "http://github.com/davidsantiago/hickory"
   :license {:name "Eclipse Public License"
@@ -8,11 +8,12 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.293"]
                  [org.jsoup/jsoup "1.9.2"]
+                 [viebel/codox-klipse-theme "0.0.1"]
                  [quoin "0.1.2" :exclusions [org.clojure/clojure]]]
 
   :hooks [leiningen.cljsbuild]
 
-  :plugins [[codox "0.6.4"]]
+  :plugins [[lein-codox "0.10.0"]]
   :doo {:build "test"}
 
   :source-paths ["src/clj" "src/cljc" "src/cljs"]
@@ -35,8 +36,16 @@
           }}
 
   :codox {:sources                   ["src" "target/generated-src"]
-          :output-dir                "codox-out"
+          :output-path                "codox-out"
           :src-dir-uri               "http://github.com/davidsantiago/hickory/blob/master"
+          :metadata {:doc/format :markdown}
+          :language :clojurescript
+          :themes [:default [:klipse {:klipse/external-libs  "https://raw.githubusercontent.com/davidsantiago/hickory/master/src/cljc,https://raw.githubusercontent.com/davidsantiago/hickory/master/src/cljs"
+                                      :klipse/require-statement "(ns my.html
+                                                                  (:require [hickory.core :refer [parse as-hiccup as-hickory]]
+                                                                            [hickory.render :refer [hickory-to-html hiccup-to-html]]
+                                                                            [hickory.convert :refer [hiccup-to-hickory]]))
+                                                                "}]]
           :src-linenum-anchor-prefix "L"}
 
   )

@@ -250,7 +250,7 @@ the parsed data, like doctype and comments.
 To get hickory, add
 
 ```clojure
-[hickory "0.7.0"]
+[hickory "0.7.1"]
 ```
 
 to your project.clj, or an equivalent entry for your Maven-compatible build tool.
@@ -260,6 +260,8 @@ to your project.clj, or an equivalent entry for your Maven-compatible build tool
 Hickory expects a DOM implementation and thus won't work out of the box on node. On browsers it works for IE9+ (you can find a workaround for IE9 [here](http://stackoverflow.com/questions/9250545/javascript-domparser-access-innerhtml-and-other-properties)).
 
 ## Changes
+
+- Version 0.7.1. Thanks to [Matt Grimm](https://github.com/tkocmathla) for adding the up-pred zipper function.
 
 - Version 0.7.0. Thanks to [Ricardo J. Méndez](https://github.com/ricardojmendez) for the following updates.
     * Removed dependency on cljx, since it was deprecated in June 2015.
