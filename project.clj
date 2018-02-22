@@ -6,7 +6,7 @@
 
 
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.293"]
+                 [org.clojure/clojurescript "1.9.293" :scope "provided"]
                  [org.jsoup/jsoup "1.9.2"]
                  [viebel/codox-klipse-theme "0.0.1"]
                  [quoin "0.1.2" :exclusions [org.clojure/clojure]]]
