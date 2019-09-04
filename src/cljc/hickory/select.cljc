@@ -246,7 +246,7 @@
   [class-name]
   (letfn [(parse-classes [class-str]
                        (into #{} (mapv string/lower-case
-                                       (string/split class-str #" "))))]
+                                       (string/split class-str #"\s+"))))]
     (attr :class #(contains? (parse-classes %)
                              (string/lower-case (name class-name))))))
 

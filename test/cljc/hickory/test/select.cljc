@@ -22,7 +22,8 @@
 <div class=\"subdiv cool\" id=\"deepestdiv\">Div</div>
 </span>
 <!-- Comment 2 -->
-<span id=\"anid\" class=\"cool\">Span</span>
+<span id=\"anid\" class=\"line-feed-ahead
+cool\">Span</span>
 </div>
 </body>
 </html>")
@@ -196,6 +197,12 @@
                                      htree)]
         (is (and (= 1 (count selection))
                  (re-find #"aclass"
+                          (-> selection first :attrs :class)))))
+      ;; class followed by line feed
+      (let [selection (select/select (select/class :line-feed-ahead)
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (re-find #"line-feed-ahead"
                           (-> selection first :attrs :class))))))))
 
 (deftest any-test
