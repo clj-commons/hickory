@@ -6,7 +6,7 @@ transform, and output back to HTML. HTML can be parsed into
 map-based DOM-like format very similar to that used by clojure.xml. It
 can be used from both Clojure and Clojurescript.
 
-There is [API documentation](http://davidsantiago.github.com/hickory) available.
+There is [API documentation](https://davidsantiago.github.io/hickory/) available.
 
 ## Usage
 
