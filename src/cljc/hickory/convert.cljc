@@ -32,25 +32,24 @@
   [dom]
   (if (string? dom)
     (utils/html-escape dom)
-    (try
-      (case (:type dom)
-        :document
-        (mapv hickory-to-hiccup (:content dom))
-        :document-type
-        (utils/render-doctype (get-in dom [:attrs :name])
-                              (get-in dom [:attrs :publicid])
-                              (get-in dom [:attrs :systemid]))
-        :element
-        (if (utils/unescapable-content (:tag dom))
-          (if (every? string? (:content dom))
-            ;; Merge :attrs contents with {} to prevent nil from getting into
-            ;; the hiccup forms when there are no attributes.
-            (apply vector (:tag dom) (into {} (:attrs dom)) (:content dom))
-            (throw (ex-info
-                    "An unescapable content tag had non-string children."
-                    {:error-location dom})))
-          (apply vector (:tag dom) (into {} (:attrs dom))
-                 (map hickory-to-hiccup (:content dom))))
-        :comment
-        (str "<!--" (apply str (:content dom)) "-->")))))
+    (case (:type dom)
+      :document
+      (mapv hickory-to-hiccup (:content dom))
+      :document-type
+      (utils/render-doctype (get-in dom [:attrs :name])
+                            (get-in dom [:attrs :publicid])
+                            (get-in dom [:attrs :systemid]))
+      :element
+      (if (utils/unescapable-content (:tag dom))
+        (if (every? string? (:content dom))
+          ;; Merge :attrs contents with {} to prevent nil from getting into
+          ;; the hiccup forms when there are no attributes.
+          (apply vector (:tag dom) (into {} (:attrs dom)) (:content dom))
+          (throw (ex-info
+                  "An unescapable content tag had non-string children."
+                  {:error-location dom})))
+        (apply vector (:tag dom) (into {} (:attrs dom))
+               (map hickory-to-hiccup (:content dom))))
+      :comment
+      (str "<!--" (apply str (:content dom)) "-->"))))
 
