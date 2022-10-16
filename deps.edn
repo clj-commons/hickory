@@ -1,0 +1,8 @@
+{:paths ["src/clj" "src/cljc" "src/cljs"],
+ :deps
+ {org.clojure/clojure {:mvn/version "1.8.0"},
+  org.clojure/clojurescript {:mvn/version "1.9.293"},
+  org.jsoup/jsoup {:mvn/version "1.14.3"},
+  viebel/codox-klipse-theme {:mvn/version "0.0.1"},
+  quoin/quoin
+  {:mvn/version "0.1.2", :exclusions [org.clojure/clojure]}}}
