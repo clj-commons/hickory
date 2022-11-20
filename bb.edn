@@ -3,8 +3,5 @@
  :tasks
  {:requires ([babashka.fs :as fs])
 
-  test:clj (shell (if (fs/windows?)
-                    ;; Github actions setup-clojure used Powershell for lein :/
-                    "pwsh -command 'lein test'"
-                    "lein test"))
+  test:clj (shell "lein test")
   test:cljs (clojure "-M:test:cljs:cljs-test-runner")}}
