@@ -15,29 +15,13 @@
                  [quoin "0.1.2" :exclusions [org.clojure/clojure]]
                  [viebel/codox-klipse-theme "0.0.1" :scope "provided"]]
 
-  :hooks [leiningen.cljsbuild]
-
   :plugins [[lein-codox "0.10.0"]]
-  :doo {:build "test"}
 
   :source-paths ["src/clj" "src/cljc" "src/cljs"]
 
-  :cljsbuild {:builds        {}
-              :test-commands {"unit-tests" ["lein" "with-profile" "test" "doo" "phantom" "once"]}}
-
   :profiles
-  {:dev  {:source-paths ["src/clj" "src/cljc"]
-          :dependencies [[lein-doo "0.1.11"]]
-          :plugins      [[lein-cljsbuild "1.1.8"]
-                         [lein-doo "0.1.11" :exclusions [org.clojure/clojure]]]}
-   :test {:source-paths ["src/cljs" "src/cljc" "test/cljc" "test/cljs"]
-          :plugins      [[lein-doo "0.1.11" :exclusions [org.clojure/clojure]]]
-          :cljsbuild    {:builds {:test {:source-paths  ["src/cljs" "src/cljc" "test/cljc" "test/cljs"]
-                                         :compiler      {:output-to "target/cljs/testable.js"
-                                                         :main      "hickory.doo-runner"}
-                                         :optimizations :whitespace
-                                         :pretty-print  true}}}
-          }}
+  {:dev  {:source-paths ["src/clj" "src/cljc"]}
+   :test {:source-paths ["src/cljs" "src/cljc" "test/cljc" "test/cljs"]}}
 
   :codox {:sources                   ["src" "target/generated-src"]
           :output-path                "codox-out"
