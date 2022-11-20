@@ -1,6 +1,6 @@
-(defproject hickory "0.7.1"
+(defproject org.clj-commons/hickory "0.7.1"
   :description "HTML as Data"
-  :url "http://github.com/davidsantiago/hickory"
+  :url "https://github.com/clj-commons/hickory"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
 
