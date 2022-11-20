@@ -29,7 +29,7 @@
   {:dev  {:source-paths ["src/clj" "src/cljc"]
           :dependencies [[lein-doo "0.1.11"]]
           :plugins      [[lein-cljsbuild "1.1.8"]
-                         [lein-doo "0.1.7" :exclusions [org.clojure/clojure]]]}
+                         [lein-doo "0.1.11" :exclusions [org.clojure/clojure]]]}
    :test {:source-paths ["src/cljs" "src/cljc" "test/cljc" "test/cljs"]
           :plugins      [[lein-doo "0.1.11" :exclusions [org.clojure/clojure]]]
           :cljsbuild    {:builds {:test {:source-paths  ["src/cljs" "src/cljc" "test/cljc" "test/cljs"]
