@@ -12,3 +12,4 @@ pom.xml
 .lein-repl-history
 out/
 .cpcache
+.cache
