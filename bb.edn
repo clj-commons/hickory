@@ -16,7 +16,7 @@
   quickdoc {:extra-deps {io.github.borkdude/quickdoc {:git/sha "62dd3c6a828c3a5e61bae6ca80c8ba4781356a67"}}
             :requires ([quickdoc.api :as api])
             :task (api/quickdoc {:source-paths ["src/clj" "src/cljs" "src/cljs"]
-                                 :git/branch "main"
+                                 :git/branch "master"
                                  :github/repo "https://github.com/clj-commons/hickory"})}}
 
  }
