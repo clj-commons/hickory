@@ -49,6 +49,18 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
       - run: sudo apt-get update && sudo apt-get install -y phantomjs
+      - run:
+         name: Install babashka
+         command: |
+           curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install.sh
+           sudo bash install.sh
+           rm install.sh
+      - run:
+          name: install karma
+          command: |
+            sudo npm install -g karma-cli
+            sudo npm install
+
       - run: lein deps
 
       - save_cache:
@@ -57,7 +69,10 @@ jobs:
           key: v1-dependencies-{{ checksum "project.clj" }}
 
       # run tests!
-      - run: lein test
+      - run: bb test:clj
+      - run: bb test:cljs
+
+
   deploy:
     docker:
       # specify the version you desire here
