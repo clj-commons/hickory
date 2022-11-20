@@ -7,5 +7,5 @@
  :aliases
  {:dev
   {:extra-deps
-   {org.clojure/clojurescript {:mvn/version "1.9.293"},
+   {org.clojure/clojurescript {:mvn/version "1.11.60"},
     viebel/codox-klipse-theme {:mvn/version "0.0.1"}}}}}
