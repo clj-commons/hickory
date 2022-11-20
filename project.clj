@@ -9,7 +9,7 @@
                                     :password :env/clojars_password
                                     :sign-releases true}]]
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
+  :dependencies [[org.clojure/clojure "1.11.1"]
                  [org.clojure/clojurescript "1.9.293" :scope "provided"]
                  [org.jsoup/jsoup "1.15.2"]
                  [quoin "0.1.2" :exclusions [org.clojure/clojure]]
