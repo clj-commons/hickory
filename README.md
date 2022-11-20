@@ -1,3 +1,7 @@
+[![Clojars Project](https://img.shields.io/clojars/v/clj-commons/hickory.svg)](https://clojars.org/clj-commons/hickory)
+[![cljdoc badge](https://cljdoc.org/badge/clj-commons/hickory)](https://cljdoc.org/d/clj-commons/hickory)
+[![CircleCI](https://circleci.com/gh/clj-commons/hickory.svg?style=svg)](https://circleci.com/gh/clj-commons/hickory)
+
 # Hickory
 
 Hickory parses HTML into Clojure data structures, so you can analyze,
@@ -6,7 +10,6 @@ transform, and output back to HTML. HTML can be parsed into
 map-based DOM-like format very similar to that used by clojure.xml. It
 can be used from both Clojure and Clojurescript.
 
-There is [API documentation](http://davidsantiago.github.com/hickory) available.
 
 ## Usage
 
