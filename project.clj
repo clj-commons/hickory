@@ -18,8 +18,7 @@
   :hooks [leiningen.cljsbuild]
 
   :plugins [[lein-codox "0.10.0"]]
-  :doo {:build "test"
-        :paths {:phantom "./phantomjs"}}
+  :doo {:build "test"}
 
   :source-paths ["src/clj" "src/cljc" "src/cljs"]
 

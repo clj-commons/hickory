@@ -25,7 +25,7 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: circleci/clojure:openjdk-8-lein-2.9.1-node
+      - image: circleci/clojure:openjdk-8-lein-2.9.1-node-browsers
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -55,12 +55,6 @@ jobs:
           paths:
             - ~/.m2
           key: v1-dependencies-{{ checksum "project.clj" }}
-      - run:
-          name: Install phantom
-          command: |
-            export PHANTOM_JS="phantomjs-1.9.8-linux-x86_64"
-            wget https://bitbucket.org/ariya/phantomjs/downloads/$PHANTOM_JS.tar.bz2
-            tar xvjf $PHANTOM_JS.tar.bz2
 
       # run tests!
       - run: lein test
