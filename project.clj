@@ -9,11 +9,11 @@
                                     :password :env/clojars_password
                                     :sign-releases true}]]
 
-  :dependencies [[org.clojure/clojure "1.11.1"]
-                 [org.clojure/clojurescript "1.11.60"]
-                 [org.jsoup/jsoup "1.15.2"]
-                 [viebel/codox-klipse-theme "0.0.5"]
-                 [quoin "0.1.2" :exclusions [org.clojure/clojure]]]
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [org.jsoup/jsoup "1.14.3"]
+                 [quoin "0.1.2" :exclusions [org.clojure/clojure]]
+                 [org.clojure/clojurescript "1.9.293" :scope "provided"]
+                 [viebel/codox-klipse-theme "0.0.1" :scope "provided"]]
 
   :hooks [leiningen.cljsbuild]
 
@@ -27,7 +27,7 @@
 
   :profiles
   {:dev  {:source-paths ["src/clj" "src/cljc"]
-          :dependencies [[lein-doo "0.1.11"]]
+          :dependencies [[lein-doo "0.1.7"]]
           :plugins      [[lein-cljsbuild "1.1.4"]
                          [lein-doo "0.1.7" :exclusions [org.clojure/clojure]]]}
    :test {:source-paths ["src/cljs" "src/cljc" "test/cljc" "test/cljs"]
