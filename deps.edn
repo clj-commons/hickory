@@ -1,7 +1,7 @@
 {:paths ["src/clj" "src/cljc" "src/cljs"],
  :deps
- {org.clojure/clojure {:mvn/version "1.8.0"},
-  org.jsoup/jsoup {:mvn/version "1.14.3"},
+ {org.clojure/clojure {:mvn/version "1.11.1"},
+  org.jsoup/jsoup {:mvn/version "1.15.2"},
   quoin/quoin
   {:mvn/version "0.1.2", :exclusions [org.clojure/clojure]}},
  :aliases
