@@ -15,6 +15,7 @@
             [:a {:id "so", :href "bar"} "bar"]
             [:script {:src "blah.js"} "alert(\"hi\");"]]]]
          (as-hiccup (parse "<!DOCTYPE html><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script>"))))
+
   (is (= {:type :document,
           :content [{:type :document-type,
                      :attrs {:name "html", :publicid "", :systemid ""}}
@@ -47,14 +48,15 @@
 ;; and cdata nodes.
 (deftest basic-documents2
   (is (= ["<!DOCTYPE html>"
-          [:html {}
-           [:head {}]
-           [:body {}
-            "<!--comment-->"
-            [:a {:href "foo"} "foo"] " "
-            [:a {:id "so", :href "bar"} "bar"]
-            [:script {:src "blah.js"} "alert(\"hi\");"]]]]
-         (as-hiccup (parse "<!DOCTYPE html><body><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script></body>"))))
+           [:html {}
+            [:head {}]
+            [:body {}
+             "<!--comment-->"
+             [:a {:href "foo"} "foo"] " "
+             [:a {:id "so", :href "bar"} "bar"]
+             [:script {:src "blah.js"} "alert(\"hi\");"]]]]
+          (as-hiccup (parse "<!DOCTYPE html><body><!--comment--><a href=\"foo\">foo</a> <a id=\"so\" href=\"bar\">bar</a><script src=\"blah.js\">alert(\"hi\");</script></body>"))))
+
   (is (= {:type :document,
           :content [{:type :document-type,
                      :attrs {:name "html", :publicid "", :systemid ""}}

@@ -197,7 +197,7 @@ user=> (-> (s/select (s/descendant (s/class "subModule")
                                    (s/tag :a))
                      site-htree)
            first :content first string/trim)
-"Sebastian Vettel"           
+"Sebastian Vettel"
 ```
 
 Our fears are confirmed, Sebastian Vettel is well on his way to a fourth consecutive championship. If you were to inspect the page by hand (as of around May 2013, at least), you would see that unlike the `child` selector we used in the example above, the `descendant` selector allows the argument selectors to skip stages in the tree; we've left out some elements in this descendant relationship. The first table row in the driver standings table is selected with the `and`, `tag` and `first-child` selectors, and then the second `td` element is chosen, which is the element that has the driver's name (the first table element has the driver's standing) inside an `A` element. All of this is dependent on the exact layout of the HTML in the site we are examining, of course, but it should give an idea of how you can combine selectors to reach into a specific node of an HTML document very easily.
@@ -260,7 +260,26 @@ to your project.clj, or an equivalent entry for your Maven-compatible build tool
 
 ## ClojureScript support
 
-Hickory expects a DOM implementation and thus won't work out of the box on node. On browsers it works for IE9+ (you can find a workaround for IE9 [here](http://stackoverflow.com/questions/9250545/javascript-domparser-access-innerhtml-and-other-properties)).
+Hickory works for all web browsers IE9+ (you can find a workaround for IE9 [here](http://stackoverflow.com/questions/9250545/javascript-domparser-access-innerhtml-and-other-properties)).
+
+## Nodejs support
+
+To parse markup on Nodejs, Hickory requires a Node DOM implementation.
+Several are available from [npm](https://www.npmjs.com).
+Install the npm package or use [lein-npm](https://github.com/RyanMcG/lein-npm).
+Here are some alternatives:
+
+- [jsdom](https://www.npmjs.com/package/jsdom) - **Caution:** this will not work if you're using figwheel
+
+    ```clojure
+	(set! js/document (.jsdom (cljs.nodejs/require "jsdom")))
+	```
+
+- [xmldom](https://www.npmjs.com/package/xmldom)
+
+    ```clojure
+	(set! js/DOMParser (.-DOMParser (cljs.nodejs/require "xmldom")))
+	```
 
 ## Changes
 
