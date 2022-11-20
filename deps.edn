@@ -5,7 +5,10 @@
   quoin/quoin
   {:mvn/version "0.1.2", :exclusions [org.clojure/clojure]}},
  :aliases
- {:dev
-  {:extra-deps
-   {org.clojure/clojurescript {:mvn/version "1.9.293"},
-    viebel/codox-klipse-theme {:mvn/version "0.0.1"}}}}}
+ {:test {:extra-paths ["test/cljc"]}
+  :cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.11.60"}}}
+  :cljs-test-runner
+  {:extra-deps {olical/cljs-test-runner {:mvn/version "3.8.0"}
+                viebel/codox-klipse-theme {:mvn/version "0.0.1"}}
+   :extra-paths ["cljs-test-runner-out"]
+   :main-opts ["-m" "cljs-test-runner.main" "--namespace-regex" "hickory.test.*"]}}}

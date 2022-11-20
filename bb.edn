@@ -1,5 +1,14 @@
 {:deps {io.github.borkdude/lein2deps {:git/url "https://github.com/borkdude/lein2deps"
                                       :git/sha "e26edeb114c9d88a5c4d3abb683306588fcaad13"}}
- :tasks {lein2deps {:doc "Generate deps.edn from project.clj"
-                    :requires ([lein2deps.api :as lein2deps])
-                    :task (lein2deps/lein2deps {:write-file "deps.edn"})}} }
+ :tasks
+ {:requires ([babashka.fs :as fs])
+
+  test:clj (shell "lein test")
+
+  test:cljs-npm-install (do (shell "npm install -g karma-cli")
+                            (shell "npm install"))
+  test:cljs (do
+              (fs/delete-tree "cljs-test-runner-out")
+              (apply clojure "-M:test:cljs:cljs-test-runner" "--env" "chrome-headless" *command-line-args*))
+  repl:cljs-node (shell "rlwrap bb clojure -M:test:cljs -m cljs.main -re node")
+  repl:cljs-browser (shell "rlwrap bb clojure -M:test:cljs -m cljs.main")}}

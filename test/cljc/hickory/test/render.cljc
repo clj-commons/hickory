@@ -1,9 +1,8 @@
 (ns hickory.test.render
-  (:require [hickory.core :refer [as-hiccup as-hickory parse parse-fragment]]
-            [hickory.render :refer [hiccup-to-html hickory-to-html]]
-    #?(:clj
-            [clojure.test :refer :all]
-       :cljs [cljs.test :refer-macros [is are deftest testing use-fixtures]])))
+  (:require
+   [clojure.test :refer [deftest is]]
+   [hickory.core :refer [as-hiccup as-hickory parse parse-fragment]]
+   [hickory.render :refer [hiccup-to-html hickory-to-html]]))
 ;;
 ;; Hickory to HTML
 ;;
@@ -20,7 +19,7 @@
   ;; Make sure the contents of script/style tags do not get html escaped.
   (is (= "<script>Test<!--Test&Test-->Test</script>"
          (hickory-to-html (as-hickory
-                           (first (parse-fragment "<script>Test<!--Test&Test-->Test</script>"))))))
+                           (first (parse-fragment "<body><script>Test<!--Test&Test-->Test</script></body>"))))))
   ;; Make sure attribute contents are html-escaped.
   (is (= "<img fake-attr=\"abc&quot;def\">"
          (hickory-to-html (as-hickory (first (parse-fragment "<img fake-attr=\"abc&quot;def\">")))))))
@@ -71,7 +70,7 @@
   ;; Make sure the contents of script/style tags do not get html escaped.
   (is (= "<script>Test<!--Test&Test-->Test</script>"
          (hiccup-to-html [(as-hiccup
-                            (first (parse-fragment "<script>Test<!--Test&Test-->Test</script>")))])))
+                            (first (parse-fragment "<body><script>Test<!--Test&Test-->Test</script></body>")))])))
   ;; Make sure attribute contents are html-escaped.
   (is (= "<img fake-attr=\"abc&quot;def\">"
          (hiccup-to-html [(as-hiccup (first (parse-fragment "<img fake-attr=\"abc&quot;def\">")))]))))
