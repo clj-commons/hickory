@@ -4,7 +4,7 @@
             [clojure.zip :as zip])
   (:import [org.jsoup Jsoup]
            [org.jsoup.nodes Attribute Attributes Comment DataNode Document
-            DocumentType Element Node TextNode XmlDeclaration]
+            DocumentType Element TextNode XmlDeclaration]
            [org.jsoup.parser Tag Parser]))
 
 (defn- end-or-recur [as-fn loc data & [skip-child?]]

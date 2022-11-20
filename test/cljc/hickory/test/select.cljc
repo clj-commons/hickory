@@ -399,7 +399,8 @@
                                                 (select/class "notpresent")
                                                 (select/id :nothere))
                                      htree)]
-        (= [] selection))
+        (is (and (= 1 (count selection))
+                 (every? true? (map #(= :a (:tag %)) selection)))))
       (let [selection (select/select (select/or (select/tag :div))
                                      htree)]
         (is (and (= 2 (count selection))
