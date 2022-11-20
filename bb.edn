@@ -10,4 +10,5 @@
   test:cljs (do
               (fs/delete-tree "cljs-test-runner-out")
               (apply clojure "-M:test:cljs:cljs-test-runner" "--env" "chrome-headless" *command-line-args*))
-  repl:cljs (shell "rlwrap bb clojure -M:test:cljs -m cljs.main -re node")}}
+  repl:cljs-node (shell "rlwrap bb clojure -M:test:cljs -m cljs.main -re node")
+  repl:cljs-browser (shell "rlwrap bb clojure -M:test:cljs -m cljs.main")}}

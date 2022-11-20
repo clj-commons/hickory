@@ -19,7 +19,7 @@
   ;; Make sure the contents of script/style tags do not get html escaped.
   (is (= "<script>Test<!--Test&Test-->Test</script>"
          (hickory-to-html (as-hickory
-                           (first (parse-fragment "<script>Test<!--Test&Test-->Test</script>"))))))
+                           (first (parse-fragment "<body><script>Test<!--Test&Test-->Test</script></body>"))))))
   ;; Make sure attribute contents are html-escaped.
   (is (= "<img fake-attr=\"abc&quot;def\">"
          (hickory-to-html (as-hickory (first (parse-fragment "<img fake-attr=\"abc&quot;def\">")))))))
@@ -70,7 +70,7 @@
   ;; Make sure the contents of script/style tags do not get html escaped.
   (is (= "<script>Test<!--Test&Test-->Test</script>"
          (hiccup-to-html [(as-hiccup
-                            (first (parse-fragment "<script>Test<!--Test&Test-->Test</script>")))])))
+                            (first (parse-fragment "<body><script>Test<!--Test&Test-->Test</script></body>")))])))
   ;; Make sure attribute contents are html-escaped.
   (is (= "<img fake-attr=\"abc&quot;def\">"
          (hiccup-to-html [(as-hiccup (first (parse-fragment "<img fake-attr=\"abc&quot;def\">")))]))))
