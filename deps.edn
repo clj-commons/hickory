@@ -11,4 +11,4 @@
   {:extra-deps {olical/cljs-test-runner {:mvn/version "3.8.0"}
                 viebel/codox-klipse-theme {:mvn/version "0.0.1"}}
    :extra-paths ["cljs-test-runner-out"]
-   :main-opts ["-m" "cljs-test-runner.main" "-d" "test/cljs" "-d" "test/cljc"]}}}
+   :main-opts ["-m" "cljs-test-runner.main" "--namespace-regex" "hickory.test.*"]}}}
