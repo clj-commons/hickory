@@ -10,7 +10,7 @@
                                     :sign-releases true}]]
 
   :dependencies [[org.clojure/clojure "1.11.1"]
-                 [org.clojure/clojurescript "1.9.293" :scope "provided"]
+                 [org.clojure/clojurescript "1.11.60" :scope "provided"]
                  [org.jsoup/jsoup "1.15.2"]
                  [quoin "0.1.2" :exclusions [org.clojure/clojure]]
                  [viebel/codox-klipse-theme "0.0.1" :scope "provided"]]
