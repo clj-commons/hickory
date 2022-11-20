@@ -50,5 +50,4 @@ jobs:
       - name: Execute cljs tests
         run: |
           bb test:cljs-npm-install
-          bb test:cljs
-
+          bb test:cljs -c test/cljs/hickory/advanced.edn
