@@ -78,6 +78,8 @@ user=> (use 'hickory.zip)
 nil
 user=> (require '[clojure.zip :as zip])
 nil
+user=> (require '[hickory.render :refer [hickory-to-html]])
+nil
 user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>"))) zip/node)
 ([:html {} [:head {}] [:body {} [:a {:href "foo"} "bar" [:br {}]]]])
 user=> (-> (hiccup-zip (as-hiccup (parse "<a href=foo>bar<br></a>"))) zip/next zip/node)
