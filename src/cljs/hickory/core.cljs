@@ -2,7 +2,7 @@
   (:require [hickory.utils :as utils]
             [clojure.zip :as zip]
             [goog.string :as gstring]
-            [goog.dom :as dom]))
+            [goog.dom]))
 
 ;;
 ;; Protocols
@@ -35,7 +35,7 @@
 
 (defn node-type
   [type]
-  (aget dom/NodeType type))
+  (aget goog.dom.NodeType type))
 
 (def Attribute (node-type "ATTRIBUTE"))
 (def Comment (node-type "COMMENT"))
@@ -52,7 +52,7 @@
   (let [name (aget dt "name")
         publicId (aget dt "publicId")
         systemId (aget dt "systemId")]
-    (if (not (empty? publicId))
+    (if (seq publicId)
       (gstring/format "<!DOCTYPE %s PUBLIC \"%s\" \"%s\">" name publicId systemId)
       (str "<!DOCTYPE " name ">"))))
 
@@ -80,9 +80,9 @@
                                 (into [] (concat [tag
                                                   (into {} (map as-hiccup (as-seq (aget this "attributes"))))]
                                                  (if (utils/unescapable-content tag)
-                                                   (map dom/getRawTextContent (as-seq (aget this "childNodes")))
+                                                   (map goog.dom.getRawTextContent (as-seq (aget this "childNodes")))
                                                    (map as-hiccup (as-seq (aget this "childNodes")))))))
-                      Text (utils/html-escape (dom/getRawTextContent this)))))
+                      Text (utils/html-escape (goog.dom.getRawTextContent this)))))
 
 (extend-protocol HickoryRepresentable
   object
@@ -104,7 +104,7 @@
                                 :content (not-empty
                                            (into [] (map as-hickory
                                                          (as-seq (aget this "childNodes")))))}
-                       Text (dom/getRawTextContent this))))
+                       Text (goog.dom.getRawTextContent this))))
 
 (defn extract-doctype
   [s]
@@ -119,7 +119,7 @@
 
 (defn parse-dom-with-domparser
   [s]
-  (if (exists? js/DOMParser)
+  (when (exists? js/DOMParser)
     (.parseFromString (js/DOMParser.) s "text/html")))
 
 (defn parse-dom-with-write

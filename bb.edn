@@ -4,4 +4,5 @@
  {:requires ([babashka.fs :as fs])
 
   test:clj (shell "lein test")
-  test:cljs (clojure "-M:test:cljs:cljs-test-runner")}}
+  test:cljs (clojure "-M:test:cljs:cljs-test-runner")
+  repl:cljs (shell "rlwrap bb clojure -M:test:cljs -m cljs.main -re node")}}

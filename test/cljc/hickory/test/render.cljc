@@ -1,9 +1,8 @@
 (ns hickory.test.render
-  (:require [hickory.core :refer [as-hiccup as-hickory parse parse-fragment]]
-            [hickory.render :refer [hiccup-to-html hickory-to-html]]
-    #?(:clj
-            [clojure.test :refer :all]
-       :cljs [cljs.test :refer-macros [is are deftest testing use-fixtures]])))
+  (:require
+   [clojure.test :refer [deftest is]]
+   [hickory.core :refer [as-hiccup as-hickory parse parse-fragment]]
+   [hickory.render :refer [hiccup-to-html hickory-to-html]]))
 ;;
 ;; Hickory to HTML
 ;;
