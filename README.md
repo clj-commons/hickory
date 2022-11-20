@@ -1,5 +1,5 @@
-[![Clojars Project](https://img.shields.io/clojars/v/clj-commons.org/hickory.svg)](https://clojars.org/clj-commons.org/hickory)
-[![cljdoc badge](https://cljdoc.org/badge/clj-commons.org/hickory)](https://cljdoc.org/d/clj-commons.org/hickory)
+[![Clojars Project](https://img.shields.io/clojars/v/org.clj-commons/hickory.svg)](https://clojars.org/org.clj-commons/hickory)
+[![cljdoc badge](https://cljdoc.org/badge/org.clj-commons/hickory)](https://cljdoc.org/d/org.clj-commons/hickory)
 [![CircleCI](https://circleci.com/gh/clj-commons/hickory.svg?style=svg)](https://circleci.com/gh/clj-commons/hickory)
 
 # Hickory
