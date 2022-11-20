@@ -11,4 +11,12 @@
               (fs/delete-tree "cljs-test-runner-out")
               (apply clojure "-M:test:cljs:cljs-test-runner" "--env" "chrome-headless" *command-line-args*))
   repl:cljs-node (shell "rlwrap bb clojure -M:test:cljs -m cljs.main -re node")
-  repl:cljs-browser (shell "rlwrap bb clojure -M:test:cljs -m cljs.main")}}
+  repl:cljs-browser (shell "rlwrap bb clojure -M:test:cljs -m cljs.main")
+
+  quickdoc {:extra-deps {io.github.borkdude/quickdoc {:git/sha "62dd3c6a828c3a5e61bae6ca80c8ba4781356a67"}}
+            :requires ([quickdoc.api :as api])
+            :task (api/quickdoc {:source-paths ["src/clj" "src/cljs" "src/cljs"]
+                                 :git/branch "main"
+                                 :github/repo "https://github.com/clj-commons/hickory"})}}
+
+ }
