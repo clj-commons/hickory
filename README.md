@@ -160,7 +160,7 @@ illustrate more selectors than we need; we could have gotten by just
 selecting the contents of the P and then B tags inside the element
 with id "raceDates".
 
-Using the selectors allows you to search large HTML documents for nodes of interest with a relatively small amount of code. There are many selectors available in the [`hickory.select`](http://davidsantiago.github.io/hickory/hickory.select.html) namespace, including:
+Using the selectors allows you to search large HTML documents for nodes of interest with a relatively small amount of code. There are many selectors available in the [`hickory.select`](https://cljdoc.org/d/org.clj-commons/hickory/api/hickory.select) namespace, including:
 
 - `node-type`: Give this function a keyword or string that names the contents of the `:type` field in a hickory node, and it gives you a selector that will select nodes of that type. Example: `(node-type :comment)`
 - `tag`: Give this function a keyword or string that names the contents of the `:tag` field in a hickory node, and it gives you a selector that will select nodes with that tag. Example: `(tag :div)`
@@ -178,7 +178,7 @@ Using the selectors allows you to search large HTML documents for nodes of inter
 - `first-child`: Takes no arguments, do not invoke it; equivalent to `(nth-child 1)`.
 - `last-child`: Takes no arguments, do not invoke it; equivalent to `(nth-last-child 1)`.
 
-There are also selector combinators, which take as argument some number of other selectors, and return a new selector that combines them into one larger selector. An example of this is the `child` selector in the example above. Here's a list of some selector combinators in the package (see the [API Documentation](http://davidsantiago.github.com/hickory) for the full list):
+There are also selector combinators, which take as argument some number of other selectors, and return a new selector that combines them into one larger selector. An example of this is the `child` selector in the example above. Here's a list of some selector combinators in the package (see the [API Documentation](https://cljdoc.org/d/org.clj-commons/hickory) for the full list):
 
 - `and`: Takes any number of selectors, and returns a selector that only selects nodes for which all of the argument selectors are true.
 - `or`: Takes any number of selectors, and retrurns a selector that only selects nodes for which at least one of the argument selectors are true.
@@ -206,9 +206,9 @@ Our fears are confirmed, Sebastian Vettel is well on his way to a fourth consecu
 
 Finally, it's worth noting that the `select` function itself returns the hickory zipper nodes it finds. This is most useful for analyzing the contents of nodes. However, sometimes you may wish to examine the area around a node once you've found it. For this, you can use the `select-locs` function, which returns a sequence of hickory zipper locs, instead of the nodes themselves. This will allow you to navigate around the document tree using the zipper functions in `clojure.zip`. If you wish to go further and actually modify the document tree using zipper functions, you should not use `select-locs`. The problem is that it returns a bunch of zipper locs, but once you modify one, the others are out of date and do not see the changes (just as with any other persistent data structure in Clojure). Thus, their presence was useless and possibly confusing. Instead, you should use the `select-next-loc` function to walk through the document tree manually, moving through the locs that satisfy the selector function one by one, which will allow you to make modifications as you go. As with modifying any data structure as you traverse it, you must still be careful that your code does not add the thing it is selecting for, or it could get caught in an infinite loop. Finally, for more specialized selection needs, it should be possible to write custom selection functions that use the selectors and zipper functions without too much work. The functions discussed in this paragraph are very short and simple, you can use them as a guide.
 
-The doc strings for the functions in the [`hickory.select`](http://davidsantiago.github.io/hickory/hickory.select.html) namespace provide more details on most of these functions.
+The doc strings for the functions in the [`hickory.select`](https://cljdoc.org/d/org.clj-commons/hickory/api/hickory.select) namespace provide more details on most of these functions.
 
-For more details, see the [API Documentation](http://davidsantiago.github.com/hickory).
+For more details, see the [API Documentation](https://cljdoc.org/d/org.clj-commons/hickory/).
 
 ## Hickory format
 
@@ -255,7 +255,7 @@ the parsed data, like doctype and comments.
 To get hickory, add
 
 ```clojure
-[hickory "0.7.1"]
+[hickory "0.7.3"]
 ```
 
 to your project.clj, or an equivalent entry for your Maven-compatible build tool.
