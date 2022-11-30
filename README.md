@@ -255,7 +255,7 @@ the parsed data, like doctype and comments.
 To get hickory, add
 
 ```clojure
-[hickory "0.7.3"]
+[org.clj-commons/hickory "0.7.3"]
 ```
 
 to your project.clj, or an equivalent entry for your Maven-compatible build tool.
