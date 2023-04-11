@@ -1,9 +1,7 @@
 (ns hickory.utils
   "Miscellaneous utilities used internally."
   (:require [clojure.string :as string]
-    #?(:clj
-            [quoin.text :as qt]
-       :cljs [goog.string :as gstring])))
+            #?(:cljs [goog.string :as gstring])))
 
 ;;
 ;; Data
@@ -22,9 +20,27 @@
 ;; String utils
 ;;
 
+(defn clj-html-escape-without-quoin
+  "Actually copy pasted from quoin: https://github.com/davidsantiago/quoin/blob/develop/src/quoin/text.clj"
+  [^String s]
+  ;; This method is "Java in Clojure" for serious speedups.
+  (let [sb (StringBuilder.)
+        slength (long (count s))]
+    (loop [idx (long 0)]
+      (if (>= idx slength)
+        (.toString sb)
+        (let [c (char (.charAt s idx))]
+          (case c
+            \& (.append sb "&amp;")
+            \< (.append sb "&lt;")
+            \> (.append sb "&gt;")
+            \" (.append sb "&quot;")
+            (.append sb c))
+          (recur (inc idx)))))))
+
 (defn html-escape
   [s]
-  #?(:clj  (qt/html-escape s)
+  #?(:clj  (clj-html-escape-without-quoin s)
      :cljs (gstring/htmlEscape s)))
 
 (defn starts-with
