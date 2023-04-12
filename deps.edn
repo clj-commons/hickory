@@ -1,9 +1,7 @@
 {:paths ["src/clj" "src/cljc" "src/cljs"],
  :deps
  {org.clojure/clojure {:mvn/version "1.11.1"},
-  org.jsoup/jsoup {:mvn/version "1.15.2"},
-  quoin/quoin
-  {:mvn/version "0.1.2", :exclusions [org.clojure/clojure]}},
+  org.jsoup/jsoup {:mvn/version "1.15.2"}},
  :aliases
  {:test {:extra-paths ["test/cljc"]}
   :cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.11.60"}}}
