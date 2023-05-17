@@ -67,7 +67,7 @@ fragment is parsed, but it cannot be directly used with `as-hiccup`
 in the list instead.
 
 The namespace `hickory.zip` provides
-[zippers](http://clojure.github.com/clojure/clojure.zip-api.html) for
+[zippers](https://clojure.github.io/clojure/clojure.zip-api.html) for
 both Hiccup and Hickory formatted data, with the functions
 `hiccup-zip` and `hickory-zip`. Using zippers, you can easily traverse
 the trees in any order you desire, make edits, and get the resulting
@@ -160,7 +160,7 @@ illustrate more selectors than we need; we could have gotten by just
 selecting the contents of the P and then B tags inside the element
 with id "raceDates".
 
-Using the selectors allows you to search large HTML documents for nodes of interest with a relatively small amount of code. There are many selectors available in the [`hickory.select`](https://cljdoc.org/d/org.clj-commons/hickory/api/hickory.select) namespace, including:
+Using the selectors allows you to search large HTML documents for nodes of interest with a relatively small amount of code. There are many selectors available in the [`hickory.select`](https://cljdoc.org/d/org.clj-commons/hickory/CURRENT/api/hickory.select) namespace, including:
 
 - `node-type`: Give this function a keyword or string that names the contents of the `:type` field in a hickory node, and it gives you a selector that will select nodes of that type. Example: `(node-type :comment)`
 - `tag`: Give this function a keyword or string that names the contents of the `:tag` field in a hickory node, and it gives you a selector that will select nodes with that tag. Example: `(tag :div)`
@@ -206,7 +206,7 @@ Our fears are confirmed, Sebastian Vettel is well on his way to a fourth consecu
 
 Finally, it's worth noting that the `select` function itself returns the hickory zipper nodes it finds. This is most useful for analyzing the contents of nodes. However, sometimes you may wish to examine the area around a node once you've found it. For this, you can use the `select-locs` function, which returns a sequence of hickory zipper locs, instead of the nodes themselves. This will allow you to navigate around the document tree using the zipper functions in `clojure.zip`. If you wish to go further and actually modify the document tree using zipper functions, you should not use `select-locs`. The problem is that it returns a bunch of zipper locs, but once you modify one, the others are out of date and do not see the changes (just as with any other persistent data structure in Clojure). Thus, their presence was useless and possibly confusing. Instead, you should use the `select-next-loc` function to walk through the document tree manually, moving through the locs that satisfy the selector function one by one, which will allow you to make modifications as you go. As with modifying any data structure as you traverse it, you must still be careful that your code does not add the thing it is selecting for, or it could get caught in an infinite loop. Finally, for more specialized selection needs, it should be possible to write custom selection functions that use the selectors and zipper functions without too much work. The functions discussed in this paragraph are very short and simple, you can use them as a guide.
 
-The doc strings for the functions in the [`hickory.select`](https://cljdoc.org/d/org.clj-commons/hickory/api/hickory.select) namespace provide more details on most of these functions.
+The doc strings for the functions in the [`hickory.select`](https://cljdoc.org/d/org.clj-commons/hickory/CURRENT/api/hickory.select) namespace provide more details on most of these functions.
 
 For more details, see the [API Documentation](https://cljdoc.org/d/org.clj-commons/hickory/).
 
@@ -245,7 +245,7 @@ have some subset of the following four keys, depending on the `:type`:
 Text and CDATA nodes are represented as strings.
 
 This is almost the exact same structure used by
-[clojure.xml](http://clojure.github.com/clojure/clojure.xml-api.html),
+[clojure.xml](https://clojure.github.io/clojure/clojure.xml-api.html),
 the only difference being the addition of the `:type` field. Having
 this field allows us to process nodes that clojure.xml leaves out of
 the parsed data, like doctype and comments.
