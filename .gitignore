@@ -13,6 +13,9 @@ pom.xml
 out/
 .cpcache
 .cache
+.clj-kondo/.cache
+.lsp/.cache
+.portal/vs-code.edn
 cljs-test-runner-out
 node_modules
 
