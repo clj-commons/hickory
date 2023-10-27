@@ -58,7 +58,7 @@
       (catch #?(:clj  IllegalArgumentException
                 :cljs js/Error) e
         (throw
-          (if (utils/starts-with #?(:clj (.getMessage e) :cljs (aget e "message")) "No matching clause: ")
+          (if (utils/starts-with #?(:clj (.getMessage e) :cljs (.-message e)) "No matching clause: ")
             (ex-info (str "Not a valid node: " (pr-str dom)) {:dom dom})
             e))))))
 
