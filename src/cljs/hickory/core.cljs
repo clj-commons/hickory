@@ -34,12 +34,27 @@
      node must have an implementation of the HickoryRepresentable protocol;
      nodes created by parse or parse-fragment already do."))
 
-(def Attribute goog.dom.NodeType/ATTRIBUTE)
-(def Comment goog.dom.NodeType/COMMENT)
-(def Document goog.dom.NodeType/DOCUMENT)
-(def DocumentType goog.dom.NodeType/DOCUMENT_TYPE)
-(def Element goog.dom.NodeType/ELEMENT)
-(def Text goog.dom.NodeType/TEXT)
+(defn node-type [type]
+  (case type
+    "ELEMENT" 1
+    "ATTRIBUTE" 2
+    "TEXT" 3
+    "CDATA_SECTION" 4
+    "ENTITY_REFERENCE" 5
+    "ENTITY" 6
+    "PROCESSING_INSTRUCTION" 7
+    "COMMENT" 8
+    "DOCUMENT" 9
+    "DOCUMENT_TYPE" 10
+    "DOCUMENT_FRAGMENT" 11
+    "NOTATION" 12))
+
+(def Attribute (node-type "ATTRIBUTE"))
+(def Comment (node-type "COMMENT"))
+(def Document (node-type "DOCUMENT"))
+(def DocumentType (node-type "DOCUMENT_TYPE"))
+(def Element (node-type "ELEMENT"))
+(def Text (node-type "TEXT"))
 
 (defn- as-seq [nodelist]
   (if (seq? nodelist) nodelist (array-seq nodelist)))
