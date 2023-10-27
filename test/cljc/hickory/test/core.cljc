@@ -146,3 +146,6 @@
             :tag :font
             :content ["abc"]}
            r2))))
+
+(deftest node-type
+  (is (= 3 (hickory.core/node-type "TEXT"))))
