@@ -24,19 +24,21 @@
   "Actually copy pasted from quoin: https://github.com/davidsantiago/quoin/blob/develop/src/quoin/text.clj"
   [^String s]
   ;; This method is "Java in Clojure" for serious speedups.
-  (let [sb (StringBuilder.)
-        slength (long (count s))]
-    (loop [idx (long 0)]
-      (if (>= idx slength)
-        (.toString sb)
-        (let [c (char (.charAt s idx))]
-          (case c
-            \& (.append sb "&amp;")
-            \< (.append sb "&lt;")
-            \> (.append sb "&gt;")
-            \" (.append sb "&quot;")
-            (.append sb c))
-          (recur (inc idx)))))))
+  #?(:clj (let [sb (StringBuilder.)
+                slength (long (count s))]
+            (loop [idx (long 0)]
+              (if (>= idx slength)
+                (.toString sb)
+                (let [c (char (.charAt s idx))]
+                  (case c
+                    \& (.append sb "&amp;")
+                    \< (.append sb "&lt;")
+                    \> (.append sb "&gt;")
+                    \" (.append sb "&quot;")
+                    (.append sb c))
+                  (recur (inc idx))))))
+     ;; This shouldn't be called directly in cljs, but if it is, we use the same implementation as the html-escape function
+     :cljs (gstring/htmlEscape s)))
 
 (defn html-escape
   [s]
