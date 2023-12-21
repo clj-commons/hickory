@@ -1,7 +1,7 @@
 (ns hickory.test.core
   (:require [hickory.core :refer [as-hickory as-hiccup parse parse-fragment]]
     #?(:clj
-            [clojure.test :refer :all]
+            [clojure.test :refer [deftest is]]
        :cljs [cljs.test :refer-macros [is are deftest testing use-fixtures]])))
 
 ;; This document tests: doctypes, white space text nodes, attributes,
@@ -147,5 +147,6 @@
             :content ["abc"]}
            r2))))
 
-(deftest node-type
-  (is (= 3 (hickory.core/node-type "TEXT"))))
+#?(:cljs
+   (deftest node-type-test
+     (is (= 3 (hickory.core/node-type "TEXT")))))
