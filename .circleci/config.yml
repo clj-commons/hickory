@@ -25,7 +25,7 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: circleci/clojure:openjdk-8-lein-2.9.1-node-browsers
+      - image: cimg/clojure:1.11.1-browsers
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -48,13 +48,13 @@ jobs:
             - v1-dependencies-{{ checksum "project.clj" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
-      - run: sudo apt-get update && sudo apt-get install -y phantomjs
       - run:
          name: Install babashka
          command: |
            curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install.sh
            sudo bash install.sh
            rm install.sh
+
       - run:
           name: install karma
           command: |
@@ -75,12 +75,7 @@ jobs:
 
   deploy:
     docker:
-      # specify the version you desire here
-      - image: circleci/clojure:openjdk-8-lein-2.9.1
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
+      - image: cimg/clojure:1.11.1-browsers
 
     working_directory: ~/repo
 
@@ -107,11 +102,12 @@ jobs:
             - v1-dependencies-
 
       - run:
-         name: Install babashka
-         command: |
-           curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install.sh
-           sudo bash install.sh
-           rm install.sh
+          name: Install babashka
+          command: |
+            curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install.sh
+            sudo bash install.sh
+            rm install.sh
+
       - run:
           name: Install deployment-script
           command: |
