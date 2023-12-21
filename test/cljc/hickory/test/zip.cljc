@@ -2,8 +2,7 @@
   (:require [clojure.zip :as zip]
             [hickory.core :refer [as-hiccup as-hickory parse]]
             [hickory.zip :refer [hickory-zip hiccup-zip]]
-    #?(:clj[clojure.test :refer :all]
-       :cljs [cljs.test :refer-macros [is are deftest testing use-fixtures]])))
+            [clojure.test :refer [deftest is]]))
 
 (deftest hickory-zipper
   (is (= {:type :document,

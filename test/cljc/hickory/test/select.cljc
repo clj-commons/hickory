@@ -4,8 +4,7 @@
             [hickory.utils :as utils]
             [hickory.zip :as hzip]
             [clojure.zip :as zip]
-    #?(:clj[clojure.test :refer :all]
-       :cljs [cljs.test :refer-macros [is are deftest testing use-fixtures]])))
+            [clojure.test :refer [deftest is testing]]))
 
 (def html1
   "<!DOCTYPE html>

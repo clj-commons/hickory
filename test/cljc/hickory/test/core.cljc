@@ -1,8 +1,6 @@
 (ns hickory.test.core
   (:require [hickory.core :refer [as-hickory as-hiccup parse parse-fragment]]
-    #?(:clj
-            [clojure.test :refer [deftest is]]
-       :cljs [cljs.test :refer-macros [is are deftest testing use-fixtures]])))
+            [clojure.test :refer [deftest is]]))
 
 ;; This document tests: doctypes, white space text nodes, attributes,
 ;; and cdata nodes.

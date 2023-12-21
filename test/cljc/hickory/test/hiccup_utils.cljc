@@ -1,9 +1,7 @@
 (ns hickory.test.hiccup-utils
   (:require [hickory.hiccup-utils :refer [class-names id normalize-form
                                           tag-name tag-well-formed?]]
-    #?(:clj
-            [clojure.test :refer :all]
-       :cljs [cljs.test :refer-macros [is are deftest testing use-fixtures]])))
+            [clojure.test :refer [deftest is]]))
 
 #?(:clj
    (deftest first-idx-test
@@ -94,4 +92,3 @@
   (is (= [:a {:id nil :class nil}
           [:b {:id nil :class nil} "foo" [:i {:id nil :class nil} "bar"]]]
          (normalize-form [:a [:b "foo" [:i "bar"]]]))))
-
