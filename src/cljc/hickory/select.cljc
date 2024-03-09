@@ -465,6 +465,27 @@
   (and (node-type :element)
        (not selector)))
 
+(defn compose-unary
+  "Takes a unary selection function and any number of selectors and returns
+   a selector which returns true when each selector and the unary function
+   applied to each subsequenct selector returns true.
+
+   Example:
+   (compose-unary has-child (tag :div) (class :foo) (attr :disabled))
+   Produces the equivalent of:
+   (and (tag :div)
+        (has-child (and (class :foo)
+                        (has-child (and (attr :disabled))))))"
+  [unary-selector-fn & selectors]
+  (let [rev (reverse selectors)]
+    (loop [selectors (rest rev)
+           output (and (first rev))]
+      (cond
+        (empty? selectors) output
+        (= (count selectors) 1) (and (first selectors) (unary-selector-fn output))
+        :else (recur (rest selectors)
+                     (and (first selectors) (unary-selector-fn output)))))))
+
 (defn ordered-adjacent
   "Takes a zipper movement function and any number of selectors as arguments
    and returns a selector that returns true when the zip-loc given as the
@@ -506,6 +527,40 @@
    <div><span class=\"foo\"><b><input disabled></input></b></span></div>"
   [& selectors]
   (apply ordered-adjacent zip/up (reverse selectors)))
+
+(defn has-child
+  "Takes a selector as argument and returns a selector that returns true
+   when some direct child node of the zip-loc given as the argument satisfies
+   the selector.
+
+   Example: (has-child (tag :div))
+     will select only the inner span in
+   <div><span><div></div></span></div>"
+  [selector]
+  (fn [hzip-loc]
+    (let [subtree-start-loc (-> hzip-loc zip/down)
+          has-children? (not= nil subtree-start-loc)]
+      ;; has-children? is needed to guard against zip/* receiving a nil arg in
+      ;; a selector.
+      (if has-children?
+        (if (select-next-loc selector subtree-start-loc
+                             zip/right
+                             #(nil? %))
+          hzip-loc)))))
+
+(defn parent
+  "Takes any number of selectors as arguments and returns a selector that
+   returns true when the zip-loc given as the argument is at the start of
+   a chain of direct child relationships specified by the selectors given
+   as arguments.
+
+   Example: (parent (tag :div) (class :foo) (attr :disabled))
+     will select the div in
+   <div><span class=\"foo\"><input disabled></input></span></div>
+     but not in
+   <div><span class=\"foo\"><b><input disabled></input></b></span></div>"
+  [& selectors]
+  (apply compose-unary has-child selectors))
 
 (defn follow-adjacent
   "Takes any number of selectors as arguments and returns a selector that
@@ -593,36 +648,6 @@
   [& selectors]
   (apply ordered zip/up (reverse selectors)))
 
-(defn follow
-  "Takes any number of selectors as arguments and returns a selector that
-   returns true when the zip-loc given as the argument is at the end of
-   a chain of element sibling relationships specified by the selectors
-   given as arguments; intervening elements that do not satisfy a selector
-   are simply ignored and do not prevent a match.
-
-   Example: (follow (tag :div) (class :foo))
-     will select the span in both
-   <div>...</div><span class=\"foo\">...</span>
-     and
-   <div>...</div><b>...</b><span class=\"foo\">...</span>"
-  [& selectors]
-  (apply ordered #(left-of-node-type % :element) (reverse selectors)))
-
-(defn precede
-  "Takes any number of selectors as arguments and returns a selector that
-   returns true when the zip-loc given as the argument is at the beginning of
-   a chain of element sibling relationships specified by the selectors
-   given as arguments; intervening elements that do not satisfy a selector
-   are simply ignored and do not prevent a match.
-
-   Example: (precede (tag :div) (class :foo))
-     will select the div in both
-   <div>...</div><span class=\"foo\">...</span>
-     and
-   <div>...</div><b>...</b><span class=\"foo\">...</span>"
-  [& selectors]
-  (apply ordered #(right-of-node-type % :element) selectors))
-
 (defn has-descendant
   "Takes a selector as argument and returns a selector that returns true
    when some descendant node of the zip-loc given as the argument satisfies
@@ -652,23 +677,47 @@
                                #(= % subtree-end-loc))
             hzip-loc))))))
 
-(defn has-child
-  "Takes a selector as argument and returns a selector that returns true
-   when some direct child node of the zip-loc given as the argument satisfies
-   the selector.
+(defn ancestor
+  "Takes any number of selectors as arguments and returns a selector that
+   returns true when the zip-loc given as the argument is at the start of
+   a chain of descendant relationships specified by the selectors given
+   as arguments; intervening elements that do not satisfy a selector are
+   simply ignored and do not prevent a match.
 
-   Example: (has-child (tag :div))
-     will select only the inner span in
-   <div><span><div></div></span></div>"
-  [selector]
-  (fn [hzip-loc]
-    (let [subtree-start-loc (-> hzip-loc zip/down)
-          has-children? (not= nil subtree-start-loc)]
-      ;; has-children? is needed to guard against zip/* receiving a nil arg in
-      ;; a selector.
-      (if has-children?
-        (if (select-next-loc selector subtree-start-loc
-                             zip/right
-                             #(nil? %))
-          hzip-loc)))))
+   Example: (ancestor (tag :div) (class :foo) (attr :disabled))
+     will select the div in both
+   <div><span class=\"foo\"><input disabled></input></span></div>
+     and
+   <div><span class=\"foo\"><b><input disabled></input></b></span></div>"
+  [& selectors]
+  (apply compose-unary has-descendant selectors))
 
+(defn follow
+  "Takes any number of selectors as arguments and returns a selector that
+   returns true when the zip-loc given as the argument is at the end of
+   a chain of element sibling relationships specified by the selectors
+   given as arguments; intervening elements that do not satisfy a selector
+   are simply ignored and do not prevent a match.
+
+   Example: (follow (tag :div) (class :foo))
+     will select the span in both
+   <div>...</div><span class=\"foo\">...</span>
+     and
+   <div>...</div><b>...</b><span class=\"foo\">...</span>"
+  [& selectors]
+  (apply ordered #(left-of-node-type % :element) (reverse selectors)))
+
+(defn precede
+  "Takes any number of selectors as arguments and returns a selector that
+   returns true when the zip-loc given as the argument is at the beginning of
+   a chain of element sibling relationships specified by the selectors
+   given as arguments; intervening elements that do not satisfy a selector
+   are simply ignored and do not prevent a match.
+
+   Example: (precede (tag :div) (class :foo))
+     will select the div in both
+   <div>...</div><span class=\"foo\">...</span>
+     and
+   <div>...</div><b>...</b><span class=\"foo\">...</span>"
+  [& selectors]
+  (apply ordered #(right-of-node-type % :element) selectors))

@@ -498,6 +498,79 @@
                                      htree)]
         (is (= [] selection))))))
 
+(deftest has-child-test
+  (testing "has-child selector combinator"
+    (let [docs ["<div id=\"outermost\"><div><span id=\"innermost\"></span></div></div>"
+                "<div id=\"outermost\"><div><span id=\"innermost\"></span></div><span id=\"sib\"></span></div>"
+                "<div id=\"outermost\"><span id=\"sib\"></span><div><span id=\"innermost\"></span></div></div>"]]
+      (doseq [doc docs]
+        (let [htree (-> doc
+                     hickory/parse hickory/as-hickory)]
+          (let [selection (select/select (select/has-child
+                                          (select/id :innermost))
+                                         htree)]
+            (is (and (= 1 (count selection))
+                     (every? true? (map #(= :div (-> % :tag)) selection)))))
+          ;; Check that a descendant selector can peer up past the
+          ;; node having its descendants examined.
+          (let [selection (select/select (select/has-child
+                                          (select/descendant (select/id :outermost)
+                                                             (select/id :innermost)))
+                                         htree)]
+            (is (and (= 1 (count selection))
+                     (every? true? (map #(= :div (-> % :tag)) selection)))))
+          (let [selection (select/select (select/has-child (select/tag :a))
+                                         htree)]
+            (is (= [] selection))))))))
+
+(deftest parent-test
+  (testing "parent selector combinator"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/parent (select/el-not select/any))
+                                     htree)]
+        (is (= [] selection)))
+      (let [selection (select/select (select/parent (select/tag :html)
+                                                    (select/tag :div)
+                                                    (select/tag :span))
+                                     htree)]
+        (is (= [] selection)))
+      (let [selection (select/select (select/parent (select/tag :body)
+                                                    (select/tag :div)
+                                                    (select/tag :span))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (every? true? (map #(= :body (:tag %)) selection)))))
+      (let [selection (select/select (select/parent (select/tag :div)
+                                                    select/any)
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (every? true? (map #(= :div (-> % :tag))
+                                    selection)))))
+      ;; Find any element that is a parent of another element
+      (let [selection (select/select (select/parent select/any select/any)
+                                     htree)]
+        (is (and (= 4 (count selection))
+                 (every? true? (mapv #(or (= :html (-> % :tag))
+                                          (= :body (-> % :tag))
+                                          (= :div (-> % :tag))
+                                          (= :span (-> % :tag)))
+                                     selection))))))
+    ;; Check examples from the doc string.
+    (let [htree (-> "<div><span class=\"foo\"><input disabled></input></span></div>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/parent (select/tag :div)
+                                                    (select/class :foo)
+                                                    (select/attr :disabled))
+                                     htree)]
+        (is (= :div (-> selection first :tag)))))
+    (let [htree (-> "<div><span class=\"foo\"><b><input disabled></input></b></span></div>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/parent (select/tag :div)
+                                                    (select/class :foo)
+                                                    (select/attr :disabled))
+                                     htree)]
+        (is (= [] selection))))))
+
 (deftest follow-adjacent-test
   (testing "follow-adjacent selector combinator"
     (let [htree (hickory/as-hickory (hickory/parse html1))]
@@ -591,6 +664,79 @@
         (is (and (= 1 (count selection))
                  (= :input (-> selection first :tag))))))))
 
+(deftest has-descendant-test
+  (testing "has-descendant selector combinator"
+    (let [docs ["<div id=\"outermost\"><div><span id=\"innermost\"></span></div></div>"
+                "<div id=\"outermost\"><div><span id=\"innermost\"></span></div><span id=\"sib\"></span></div>"
+                "<div id=\"outermost\"><span id=\"sib\"></span><div><span id=\"innermost\"></span></div></div>"]]
+      (doseq [doc docs]
+        (let [htree (-> doc
+                     hickory/parse hickory/as-hickory)]
+          (let [selection (select/select (select/and (select/tag :div)
+                                                     (select/has-descendant
+                                                      (select/id :innermost)))
+                                         htree)]
+            (is (and (= 2 (count selection))
+                     (every? true? (map #(= :div (-> % :tag)) selection)))))
+          ;; Check that a descendant selector can peer up past the
+          ;; node having its descendants examined.
+          (let [selection (select/select (select/and (select/tag :div)
+                                                     (select/has-descendant
+                                                      (select/descendant (select/id :outermost)
+                                                                         (select/tag :span))))
+                                         htree)]
+            (is (and (= 2 (count selection))
+                     (every? true? (map #(= :div (-> % :tag)) selection)))))
+          (let [selection (select/select (select/has-descendant (select/tag :a))
+                                         htree)]
+            (is (= [] selection))))))))
+
+(deftest ancestor-test
+  (testing "ancestor selector combinator"
+    (let [htree (hickory/as-hickory (hickory/parse html1))]
+      (let [selection (select/select (select/ancestor (select/tag :h1))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :h1 (-> selection first :tag)))))
+      (let [selection (select/select (select/ancestor (select/class "cool")
+                                                      (select/tag :div))
+                                     htree)]
+        (is (= 1 (count selection))
+            (= "deepestdiv" (-> selection first :attrs :id))))
+      (let [selection (select/select (select/ancestor (select/tag :div)
+                                                      select/any)
+                                     htree)]
+        (is (= 1 (count selection))))
+      (let [selection (select/select (select/ancestor (select/tag :span))
+                                     htree)]
+        (is (= 2 (count selection))))
+      ;; Find any element that is a parent of another element
+      (let [selection (select/select (select/parent select/any select/any)
+                                     htree)]
+        (is (and (= 4 (count selection))
+                 (every? true? (mapv #(or (= :html (-> % :tag))
+                                          (= :body (-> % :tag))
+                                          (= :div (-> % :tag))
+                                          (= :span (-> % :tag)))
+                                     selection))))))
+    ;; Check examples from doc string.
+    (let [htree (-> "<div><span class=\"foo\"><input disabled></input></span></div>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/ancestor (select/tag :div)
+                                                      (select/class :foo)
+                                                      (select/attr :disabled))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :div (-> selection first :tag))))))
+    (let [htree (-> "<div><span class=\"foo\"><b><input disabled></input></b></span></div>"
+                    hickory/parse hickory/as-hickory)]
+      (let [selection (select/select (select/ancestor (select/tag :div)
+                                                      (select/class :foo)
+                                                      (select/attr :disabled))
+                                     htree)]
+        (is (and (= 1 (count selection))
+                 (= :div (-> selection first :tag))))))))
+
 (deftest follow-test
   (testing "follow selector combinator"
     (let [htree (hickory/as-hickory (hickory/parse html1))]
@@ -635,58 +781,6 @@
                                                      (select/class "foo"))
                                      htree)]
         (is (= :div (-> selection first :tag)))))))
-
-(deftest has-descendant-test
-  (testing "has-descendant selector combinator"
-    (let [docs ["<div id=\"outermost\"><div><span id=\"innermost\"></span></div></div>"
-                "<div id=\"outermost\"><div><span id=\"innermost\"></span></div><span id=\"sib\"></span></div>"
-                "<div id=\"outermost\"><span id=\"sib\"></span><div><span id=\"innermost\"></span></div></div>"]]
-      (doseq [doc docs]
-        (let [htree (-> doc
-                     hickory/parse hickory/as-hickory)]
-          (let [selection (select/select (select/and (select/tag :div)
-                                                     (select/has-descendant
-                                                      (select/id :innermost)))
-                                         htree)]
-            (is (and (= 2 (count selection))
-                     (every? true? (map #(= :div (-> % :tag)) selection)))))
-          ;; Check that a descendant selector can peer up past the
-          ;; node having its descendants examined.
-          (let [selection (select/select (select/and (select/tag :div)
-                                                     (select/has-descendant
-                                                      (select/descendant (select/id :outermost)
-                                                                         (select/tag :span))))
-                                         htree)]
-            (is (and (= 2 (count selection))
-                     (every? true? (map #(= :div (-> % :tag)) selection)))))
-          (let [selection (select/select (select/has-descendant (select/tag :a))
-                                         htree)]
-            (is (= [] selection))))))))
-
-(deftest has-child-test
-  (testing "has-child selector combinator"
-    (let [docs ["<div id=\"outermost\"><div><span id=\"innermost\"></span></div></div>"
-                "<div id=\"outermost\"><div><span id=\"innermost\"></span></div><span id=\"sib\"></span></div>"
-                "<div id=\"outermost\"><span id=\"sib\"></span><div><span id=\"innermost\"></span></div></div>"]]
-      (doseq [doc docs]
-        (let [htree (-> doc
-                     hickory/parse hickory/as-hickory)]
-          (let [selection (select/select (select/has-child
-                                          (select/id :innermost))
-                                         htree)]
-            (is (and (= 1 (count selection))
-                     (every? true? (map #(= :div (-> % :tag)) selection)))))
-          ;; Check that a descendant selector can peer up past the
-          ;; node having its descendants examined.
-          (let [selection (select/select (select/has-child
-                                          (select/descendant (select/id :outermost)
-                                                             (select/id :innermost)))
-                                         htree)]
-            (is (and (= 1 (count selection))
-                     (every? true? (map #(= :div (-> % :tag)) selection)))))
-          (let [selection (select/select (select/has-child (select/tag :a))
-                                         htree)]
-            (is (= [] selection))))))))
 
 (deftest graceful-boundaries-test
   ;; Testing some problematic expressions to make sure they gracefully
