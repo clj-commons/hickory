@@ -288,9 +288,11 @@
    selected."
   [re]
   (fn [hzip-loc]
-    (some #(re-find re %) (->> (zip/node hzip-loc)
-                               :content
-                               (filter string?)))))
+    (when (some #(re-find re %)
+                (->> (zip/node hzip-loc)
+                     :content
+                     (filter string?)))
+      hzip-loc)))
 
 (defn n-moves-until
   "This selector returns a selector function that selects its argument if

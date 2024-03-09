@@ -8,40 +8,38 @@
 
 (def html1
   "<!DOCTYPE html>
-<!-- Comment 1 -->
-<html>
-<head></head>
-<body>
-<h1>Heading</h1>
-<p>Paragraph</p>
-<a href=\"http://example.com\">Link</a>
-<div class=\"aclass bclass cool\">
-<span disabled anotherattr=\"\" thirdthing=\"44\" id=\"attrspan\"
-      Capitalized=\"UPPERCASED\">
-<div class=\"subdiv cool\" id=\"deepestdiv\">Div</div>
-</span>
-<!-- Comment 2 -->
-<span id=\"anid\" class=\"line-feed-ahead
-cool\">Span</span>
-</div>
-</body>
-</html>")
+    <!-- Comment 1 -->
+    <html>
+    <head></head>
+    <body>
+        <h1>Heading</h1>
+        <p>Paragraph</p>
+        <a href=\"http://example.com\">Link</a>
+        <div class=\"aclass bclass cool\">
+            <span disabled anotherattr=\"\" thirdthing=\"44\" id=\"attrspan\" Capitalized=\"UPPERCASED\">
+                <div class=\"subdiv cool\" id=\"deepestdiv\">Div</div>
+            </span>
+            <!-- Comment 2 -->
+            <span id=\"anid\" class=\"line-feed-ahead cool\">Span</span>
+        </div>
+    </body>
+    </html>")
 
 (def html2
   "<!DOCTYPE html>
-<html>
-<head></head>
-<body>
-<p>Paragraph 1</p>
-<p>Paragraph 2</p>
-<p>Paragraph 3</p>
-<p>Paragraph 4</p>
-<p>Paragraph 5</p>
-<p>Paragraph 6</p>
-<p>Paragraph 7</p>
-<p>Paragraph 8</p>
-</body>
-</html>")
+    <html>
+    <head></head>
+    <body>
+        <p>Paragraph 1</p>
+        <p>Paragraph 2</p>
+        <p>Paragraph 3</p>
+        <p>Paragraph 4</p>
+        <p>Paragraph 5</p>
+        <p>Paragraph 6</p>
+        <p>Paragraph 7</p>
+        <p>Paragraph 8</p>
+    </body>
+    </html>")
 
 (deftest select-next-loc-test
   (testing "The select-next-loc function."
@@ -232,7 +230,15 @@ cool\">Span</span>
                  (= :h1 (-> selection first :tag)))))
       (let [selection (select/select (select/find-in-text #"Div") htree)]
         (is (and (= 1 (count selection))
-                 (= :div (-> selection first :tag))))))
+                 (= :div (-> selection first :tag)))))
+      (let [selection-locs (select/select-locs
+                            (select/child (select/tag :body)
+                                          (select/find-in-text #"Paragraph"))
+                            htree)
+            selection (mapv zip/node selection-locs)]
+        (is (and (= 1 (count selection))
+                 (= :p (-> selection first :tag))
+                 (= :body (-> selection-locs first zip/up zip/node :tag))))))
     (let [htree (hickory/as-hickory (hickory/parse html2))]
       (let [selection (select/select (select/find-in-text #"Paragraph") htree)]
         (is (and (= 8 (count selection))
