@@ -144,15 +144,11 @@
     ([this] (trampoline as-hickory this (hzip/hickory-zip this)))
     ([this loc] (end-or-recur as-hickory loc (.getWholeText this)))))
 
-(set! *warn-on-reflection* false)
-
 (defn parse
   "Parse an entire HTML document into a DOM structure that can be
    used as input to as-hiccup or as-hickory."
   [s]
   (Jsoup/parse s))
-
-(set! *warn-on-reflection* true)
 
 (defn parse-fragment
   "Parse an HTML fragment (some group of tags that might be at home somewhere
