@@ -16,7 +16,8 @@
 
   (is (= {:type :document,
           :content [{:type :document-type,
-                     :attrs {:name "html", :publicid "", :systemid ""}}
+                     :attrs {:name "html", :publicid "", :systemid ""
+                             :#doctype "html"}}
                     {:type :element,
                      :attrs nil,
                      :tag :html,
@@ -57,7 +58,8 @@
 
   (is (= {:type :document,
           :content [{:type :document-type,
-                     :attrs {:name "html", :publicid "", :systemid ""}}
+                     :attrs {:name "html", :publicid "", :systemid ""
+                             :#doctype "html"}}
                     {:type :element,
                      :attrs nil,
                      :tag :html,
