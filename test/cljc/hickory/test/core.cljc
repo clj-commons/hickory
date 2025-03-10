@@ -17,7 +17,7 @@
   (is (= {:type :document,
           :content [{:type :document-type,
                      :attrs {:name "html", :publicid "", :systemid ""
-                             :#doctype "html"}}
+                             #?@(:clj [:#doctype "html"])}}
                     {:type :element,
                      :attrs nil,
                      :tag :html,
@@ -59,7 +59,7 @@
   (is (= {:type :document,
           :content [{:type :document-type,
                      :attrs {:name "html", :publicid "", :systemid ""
-                             :#doctype "html"}}
+                             #?@(:clj [:#doctype "html"])}}
                     {:type :element,
                      :attrs nil,
                      :tag :html,
