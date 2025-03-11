@@ -7,6 +7,8 @@
             DocumentType Element TextNode XmlDeclaration]
            [org.jsoup.parser Tag Parser]))
 
+(set! *warn-on-reflection* true)
+
 (defn- end-or-recur [as-fn loc data & [skip-child?]]
   (let [new-loc (-> loc (zip/replace data) zip/next (cond-> skip-child? zip/next))]
     (if (zip/end? new-loc)
@@ -68,9 +70,10 @@
   DocumentType
   (as-hiccup
     ([this] (trampoline as-hiccup this (hzip/hiccup-zip this)))
-    ([this loc] (end-or-recur as-hiccup loc (utils/render-doctype (.attr this "name")
-                                                                  (.attr this "publicid")
-                                                                  (.attr this "systemid")))))
+    ([this loc]
+     (end-or-recur as-hiccup loc (utils/render-doctype (.name this)
+                                                       (.publicId this)
+                                                       (.systemId this)))))
   Element
   (as-hiccup
     ([this] (trampoline as-hiccup this (hzip/hiccup-zip this)))
