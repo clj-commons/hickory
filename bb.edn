@@ -13,7 +13,7 @@
   repl:cljs-node (shell "rlwrap bb clojure -M:test:cljs -m cljs.main -re node")
   repl:cljs-browser (shell "rlwrap bb clojure -M:test:cljs -m cljs.main")
 
-  quickdoc {:extra-deps {io.github.borkdude/quickdoc {:git/sha "62dd3c6a828c3a5e61bae6ca80c8ba4781356a67"}}
+  quickdoc {:extra-deps {io.github.borkdude/quickdoc {:git/tag "v0.2.5", :git/sha "25784ca"}}
             :requires ([quickdoc.api :as api])
             :task (api/quickdoc {:source-paths ["src/clj" "src/cljs" "src/cljs"]
                                  :git/branch "master"
