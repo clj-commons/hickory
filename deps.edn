@@ -1,7 +1,7 @@
 {:paths ["src/clj" "src/cljc" "src/cljs"]
  :deps
  {org.clojure/clojure {:mvn/version "1.11.1"}
-  org.jsoup/jsoup {:mvn/version "1.20.1"}}
+  org.jsoup/jsoup {:mvn/version "1.21.1"}}
  :aliases
  {:test {:extra-paths ["test/cljc"]}
   :cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.11.60"}}}
