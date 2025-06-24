@@ -144,16 +144,18 @@
     ([this] (trampoline as-hickory this (hzip/hickory-zip this)))
     ([this loc] (end-or-recur as-hickory loc (.getWholeText this)))))
 
-;; Jsoup/parse is polymorphic, we'll let reflection handle it for now
-(set! *warn-on-reflection* false)
-
 (defn parse
   "Parse an entire HTML document into a DOM structure that can be
    used as input to as-hiccup or as-hickory."
   [s]
-  (Jsoup/parse s))
-
-(set! *warn-on-reflection* true)
+  (cond (instance? String s)
+        (Jsoup/parse ^String s)
+        (instance? java.io.File s)
+        (Jsoup/parse ^java.io.File s)
+        (instance? java.nio.file.Path s)
+        (Jsoup/parse ^java.nio.file.Path s)
+        :else
+        (throw (ex-info "Invalid input for parse" {:type (type s)}))))
 
 (defn parse-fragment
   "Parse an HTML fragment (some group of tags that might be at home somewhere
