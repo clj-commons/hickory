@@ -11,7 +11,7 @@
 
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [org.clojure/clojurescript "1.11.60" :scope "provided"]
-                 [org.jsoup/jsoup "1.20.1"]]
+                 [org.jsoup/jsoup "1.21.1"]]
 
   :source-paths ["src/clj" "src/cljc" "src/cljs"]
 
