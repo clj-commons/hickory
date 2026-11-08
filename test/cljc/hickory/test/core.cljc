@@ -126,6 +126,42 @@
          (get-in (as-hickory (parse "<pre>ABC&amp;\n\nDEF.</pre>"))
                  [:content 0 :content 1 :content 0 :content 0]))))
 
+;; Issue #98 regression test: as-hiccup could not handle unescapable elements
+;; like <script> and <style> if they had no children.
+(deftest sibling-after-unescapable-element
+  ;; A single empty <script> in <head> must not keep the following <body> from being converted.
+  (is (= ["<!DOCTYPE html>"
+          [:html {}
+           [:head {} [:script {:src "/test.js"}]]
+           [:body {} [:h1 {} "Test"]]]]
+         (as-hiccup (parse "<!DOCTYPE html><html><head><script src=\"/test.js\"></script></head><body><h1>Test</h1></body></html>"))))
+  ;; With two empty <script> tags, both must be converted
+  ;; (previously the second was left as a raw Element).
+  (is (= ["<!DOCTYPE html>"
+          [:html {}
+           [:head {}
+            [:script {:src "/test.js"}]
+            [:script {:src "/test.js"}]]
+           [:body {} [:h1 {} "Test"]]]]
+         (as-hiccup (parse "<!DOCTYPE html><html><head><script src=\"/test.js\"></script><script src=\"/test.js\"></script></head><body><h1>Test</h1></body></html>"))))
+  ;; An empty <style> tag shares the same unescapable handling
+  ;; and must not skip its following sibling either.
+  (is (= [[:html {}
+           [:head {} [:style {}]]
+           [:body {} [:h1 {} "Test"]]]]
+         (as-hiccup (parse "<html><head><style></style></head><body><h1>Test</h1></body></html>"))))
+  ;; A <script> WITH content must still convert correctly - this always worked.
+  ;; The fix must not over-correct and skip real siblings.
+  (is (= [[:html {}
+           [:head {} [:script {} "alert(\"hi\");"]]
+           [:body {} [:h1 {} "Test"]]]]
+         (as-hiccup (parse "<html><head><script>alert(\"hi\");</script></head><body><h1>Test</h1></body></html>"))))
+  ;; Normal text and unescapable content must both be handled correctly (and differently)
+  (is (= [[:html {}
+           [:head {} [:script {} "if (a < b && c > d) { }"]]
+           [:body {} "a &amp; b"]]]
+         (as-hiccup (parse "<html><head><script>if (a < b && c > d) { }</script></head><body>a & b</body></html>")))))
+
 ;; Issue #50: Tests that the parser does not throw a StackOverflowError when
 ;; parsing a document with deeply nested HTML tags.
 ;; I don't have time for this

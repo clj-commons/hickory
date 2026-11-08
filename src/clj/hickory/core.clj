@@ -93,7 +93,9 @@
      (let [tag (utils/lower-case-keyword (.tagName this))
            children (cond->> (.childNodes this) (utils/unescapable-content tag) (map str))
            data (into [] (concat [tag (trampoline as-hiccup (.attributes this))] children))]
-       (end-or-recur as-hiccup loc data (utils/unescapable-content tag)))))
+       (end-or-recur as-hiccup loc data (and (utils/unescapable-content tag)
+                                             ; only `skip-child?` if there are actual children
+                                             (seq children))))))
   TextNode
   ;; See comment for Element re: html escaping.
   (as-hiccup
