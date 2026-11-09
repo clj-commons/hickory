@@ -2,6 +2,10 @@
 
 [Hickory](https://github.com/clj-commons/hickory): parse HTML into Clojure data structures.
 
+## Unreleased
+
+- Bump jsoup to 1.24.1
+
 ## 0.7.8 (2026-11-09)
 
 - [#98](https://github.com/clj-commons/hickory/issues/98): `as-hiccup` converts the element after an empty `script` or `style` element ([@jacobemcken](https://github.com/jacobemcken))
