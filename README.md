@@ -285,59 +285,7 @@ Here are some alternatives:
 
 ## Changes
 
-- Version 0.7.1. Thanks to [Matt Grimm](https://github.com/tkocmathla) for adding the up-pred zipper function.
-
-- Version 0.7.0. Thanks to [Ricardo J. Méndez](https://github.com/ricardojmendez) for the following updates.
-    * Removed dependency on cljx, since it was deprecated in June 2015.
-    * Converted all files and conditionals to cljc.
-    * Moved tests to cljs.test with doo, since cemerick.test was deprecated over a year ago.
-    * Updated Clojure and ClojureScript dependencies to avoid conflicts.
-    * Updated JSoup to 1.9.2, which should bring improved parsing performance.
-
-- Released version 0.6.0.
-    * Updated JSoup to version 1.8.3. This version of JSoup contains bug fixes, but slightly changes the way it
-    handles HTML: some parses and output might have different case than before. HTML is still case-insensitive,
-    of course, but Hickory minor version has been increased just in case. API and semantics are otherwise unchanged.
-
-- Released version 0.5.4.
-    * Fixed project dependencies so ClojureScript is moved to a dev-dependency.
-
-- Released version 0.5.3.
-    * Minor bug fix to accommodate ClojureScript's new type hinting support.
-
-- Released version 0.5.2.
-    * Updates the Clojurescript version to use the latest version of Clojurescript (0.0-1934).
-
-- Released version 0.5.1.
-    * Added `has-child` and `has-descendant` selectors. Be careful with `has-descendant`, as it must do a full subtree search on each node, which is not fast.
-
-- Released version 0.5.0.
-    * Now works in Clojurescript as well, huge thanks to [Julien Eluard](https://github.com/jeluard) for doing the heavy lifting on this.
-    * Reorganized parts of the API into more granular namespaces for better organization.
-    * Added functions to convert between Hiccup and Hickory format; note that this conversion is not always exact or roundtripable, and can cause a full HTML reparse.
-    * Added new selector, `element-child`, which selects element nodes that are the child of another element node.
-    * Numerous bug fixes and improvements.
-
-- Released version 0.4.1, which adds a number of new selectors and selector combinators, including `find-in-text`, `precede-adjacent`, `follow-adjacent`, `precede` and `follow`.
-
-- Released version 0.4.0. Adds the `hickory.select` namespace with many helpful functions for searching through hickory-format HTML documents for specific nodes.
-
-- Released version 0.3.0. Provides a more helpful error message when hickory-to-html has an error. Now requires Clojure 1.4.
-
-- Released version 0.2.3. Fixes a bug where hickory-to-html was not html-escaping the values of tag attributes.
-
-- Released version 0.2.2. Fixes a bug where hickory-to-html was improperly html-escaping the contents of script/style tags.
-
-- Released version 0.2.1. This version fixes bugs:
-    * hickory-to-html now properly escapes text nodes
-    * text nodes will now preserve whitespace correctly
-
-- Released version 0.2.0. This version adds a second parsed data
-  format, explained above. To support this, the API for `parse` and
-  `parse-fragment` has been changed to allow their return values to be
-  passed to functions `as-hiccup` or `as-hickory` to determine the
-  final format. Also added are zippers for both Hiccup and Hickory
-  formats.
+See [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
