@@ -285,6 +285,14 @@ Here are some alternatives:
 
 ## Changes
 
+- Unreleased
+    * Fix [#98](https://github.com/clj-commons/hickory/issues/98): `as-hiccup` converts the element after an empty `script` or `style` element. Thanks to [Jacob Emcken](https://github.com/jacobemcken) ([#101](https://github.com/clj-commons/hickory/pull/101)).
+    * `parse` accepts a `String`, `File` or `Path` without reflection and throws on other input. Thanks to [Janos Erdos](https://github.com/erdos) ([#94](https://github.com/clj-commons/hickory/pull/94)).
+    * Bump jsoup to 1.22.2.
+
+- Version 0.7.7
+    * Suppress the reflection warning in `parse` ([#92](https://github.com/clj-commons/hickory/pull/92)).
+
 - Version 0.7.1. Thanks to [Matt Grimm](https://github.com/tkocmathla) for adding the up-pred zipper function.
 
 - Version 0.7.0. Thanks to [Ricardo J. Méndez](https://github.com/ricardojmendez) for the following updates.
