@@ -2,7 +2,7 @@
 
 [Hickory](https://github.com/clj-commons/hickory): parse HTML into Clojure data structures.
 
-## Unreleased
+## 0.7.8 (2026-11-09)
 
 - [#98](https://github.com/clj-commons/hickory/issues/98): `as-hiccup` converts the element after an empty `script` or `style` element ([@jacobemcken](https://github.com/jacobemcken))
 - [#94](https://github.com/clj-commons/hickory/pull/94): `parse` accepts a `String`, `File` or `Path` without reflection and throws on other input ([@erdos](https://github.com/erdos))
