@@ -293,6 +293,27 @@ Here are some alternatives:
 - Version 0.7.7
     * Suppress the reflection warning in `parse` ([#92](https://github.com/clj-commons/hickory/pull/92)).
 
+- Version 0.7.6
+    * Bump jsoup to 1.19.1.
+
+- Version 0.7.5
+    * Add `parent` and `ancestor` selectors.
+    * Fix `find-in-text` inside a child selector.
+
+- Version 0.7.4
+    * Remove the quoin dependency.
+    * Split class names on any whitespace.
+    * Fix ClojureScript advanced compilation.
+
+- Version 0.7.3
+    * Upgrade ClojureScript.
+
+- Version 0.7.2
+    * Move to clj-commons: `org.clj-commons/hickory`.
+    * Parse deeply nested HTML without a stack overflow.
+    * Support Node.js in ClojureScript.
+    * Bump jsoup to 1.15.2.
+
 - Version 0.7.1. Thanks to [Matt Grimm](https://github.com/tkocmathla) for adding the up-pred zipper function.
 
 - Version 0.7.0. Thanks to [Ricardo J. Méndez](https://github.com/ricardojmendez) for the following updates.
