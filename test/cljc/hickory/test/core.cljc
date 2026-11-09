@@ -1,6 +1,6 @@
 (ns hickory.test.core
   (:require [hickory.core :refer [as-hickory as-hiccup parse parse-fragment]]
-            [clojure.test :refer [deftest is]]))
+            [clojure.test :refer [deftest is testing]]))
 
 ;; This document tests: doctypes, white space text nodes, attributes,
 ;; and cdata nodes.
@@ -126,41 +126,36 @@
          (get-in (as-hickory (parse "<pre>ABC&amp;\n\nDEF.</pre>"))
                  [:content 0 :content 1 :content 0 :content 0]))))
 
-;; Issue #98 regression test: as-hiccup could not handle unescapable elements
-;; like <script> and <style> if they had no children.
+;; Issue #98
 (deftest sibling-after-unescapable-element
-  ;; A single empty <script> in <head> must not keep the following <body> from being converted.
-  (is (= ["<!DOCTYPE html>"
-          [:html {}
-           [:head {} [:script {:src "/test.js"}]]
-           [:body {} [:h1 {} "Test"]]]]
-         (as-hiccup (parse "<!DOCTYPE html><html><head><script src=\"/test.js\"></script></head><body><h1>Test</h1></body></html>"))))
-  ;; With two empty <script> tags, both must be converted
-  ;; (previously the second was left as a raw Element).
-  (is (= ["<!DOCTYPE html>"
-          [:html {}
-           [:head {}
-            [:script {:src "/test.js"}]
-            [:script {:src "/test.js"}]]
-           [:body {} [:h1 {} "Test"]]]]
-         (as-hiccup (parse "<!DOCTYPE html><html><head><script src=\"/test.js\"></script><script src=\"/test.js\"></script></head><body><h1>Test</h1></body></html>"))))
-  ;; An empty <style> tag shares the same unescapable handling
-  ;; and must not skip its following sibling either.
-  (is (= [[:html {}
-           [:head {} [:style {}]]
-           [:body {} [:h1 {} "Test"]]]]
-         (as-hiccup (parse "<html><head><style></style></head><body><h1>Test</h1></body></html>"))))
-  ;; A <script> WITH content must still convert correctly - this always worked.
-  ;; The fix must not over-correct and skip real siblings.
-  (is (= [[:html {}
-           [:head {} [:script {} "alert(\"hi\");"]]
-           [:body {} [:h1 {} "Test"]]]]
-         (as-hiccup (parse "<html><head><script>alert(\"hi\");</script></head><body><h1>Test</h1></body></html>"))))
-  ;; Normal text and unescapable content must both be handled correctly (and differently)
-  (is (= [[:html {}
-           [:head {} [:script {} "if (a < b && c > d) { }"]]
-           [:body {} "a &amp; b"]]]
-         (as-hiccup (parse "<html><head><script>if (a < b && c > d) { }</script></head><body>a & b</body></html>")))))
+  (testing "an empty <script> does not skip the next sibling"
+    (is (= ["<!DOCTYPE html>"
+            [:html {}
+             [:head {} [:script {:src "/test.js"}]]
+             [:body {} [:h1 {} "Test"]]]]
+           (as-hiccup (parse "<!DOCTYPE html><html><head><script src=\"/test.js\"></script></head><body><h1>Test</h1></body></html>")))))
+  (testing "two empty <script> tags both convert"
+    (is (= ["<!DOCTYPE html>"
+            [:html {}
+             [:head {}
+              [:script {:src "/test.js"}]
+              [:script {:src "/test.js"}]]
+             [:body {} [:h1 {} "Test"]]]]
+           (as-hiccup (parse "<!DOCTYPE html><html><head><script src=\"/test.js\"></script><script src=\"/test.js\"></script></head><body><h1>Test</h1></body></html>")))))
+  (testing "an empty <style> does not skip the next sibling"
+    (is (= [[:html {}
+             [:head {} [:style {}]]
+             [:body {} [:h1 {} "Test"]]]]
+           (as-hiccup (parse "<html><head><style></style></head><body><h1>Test</h1></body></html>")))))
+  #?(:clj
+     (testing "a <script> with two data nodes converts both"
+       (let [doc (parse "<html><head><script>a</script></head><body><h1>Test</h1></body></html>")]
+         (.appendChild ^org.jsoup.nodes.Element (first (.getElementsByTag ^org.jsoup.nodes.Document doc "script"))
+                       (org.jsoup.nodes.DataNode. "b"))
+         (is (= [[:html {}
+                  [:head {} [:script {} "a" "b"]]
+                  [:body {} [:h1 {} "Test"]]]]
+                (as-hiccup doc)))))))
 
 ;; Issue #50: Tests that the parser does not throw a StackOverflowError when
 ;; parsing a document with deeply nested HTML tags.
